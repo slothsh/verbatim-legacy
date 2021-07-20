@@ -46,8 +46,6 @@
 
 #define CREATE_NODETAG_ITEMS(FN)        \
     FN(undefined)                       \
-    FN(id)                              \
-    FN(xml)                             \
     FN(tt)                              \
     FN(set)                             \
     FN(body)                            \
@@ -82,10 +80,13 @@
     FN(id)                              \
     FN(lang)                            \
     FN(space)                           \
+    FN(base)                            \
     FN(tt)                              \
     FN(ttm)                             \
     FN(ttp)                             \
     FN(tts)                             \
+    FN(value)                           \
+    FN(type)                            \
     FN(style)                           \
     FN(region)                          \
     FN(begin)                           \
@@ -136,6 +137,7 @@
     FN(subFrameRate)                    \
     FN(tickRate)                        \
     FN(timeBase)                        \
+    FN(use)                             \
     
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
 
@@ -191,7 +193,7 @@ namespace Helpers
         struct _NSTagVersion
         {
             NSTagID            ns;
-            size_t              versions;
+            size_t             versions;
         } NSTagVersion;
 
         typedef
@@ -204,8 +206,9 @@ namespace Helpers
         typedef
         struct _AttrTagVersion
         {
+            NSTagID           ns_tag;
             AttrTagID         attribute;
-            size_t             versions;
+            size_t            versions;
         } AttrTagVersion;
     }
 }

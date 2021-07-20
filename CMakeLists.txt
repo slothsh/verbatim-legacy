@@ -65,6 +65,11 @@ add_executable(edltool
 )
 set_target_properties(edltool PROPERTIES LINKER_LANGUAGE CXX)
 
+# add_custom_command(
+# 	TARGET edltool PRE_BUILD
+# 	COMMAND "./scripts/hashdictionary.sh"
+# )
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 # set_target_properties(edltool PROPERTIES COMPILE_FLAGS "-fsanitize=address" LINK_FLAGS "-fsanitize=address") # Configure this more appropriately
 # set_target_properties(edltool PROPERTIES COMPILE_FLAGS) # Configure this more appropriately
