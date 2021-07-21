@@ -182,7 +182,7 @@ namespace Helpers
         } NodeTagID;
 
         typedef
-        struct _AttrID
+        struct _AttrTagID
         {
             NSTag               ns;
             AttrTag             attribute;
