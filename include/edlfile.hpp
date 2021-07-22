@@ -32,8 +32,8 @@ public:
 	explicit EDLFilePTX(const std::string& path);
     ~EDLFilePTX();
 
-	void PrintOutput(const Helpers::Format::File& format);
-	void WriteOutput(const std::string& path, const Helpers::Format::File& format);
+	void PrintOutput(const vt::Format::File& format);
+	void WriteOutput(const std::string& path, const vt::Format::File& format);
 	void AddTrack() noexcept;
 	void Flush() noexcept;
 	void RemoveTrack(const uint32_t& track_index) noexcept;
@@ -79,7 +79,7 @@ protected:
 	std::map<uint32_t, PTXTrack> ptx_tracks;
 
 private:
-	std::stringstream GetOutput(const Helpers::Format::File& format);
+	std::stringstream GetOutput(const vt::Format::File& format);
 	inline void ConstructorAssignment(const EDLFilePTX& edl_file) noexcept;
 } EDLFILEPTX;
 

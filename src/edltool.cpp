@@ -37,7 +37,7 @@ void operator delete(void* ptr, size_t size) noexcept {
 }
 #endif
 
-using namespace Helpers;
+using namespace vt;
 using namespace EDL;
 
 int main(int argc, char** argv)
@@ -51,12 +51,12 @@ int main(int argc, char** argv)
         std::exit(1);
     }
 
-	using namespace Helpers::XML;
+	using namespace vt::XML;
 	try {
 		EDLFILEPTX edlfile((std::string(argv[1])));
 		// RemoveBoundaryEvents(edlfile, "(cross fade)");
 		MergeBoundaryEvents(edlfile, "(cross fade)");
-		// edlfile.WriteOutput((std::string(argv[2])), Helpers::Format::File::edl_ptx_minimal);
+		// edlfile.WriteOutput((std::string(argv[2])), vt::Format::File::edl_ptx_minimal);
 		TTML1p0_Netflix ttml;
 		ttml << edlfile;
 		// ttml.PrintNodes();

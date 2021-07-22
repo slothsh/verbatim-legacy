@@ -1,5 +1,5 @@
 // Stefan "SoulXP" Olivier
-// File: edlhelpers.cpp
+// File: edlvt.cpp
 // Description: Source files for auxiliary functions to help with parsing EDL files
 
 // Standard headers
@@ -13,7 +13,7 @@
 // Project headers
 #include "../include/helpers.hpp"
 
-namespace Helpers
+namespace vt
 {
 	namespace Regex
 	{
@@ -243,7 +243,7 @@ namespace Helpers
 		using attribute_t = std::tuple<std::string, std::string, std::string>;
 		std::optional<std::reference_wrapper<const attribute_t>> XMLNode::GetNodeId() const noexcept
 		{
-			using namespace Helpers::XML;
+			using namespace vt::XML;
 			const auto& predicate = [&](const auto& a) {
 				const auto tag_id = GetXMLTagText(XMLTag::id);
 				const auto tag_xml = GetXMLTagText(XMLTag::xml);

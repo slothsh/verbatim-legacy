@@ -25,8 +25,8 @@
 #include "../include/edlfile.hpp"
 
 // Aliases
-using namespace Helpers;
-using XMLProfile = Helpers::XML::XMLProfile;
+using namespace vt;
+using XMLProfile = vt::XML::XMLProfile;
 
 // XmlFile declaration -------------------------------------------------------------------------------------------------1 of 1-|
 // ============================================================================================================================|
@@ -159,7 +159,7 @@ TTML1p0_Netflix::~TTML1p0_Netflix()
 void TTML1p0_Netflix::AddMetadata(const XMLNode& node) noexcept
 {
   // Create valid metadata tags according TTML1 spec
-  using namespace Helpers::XML;
+  using namespace vt::XML;
   const auto tag_agent = GetXMLTagText(XMLTag::agent);
   const auto tag_copyright = GetXMLTagText(XMLTag::copyright);
   const auto tag_desc = GetXMLTagText(XMLTag::desc);
@@ -178,7 +178,7 @@ void TTML1p0_Netflix::AddMetadata(const XMLNode& node) noexcept
     -> bool
     {
       // Tag specific tasks
-      switch (Helpers::XML::GetXMLTag(node.tag.second)) {
+      switch (vt::XML::GetXMLTag(node.tag.second)) {
         case XMLTag::agent:
           // TODO
           return true;
@@ -216,7 +216,7 @@ void TTML1p0_Netflix::AddMetadata(const XMLNode& node) noexcept
 
     // Create and validate node
     if (!CreateInternalNode()) throw std::logic_error("Could not add metadata to document head\n");
-    using XMLHeadFlags = Helpers::XML::TTML1p0_Head_Flags;
+    using XMLHeadFlags = vt::XML::TTML1p0_Head_Flags;
     this->VerifyNodes(XMLHeadFlags::metadata);
   }
   catch(const std::exception& e) {
@@ -228,7 +228,7 @@ void TTML1p0_Netflix::AddMetadata(const XMLNode& node) noexcept
 void TTML1p0_Netflix::AddStyling(const XMLNode& node) noexcept
 {
   // Create valid styling tags according TTML1 spec
-  using namespace Helpers::XML;
+  using namespace vt::XML;
   const auto tag_id = GetXMLTagText(XMLTag::id);
   const auto tag_xml = GetXMLTagText(XMLTag::xml);
   const auto tag_style = GetXMLTagText(XMLTag::style);
@@ -245,7 +245,7 @@ void TTML1p0_Netflix::AddStyling(const XMLNode& node) noexcept
     -> bool
     {
       // Tag specific tasks
-      switch (Helpers::XML::GetXMLTag(node.tag.second)) {
+      switch (vt::XML::GetXMLTag(node.tag.second)) {
         case XMLTag::styling: {
           // TODO
           return true;
@@ -289,7 +289,7 @@ void TTML1p0_Netflix::AddStyling(const XMLNode& node) noexcept
 
     // Create and validate node
     if (!CreateInternalNode()) throw std::logic_error("Could not add styling to document head\n");
-    using XMLHeadFlags = Helpers::XML::TTML1p0_Head_Flags;
+    using XMLHeadFlags = vt::XML::TTML1p0_Head_Flags;
     this->VerifyNodes(XMLHeadFlags::styling);
   }
   catch (const std::exception& e) {
@@ -301,7 +301,7 @@ void TTML1p0_Netflix::AddStyling(const XMLNode& node) noexcept
 void TTML1p0_Netflix::AddLayout(const XMLNode& node) noexcept
 {
   // Create valid styling tags according TTML1 spec
-  using namespace Helpers::XML;
+  using namespace vt::XML;
   const auto tag_id = GetXMLTagText(XMLTag::id);
   const auto tag_xml = GetXMLTagText(XMLTag::xml);
   const auto tag_layout = GetXMLTagText(XMLTag::layout);
@@ -318,7 +318,7 @@ void TTML1p0_Netflix::AddLayout(const XMLNode& node) noexcept
     -> bool
     {
       // Tag specific tasks
-      switch (Helpers::XML::GetXMLTag(node.tag.second)) {
+      switch (vt::XML::GetXMLTag(node.tag.second)) {
         case XMLTag::layout: {
           // TODO
           return true;
@@ -360,7 +360,7 @@ void TTML1p0_Netflix::AddLayout(const XMLNode& node) noexcept
 
     // Create and validate node
     if (!CreateInternalNode()) throw std::logic_error("Could not add layout to document head\n");
-    using XMLHeadFlags = Helpers::XML::TTML1p0_Head_Flags;
+    using XMLHeadFlags = vt::XML::TTML1p0_Head_Flags;
     this->VerifyNodes(XMLHeadFlags::layout);
   }
   catch (const std::exception& e) {
@@ -388,7 +388,7 @@ xmlpp::Element* TTML1p0_Netflix::GetHeadData(const XMLHeadFlags& flag, const std
 void TTML1p0_Netflix::VerifyNodes(const uint16_t flags) noexcept
 {
   // TODO: Better verification of nodes
-  using namespace Helpers::XML;
+  using namespace vt::XML;
   for (uint16_t bit = 0x0001; bit != 0x0000; bit <<= 0x0001) {
     switch (flags & bit) {
       case 0x0001: {
@@ -454,7 +454,7 @@ bool TTML1p0_Netflix::IsValidNodes(const uint16_t flags) noexcept
 {
   // TODO: Better verification of nodes
   bool nodes_are_valid = true;
-  using namespace Helpers::XML;
+  using namespace vt::XML;
   for (uint16_t bit = 0x0001; bit != 0x0000; bit <<= 0x0001) {
     switch (flags & bit) {
       case 0x0001: {
@@ -507,7 +507,7 @@ bool TTML1p0_Netflix::IsValidNodes(const uint16_t flags) noexcept
 
 void TTML1p0_Netflix::AddSubtitle(std::vector<std::map<std::string, std::string>>& subtitle_data) noexcept
 {
-  using namespace Helpers::XML;
+  using namespace vt::XML;
   const auto tag_id = GetXMLTagText(XMLTag::id);
   const auto tag_div = GetXMLTagText(XMLTag::div);
   const auto tag_begin = GetXMLTagText(XMLTag::begin);
@@ -571,9 +571,9 @@ void TTML1p0_Netflix::AddSubtitle(std::vector<std::map<std::string, std::string>
 
 Format::XMLNode TTML1p0_Netflix::CreatePresetNode(const TTML1p0_Netflix::StyleNodePresets& preset)
 {
-  using namespace Helpers::XML;
-  using namespace Helpers::Format;
-  using XMLNode = Helpers::Format::XMLNode;
+  using namespace vt::XML;
+  using namespace vt::Format;
+  using XMLNode = vt::Format::XMLNode;
   using preset_t = TTML1p0_Netflix::StyleNodePresets;
 
   const auto tag_id = GetXMLTagText(XMLTag::id);
@@ -656,7 +656,7 @@ void TTML1p0_Netflix::ConfigureDocument()
   // Clean up first
   if (this->filesink_raw) this->Purge();
 
-  using namespace Helpers::XML;
+  using namespace vt::XML;
   this->xmlfile_profile = XMLProfile::ttml_1p0_netflix;
 
   // Declare root namespaces for TTML 1.1 Netflix profile
@@ -714,7 +714,7 @@ void TTML1p0_Netflix::ConfigureDocument()
 void TTML1p0_Netflix::operator<<(EDLFilePTX& edl_file) noexcept
 {
   // XML tags
-  using namespace Helpers::XML;
+  using namespace vt::XML;
   const auto tag_ttp = GetXMLTagText(XMLTag::ttp);
   const auto tag_framerate = GetXMLTagText(XMLTag::frame_rate);
 

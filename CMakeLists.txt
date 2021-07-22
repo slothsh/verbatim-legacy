@@ -61,6 +61,7 @@ add_executable(edltool
     ./src/helpers.cpp
     ./src/edltool.cpp
 	./src/versions.cpp
+	./src/node.cpp
 	${libtimecode_src}
 )
 set_target_properties(edltool PROPERTIES LINKER_LANGUAGE CXX)

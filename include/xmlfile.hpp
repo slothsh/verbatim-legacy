@@ -23,8 +23,8 @@
 #include "node.hpp"
 
 // Aliases
-using namespace Helpers::XML;
-using XMLProfile = Helpers::XML::XMLProfile;
+using namespace vt::XML;
+using XMLProfile = vt::XML::XMLProfile;
 
 // XmlFile declaration -------------------------------------------------------------------------------------------------1 of 1-|
 // ============================================================================================================================|
@@ -65,8 +65,8 @@ typedef
 struct TTML1p0_Netflix : public XMLFile
 {
 public:
-    using XMLNode = Helpers::Format::XMLNode;
-    using XMLHeadFlags = Helpers::XML::TTML1p0_Head_Flags;
+    using XMLNode = vt::Format::XMLNode;
+    using XMLHeadFlags = vt::XML::TTML1p0_Head_Flags;
     TTML1p0_Netflix();
     explicit TTML1p0_Netflix(const std::string& path);
     ~TTML1p0_Netflix();
@@ -120,7 +120,7 @@ private:
 
     inline xmlpp::Element* GetHeadNode(const XMLTag& tag, const XMLTag ns = XMLTag::none) noexcept
     {
-        using namespace Helpers::XML;
+        using namespace vt::XML;
         uint16_t flags = 0x0000;
         switch (tag) {
             case XMLTag::tt:        flags = 0x0001;      break;

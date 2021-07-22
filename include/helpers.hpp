@@ -2,8 +2,8 @@
 // File: helpers.hpp
 // Description: Auxiliary functions to help with parsing EDL files
 
-#ifndef HELPERS_HEADER
-#define HELPERS_HEADER
+#ifndef vt_HEADER
+#define vt_HEADER
 
 // Standard headers
 #include <iostream>
@@ -17,7 +17,7 @@
 
 // Project headers
 
-namespace Helpers
+namespace vt
 {
 	namespace Regex
 	{

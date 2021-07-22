@@ -72,7 +72,7 @@ EDLFilePTX::~EDLFilePTX()
 
 void EDLFilePTX::Parse()
 {
-	using namespace Helpers;
+	using namespace vt;
 	// Functions for parsing data
 	const auto ParseHeaderData = [](
 		PTXHEADER& header,
@@ -196,12 +196,12 @@ void EDLFilePTX::Parse()
 	this->session_info.audio_tracks_edl = i;
 }
 
-void EDLFilePTX::PrintOutput(const Helpers::Format::File& file_format)
+void EDLFilePTX::PrintOutput(const vt::Format::File& file_format)
 {
 	std::cout << this->GetOutput(file_format).str();
 }
 
-void EDLFilePTX::WriteOutput(const std::string& path, const Helpers::Format::File& format)
+void EDLFilePTX::WriteOutput(const std::string& path, const vt::Format::File& format)
 {
 	std::ofstream file(path, std::ios::binary | std::ios::out);
 	if (!file.is_open()) throw std::invalid_argument("Could not create specified file\n");
@@ -361,22 +361,22 @@ std::string EDLFilePTX::SessionStart() noexcept
 
 std::string EDLFilePTX::SampleRate() noexcept
 {
-	return Helpers::Format::GetSampleRate(this->session_info.sample_rate);
+	return vt::Format::GetSampleRate(this->session_info.sample_rate);
 }
 
 std::string EDLFilePTX::BitDepth() noexcept
 {
-	return Helpers::Format::GetBitDepth(this->session_info.bit_depth);
+	return vt::Format::GetBitDepth(this->session_info.bit_depth);
 }
 
 std::string EDLFilePTX::TimecodeFormat() noexcept
 {
-	return Helpers::Format::GetTimeFormat(this->session_info.timecode_format);
+	return vt::Format::GetTimeFormat(this->session_info.timecode_format);
 }
 
 std::string EDLFilePTX::FrameRate() noexcept
 {
-	return Helpers::Format::GetFrameRate(this->session_info.frame_rate);
+	return vt::Format::GetFrameRate(this->session_info.frame_rate);
 }
 
 void EDLFilePTX::SetAudioTracks(const uint32_t audio_tracks) noexcept
@@ -406,27 +406,27 @@ void EDLFilePTX::SetSessionStart(const std::string& session_start) noexcept
 
 void EDLFilePTX::SetSampleRate(const std::string& sample_rate) noexcept
 {
-	this->session_info.sample_rate = Helpers::Format::GetSampleRate(sample_rate);
+	this->session_info.sample_rate = vt::Format::GetSampleRate(sample_rate);
 }
 
 void EDLFilePTX::SetBitDepth(const std::string& bit_depth) noexcept
 {
-	this->session_info.bit_depth = Helpers::Format::GetBitDepth(bit_depth);
+	this->session_info.bit_depth = vt::Format::GetBitDepth(bit_depth);
 }
 
 void EDLFilePTX::SetTimecodeFormat(const std::string& timecode_format) noexcept
 {
-	this->session_info.timecode_format = Helpers::Format::ParseTimeFormat(timecode_format);
+	this->session_info.timecode_format = vt::Format::ParseTimeFormat(timecode_format);
 }
 
 void EDLFilePTX::SetFrameRate(const std::string& frame_rate) noexcept
 {
-	this->session_info.frame_rate = Helpers::Format::GetFrameRate(frame_rate);
+	this->session_info.frame_rate = vt::Format::GetFrameRate(frame_rate);
 }
 
-std::stringstream EDLFilePTX::GetOutput(const Helpers::Format::File& file_format)
+std::stringstream EDLFilePTX::GetOutput(const vt::Format::File& file_format)
 {
-	using namespace Helpers;
+	using namespace vt;
 	// TODO: Update srt conversion to include format enumerations
 	// Timecode parsing
 	const auto ParseTimecode = [](
@@ -659,7 +659,7 @@ namespace EDL
 {
 	inline void AddEventTime(EDLFilePTX& edl_file, PTXTrackData& data_1, PTXTrackData& data_2)
 	{
-		using namespace Helpers;
+		using namespace vt;
 		double duration = Numbers::ParseTimecode(data_2.timecode["end"], Format::GetFrameRate(edl_file.FrameRate())) - data_1.time["start"].nanoseconds;
 		data_1.time["end"].nanoseconds = data_2.time["end"].nanoseconds;
 		data_1.time["duration"].nanoseconds = duration;
@@ -687,7 +687,7 @@ namespace EDL
 		// TODO: This should only work for events that are bordering on a delimiter event
 		// TODO: Delete dangling delimiter events
 		// TODO: Validate delimiter event length before merging
-		using namespace Helpers;
+		using namespace vt;
 		edl_file.ForEach([&edl_file, &delimiter](PTXTrack& track, size_t track_index) {
 			// Temporaries
 			size_t start_index = 0;
@@ -748,7 +748,7 @@ namespace EDL
 		// TODO: This should only work for events that are bordering on a delimiter event
 		// TODO: Delete dangling delimiter events
 		// TODO: Validate delimiter event length before merging
-		using namespace Helpers;
+		using namespace vt;
 		edl_file.ForEach([&edl_file, &delimiter](PTXTrack& track, size_t track_index) {
 			// Temporaries
 			size_t start_index = 0;

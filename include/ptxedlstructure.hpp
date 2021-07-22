@@ -40,7 +40,7 @@ public:
 	uint32_t event;
 	std::string clip_name;
 	std::map<std::string, std::string> timecode; // TODO: Refactor with better name
-	std::map<std::string, Helpers::Format::Time> time;
+	std::map<std::string, vt::Format::Time> time;
 	bool clip_state;
 
 } PTXTRACKDATA;
@@ -77,11 +77,11 @@ public:
 	uint32_t audio_files;
 	std::string session_name;
 	std::string session_start;
-	Helpers::Format::SampleRate sample_rate;
-	Helpers::Format::BitDepth bit_depth;
-	Helpers::Format::TimeFormat timecode_format;
-	Helpers::Format::TimeFormat counter_format;
-	Helpers::Format::FrameRate frame_rate;
+	vt::Format::SampleRate sample_rate;
+	vt::Format::BitDepth bit_depth;
+	vt::Format::TimeFormat timecode_format;
+	vt::Format::TimeFormat counter_format;
+	vt::Format::FrameRate frame_rate;
 } PTXHEADER;
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
