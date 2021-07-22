@@ -56,7 +56,7 @@ namespace vt
 		};
 
 		template<typename T>
-		struct AttrOption
+		struct AttributeOption
 		{
 			NodeID<T>			        expression;
 			std::string_view	        values[1];
@@ -64,10 +64,10 @@ namespace vt
 		};
 
 		template<typename T>
-		struct AttributeEntry
+		struct AttribureItem
 		{
-			constexpr AttributeEntry()          = default;
-			constexpr AttributeEntry(NodeID<T> a, size_t b, auto c[])
+			constexpr AttribureItem()          = default;
+			constexpr AttribureItem(NodeID<T> a, size_t b, auto c[])
 				: attribute(a), conditions(b)
 			{
 				for (int i = 0; i < 1; i++) {
@@ -75,9 +75,10 @@ namespace vt
 				}
 			}
 
-			NodeID<T>								attribute;
-			size_t									conditions = 0;
-			AttrOption<ValueExpression>				options[1];		
+			NodeID<T>										attribute;
+			size_t											conditions = 0;
+			size_t 											documents = 0;
+			AttributeOption<ValueExpression>				options[1];		
 		};
 
 		template<class I>
@@ -95,16 +96,15 @@ namespace vt
 			~TTMLEntry()						= default;
 			NodeID<NS>							ns;
 			NodeID<Tag>							tag;
-			AttributeEntry<Attribute> 			attributes[3];	
+			size_t								documents = 0;
+			AttribureItem<Attribute> 			attributes[3];	
 		};
-
 
 		template<size_t Size>
 		struct TTMLDictionary
 		{
 			TTMLDictionary() 					= default;
 			~TTMLDictionary() 					= default;
-			size_t								documents = 0;
 			NodeID<NS>							ns;
 			TTMLEntry<void> 					entries[Size];
 		};
@@ -127,8 +127,8 @@ namespace vt
 			constexpr auto attr_name = enum_name(Attribute::one);
 			constexpr auto expr = ValueExpression::one;
 			constexpr auto expr_name = enum_name(ValueExpression::one);
-			constexpr AttrOption<ValueExpression> expressions[] = { {{expr, expr_name}, {"Hello World!"}, 1} };
-			constexpr AttributeEntry<Attribute> attributes[] = {{{attr, attr_name}, 1, expressions}, {{attr, attr_name}, 1, expressions}, {{attr, attr_name}, 1, expressions}}; 
+			constexpr AttributeOption<ValueExpression> expressions[] = { {{expr, expr_name}, {"Hello World!"}, 1} };
+			constexpr AttribureItem<Attribute> attributes[] = {{{attr, attr_name}, 1, expressions}, {{attr, attr_name}, 1, expressions}, {{attr, attr_name}, 1, expressions}}; 
 			constexpr TTMLEntry<void> entries = { {ns, ns_name}, {tag, tag_name}, attributes };
 
 			return dictionary;
@@ -156,5 +156,16 @@ namespace vt
 		}
 	}
 }
+
+/*
+	Interface:
+		constexpr TTMLDictionary dictionary(Entries);
+
+		std::array
+
+		MakeTTMLEntries
+			NS::one
+			Tag::one
+*/
 
 #endif //NODE_HEADER
