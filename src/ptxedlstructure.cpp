@@ -89,11 +89,11 @@ PTXHeader::PTXHeader():
 	audio_files(0),
 	session_name(""),
 	session_start(""),
-	sample_rate(vt::Format::SampleRate::none),
-	bit_depth(vt::Format::BitDepth::none),
-	timecode_format(vt::Format::TimeFormat::none),
-	counter_format(vt::Format::TimeFormat::none),
-	frame_rate(vt::Format::FrameRate::none)
+	sample_rate(vt::format::SampleRate::none),
+	bit_depth(vt::format::BitDepth::none),
+	timecode_format(vt::format::TimeFormat::none),
+	counter_format(vt::format::TimeFormat::none),
+	frame_rate(vt::format::FrameRate::none)
 {
 }
 

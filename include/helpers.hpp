@@ -19,14 +19,14 @@
 
 namespace vt
 {
-	namespace Regex
+	namespace regex
 	{
 		bool HasMatch(const std::string& text, const std::string& expr);
 		std::string FirstMatch(const std::string& text, const std::regex& expr);
 		void AllMatches(std::vector<std::string>& text_list, const std::string& text, const std::regex& expr);
 	}
 
-	namespace Format
+	namespace format
 	{
 		typedef
 		enum class SampleRate
@@ -155,15 +155,15 @@ namespace vt
 		}
 	}
 
-	namespace Numbers
+namespace numbers
 	{
 		uint32_t CountDigits(const uint32_t n);
-		double ParseTimecode(const std::string text, const Format::FrameRate& format);
-		std::string ParseTimecode(double n, const Format::FrameRate& format);
-		uint64_t ParseTime(const std::string text, const Format::TimeFormat& format);
+		double ParseTimecode(const std::string text, const format::FrameRate& format);
+		std::string ParseTimecode(double n, const format::FrameRate& format);
+		uint64_t ParseTime(const std::string text, const format::TimeFormat& format);
 	}
 
-	namespace String
+	namespace string
 	{
 		typedef
 		enum WhiteSpace : uint32_t
@@ -220,7 +220,7 @@ namespace vt
 		std::string GetPTXString(const PTXString& string);
 	}
 
-	namespace XML
+	namespace xml
 	{
 		typedef
 		enum class XMLProfile

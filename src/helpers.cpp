@@ -15,7 +15,7 @@
 
 namespace vt
 {
-	namespace Regex
+	namespace regex
 	{
 		bool HasMatch(const std::string& text, const std::string& expr)
 		{
@@ -45,126 +45,126 @@ namespace vt
 		}
 	}
 
-	namespace Format
+	namespace format
 	{
 		SampleRate GetSampleRate(const std::string text)
 		{
-			if (text.find("44100") != std::string::npos) return Format::SampleRate::_44kHz;
-			if (text.find("48000") != std::string::npos) return Format::SampleRate::_48kHz;
-			if (text.find("88200") != std::string::npos) return Format::SampleRate::_88kHz;
-			if (text.find("96000") != std::string::npos) return Format::SampleRate::_96kHz;
-			if (text.find("192000") != std::string::npos) return Format::SampleRate::_192kHz;
-			if (text.find("384000") != std::string::npos) return Format::SampleRate::_384kHz;
-			return Format::SampleRate::none;
+			if (text.find("44100") != std::string::npos) return format::SampleRate::_44kHz;
+			if (text.find("48000") != std::string::npos) return format::SampleRate::_48kHz;
+			if (text.find("88200") != std::string::npos) return format::SampleRate::_88kHz;
+			if (text.find("96000") != std::string::npos) return format::SampleRate::_96kHz;
+			if (text.find("192000") != std::string::npos) return format::SampleRate::_192kHz;
+			if (text.find("384000") != std::string::npos) return format::SampleRate::_384kHz;
+			return format::SampleRate::none;
 		}
         
         std::string GetSampleRate(const SampleRate& sample_rate)
         {
-            if (sample_rate == Format::SampleRate::_44kHz) return "44100";
-			if (sample_rate == Format::SampleRate::_48kHz) return "48000";
-			if (sample_rate == Format::SampleRate::_88kHz) return "88200";
-			if (sample_rate == Format::SampleRate::_96kHz) return "96000";
-			if (sample_rate == Format::SampleRate::_192kHz) return "192000";
-			if (sample_rate == Format::SampleRate::_384kHz) return "384000";
+            if (sample_rate == format::SampleRate::_44kHz) return "44100";
+			if (sample_rate == format::SampleRate::_48kHz) return "48000";
+			if (sample_rate == format::SampleRate::_88kHz) return "88200";
+			if (sample_rate == format::SampleRate::_96kHz) return "96000";
+			if (sample_rate == format::SampleRate::_192kHz) return "192000";
+			if (sample_rate == format::SampleRate::_384kHz) return "384000";
 			return "";
         }
 
 		uint32_t ParseSampleRate(const SampleRate& sample_rate)
 		{
-			if (sample_rate == Format::SampleRate::_44kHz) return 44100;
-			if (sample_rate == Format::SampleRate::_48kHz) return 48000;
-			if (sample_rate == Format::SampleRate::_88kHz) return 88200;
-			if (sample_rate == Format::SampleRate::_96kHz) return 96000;
-			if (sample_rate == Format::SampleRate::_192kHz) return 192000;
-			if (sample_rate == Format::SampleRate::_384kHz) return 384000;
+			if (sample_rate == format::SampleRate::_44kHz) return 44100;
+			if (sample_rate == format::SampleRate::_48kHz) return 48000;
+			if (sample_rate == format::SampleRate::_88kHz) return 88200;
+			if (sample_rate == format::SampleRate::_96kHz) return 96000;
+			if (sample_rate == format::SampleRate::_192kHz) return 192000;
+			if (sample_rate == format::SampleRate::_384kHz) return 384000;
 			return 0;
 		}
 
 		BitDepth GetBitDepth(const std::string text)
 		{
-			if (text.find("8-bit") != std::string::npos) return Format::BitDepth::int8;
-			if (text.find("16-bit") != std::string::npos) return Format::BitDepth::int16;
-			if (text.find("24-bit") != std::string::npos) return Format::BitDepth::int24;
-			// if (text.find("32-bit") != std::string::npos) return Format::BitDepth::int32;
-			if (text.find("32-bit") != std::string::npos) return Format::BitDepth::float32;
-			if (text.find("64-bit") != std::string::npos) return Format::BitDepth::float64;
-			return Format::BitDepth::none;
+			if (text.find("8-bit") != std::string::npos) return format::BitDepth::int8;
+			if (text.find("16-bit") != std::string::npos) return format::BitDepth::int16;
+			if (text.find("24-bit") != std::string::npos) return format::BitDepth::int24;
+			// if (text.find("32-bit") != std::string::npos) return format::BitDepth::int32;
+			if (text.find("32-bit") != std::string::npos) return format::BitDepth::float32;
+			if (text.find("64-bit") != std::string::npos) return format::BitDepth::float64;
+			return format::BitDepth::none;
 		}
         
         std::string GetBitDepth(const BitDepth& bit_depth)
         {
-            if (bit_depth == Format::BitDepth::int8) return "8";
-			if (bit_depth == Format::BitDepth::int16) return "16";
-			if (bit_depth == Format::BitDepth::int24) return "24";
-			// if (bit_depth == Format::BitDepth::int32) return "32";
-			if (bit_depth == Format::BitDepth::float32) return "32";
-			if (bit_depth == Format::BitDepth::float64) return "64";
+            if (bit_depth == format::BitDepth::int8) return "8";
+			if (bit_depth == format::BitDepth::int16) return "16";
+			if (bit_depth == format::BitDepth::int24) return "24";
+			// if (bit_depth == format::BitDepth::int32) return "32";
+			if (bit_depth == format::BitDepth::float32) return "32";
+			if (bit_depth == format::BitDepth::float64) return "64";
 			return "";
         }
 
 		uint32_t ParseBitDepth(const BitDepth& bit_depth)
 		{
-			if (bit_depth == Format::BitDepth::int8) return 8;
-			if (bit_depth == Format::BitDepth::int16) return 16;
-			if (bit_depth == Format::BitDepth::int24) return 24;
-			// if (bit_depth == Format::BitDepth::int32) return 32;
-			if (bit_depth == Format::BitDepth::float32) return 32;
-			if (bit_depth == Format::BitDepth::float64) return 64;
+			if (bit_depth == format::BitDepth::int8) return 8;
+			if (bit_depth == format::BitDepth::int16) return 16;
+			if (bit_depth == format::BitDepth::int24) return 24;
+			// if (bit_depth == format::BitDepth::int32) return 32;
+			if (bit_depth == format::BitDepth::float32) return 32;
+			if (bit_depth == format::BitDepth::float64) return 64;
 			return 0;
 		}
 
 		TimeFormat ParseTimeFormat(const std::string text)
 		{
-			if (Regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d") && !Regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d")) return Format::TimeFormat::timecode;
-			if (Regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d")) return Format::TimeFormat::timecode_subframes;
-			// if () return Format::TimeFormat::feet_frames;
-			// if () return Format::TimeFormat::minute_seconds;
-			// if () return Format::TimeFormat::bars_beats;
-			// if () return Format::TimeFormat::samples;
-			return Format::TimeFormat::none;
+			if (regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d") && !regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d")) return format::TimeFormat::timecode;
+			if (regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d")) return format::TimeFormat::timecode_subframes;
+			// if () return format::TimeFormat::feet_frames;
+			// if () return format::TimeFormat::minute_seconds;
+			// if () return format::TimeFormat::bars_beats;
+			// if () return format::TimeFormat::samples;
+			return format::TimeFormat::none;
 		}
         
         std::string GetTimeFormat(const TimeFormat& time_format)
         {
-            if (time_format == Format::TimeFormat::timecode) return "timecode";
-			if (time_format == Format::TimeFormat::timecode_subframes) return "timecode.subframes";
-			if (time_format == Format::TimeFormat::feet_frames) return "feet+frames";
-			if (time_format == Format::TimeFormat::minute_seconds) return "minute:seconds";
-			if (time_format == Format::TimeFormat::bars_beats) return "bars|beats";
-			if (time_format == Format::TimeFormat::samples) return "samples";
-			if (time_format == Format::TimeFormat::frames) return "frames";
-			if (time_format == Format::TimeFormat::sub_frames) return "sub_frames";
-			if (time_format == Format::TimeFormat::hours) return "hours";
-			if (time_format == Format::TimeFormat::minutes) return "minutes";
-			if (time_format == Format::TimeFormat::seconds) return "seconds";
-			if (time_format == Format::TimeFormat::digits) return "digits";
+            if (time_format == format::TimeFormat::timecode) return "timecode";
+			if (time_format == format::TimeFormat::timecode_subframes) return "timecode.subframes";
+			if (time_format == format::TimeFormat::feet_frames) return "feet+frames";
+			if (time_format == format::TimeFormat::minute_seconds) return "minute:seconds";
+			if (time_format == format::TimeFormat::bars_beats) return "bars|beats";
+			if (time_format == format::TimeFormat::samples) return "samples";
+			if (time_format == format::TimeFormat::frames) return "frames";
+			if (time_format == format::TimeFormat::sub_frames) return "sub_frames";
+			if (time_format == format::TimeFormat::hours) return "hours";
+			if (time_format == format::TimeFormat::minutes) return "minutes";
+			if (time_format == format::TimeFormat::seconds) return "seconds";
+			if (time_format == format::TimeFormat::digits) return "digits";
 			return "";
         }
 
 		FrameRate GetFrameRate(const std::string text)
 		{
-			if (text.find("24") != std::string::npos) return Format::FrameRate::_24Fps;
-			if (text.find("25") != std::string::npos) return Format::FrameRate::_25Fps;
-			if (text.find("30") != std::string::npos) return Format::FrameRate::_30Fps;
-			if (text.find("60") != std::string::npos) return Format::FrameRate::_60Fps;
-			return Format::FrameRate::none;
+			if (text.find("24") != std::string::npos) return format::FrameRate::_24Fps;
+			if (text.find("25") != std::string::npos) return format::FrameRate::_25Fps;
+			if (text.find("30") != std::string::npos) return format::FrameRate::_30Fps;
+			if (text.find("60") != std::string::npos) return format::FrameRate::_60Fps;
+			return format::FrameRate::none;
 		}
         
         std::string GetFrameRate(const FrameRate& frame_rate)
         {
-            if (frame_rate == Format::FrameRate::_24Fps) return "24";
-			if (frame_rate == Format::FrameRate::_25Fps) return "25";
-			if (frame_rate == Format::FrameRate::_30Fps) return "30";
-			if (frame_rate == Format::FrameRate::_60Fps) return "60";
+            if (frame_rate == format::FrameRate::_24Fps) return "24";
+			if (frame_rate == format::FrameRate::_25Fps) return "25";
+			if (frame_rate == format::FrameRate::_30Fps) return "30";
+			if (frame_rate == format::FrameRate::_60Fps) return "60";
 			return "";
         }
 
 		uint32_t ParseFrameRate(const FrameRate& frame_rate)
 		{
-			if (frame_rate == Format::FrameRate::_24Fps) return 24;
-			if (frame_rate == Format::FrameRate::_25Fps) return 25;
-			if (frame_rate == Format::FrameRate::_30Fps) return 30;
-			if (frame_rate == Format::FrameRate::_60Fps) return 60;
+			if (frame_rate == format::FrameRate::_24Fps) return 24;
+			if (frame_rate == format::FrameRate::_25Fps) return 25;
+			if (frame_rate == format::FrameRate::_30Fps) return 30;
+			if (frame_rate == format::FrameRate::_60Fps) return 60;
 			return 0;
 		}
 
@@ -243,7 +243,7 @@ namespace vt
 		using attribute_t = std::tuple<std::string, std::string, std::string>;
 		std::optional<std::reference_wrapper<const attribute_t>> XMLNode::GetNodeId() const noexcept
 		{
-			using namespace vt::XML;
+			using namespace vt::xml;
 			const auto& predicate = [&](const auto& a) {
 				const auto tag_id = GetXMLTagText(XMLTag::id);
 				const auto tag_xml = GetXMLTagText(XMLTag::xml);
@@ -287,7 +287,7 @@ namespace vt
 
 	}
 
-	namespace Numbers
+	namespace numbers
 	{
 		uint32_t CountDigits(uint32_t n)
 		{
@@ -300,10 +300,10 @@ namespace vt
 			return digits;
 		}
 
-		double ParseTimecode(const std::string text, const Format::FrameRate& format)
+		double ParseTimecode(const std::string text, const format::FrameRate& format)
 		{
 			std::vector<std::string> chunks;
-			Regex::AllMatches(chunks, text, std::regex("\\d+"));
+			regex::AllMatches(chunks, text, std::regex("\\d+"));
 			if (chunks.size() != 4) throw std::invalid_argument("Not enough chunks to parse timecode\n");
 			uint32_t frame_rate = ParseFrameRate(format);
 			double h = std::stod(chunks[0]) * 60.0 * 60.0;
@@ -314,7 +314,7 @@ namespace vt
 			return (h + m + s + f) * 10000000; // TODO: Create a precision constant for this
 		}
 
-		std::string ParseTimecode(double n, const Format::FrameRate& format)
+		std::string ParseTimecode(double n, const format::FrameRate& format)
 		{
 			uint32_t frame_rate = ParseFrameRate(format);
 			std::string h = "00", m = "00", s = "00", f = "00";
@@ -344,25 +344,25 @@ namespace vt
 					+ ((f.length() == 1) ? ("0" + f) : f);
 		}
 
-		uint64_t ParseTime(const std::string text, const Format::TimeFormat& format)
+		uint64_t ParseTime(const std::string text, const format::TimeFormat& format)
 		{
 			std::string expr;
 			uint32_t total_chunks;
 			std::vector<std::string> chunks;
 			switch (format) {
-				case Format::TimeFormat::timecode: 
+				case format::TimeFormat::timecode: 
 					expr = "\\d+";
 					total_chunks = 4;
 					break;
-				case Format::TimeFormat::timecode_subframes: 
+				case format::TimeFormat::timecode_subframes: 
 					expr = "\\d+";
 					total_chunks = 5;
 					break;
-				case Format::TimeFormat::minute_seconds: 
+				case format::TimeFormat::minute_seconds: 
 					expr = "\\d+";
 					total_chunks = 2;
 					break;
-				case Format::TimeFormat::digits: 
+				case format::TimeFormat::digits: 
 					expr = "\\d+";
 					total_chunks = 1;
 					break;
@@ -371,15 +371,15 @@ namespace vt
 					break;
 			}
 
-			Regex::AllMatches(chunks, text, std::regex(expr));
+			regex::AllMatches(chunks, text, std::regex(expr));
 			if (chunks.size() != total_chunks) throw std::invalid_argument("The time format could not parsed\n");
 
 			size_t nanoseconds = 0;
 			switch (format) {
-				case Format::TimeFormat::timecode: break;
-				case Format::TimeFormat::timecode_subframes: break;
-				case Format::TimeFormat::minute_seconds: break;
-				case Format::TimeFormat::digits: break;
+				case format::TimeFormat::timecode: break;
+				case format::TimeFormat::timecode_subframes: break;
+				case format::TimeFormat::minute_seconds: break;
+				case format::TimeFormat::digits: break;
 				default: break;
 			}
 
@@ -387,7 +387,7 @@ namespace vt
 		}
 	}
 
-	namespace String
+	namespace string
 	{
 
 		std::string WhiteSpaceMask(const uint32_t& type)
@@ -434,7 +434,7 @@ namespace vt
 			std::string text,
 			const uint32_t& type)
 		{
-			std::string white_space = String::WhiteSpaceMask(type);
+			std::string white_space =string::WhiteSpaceMask(type);
 			text.erase(text.find_last_not_of(white_space) + 1);
 			text.erase(0, text.find_first_not_of(white_space));
 			return text;
@@ -473,7 +473,7 @@ namespace vt
 		}
 	}
 
-	namespace XML
+	namespace xml
 	{
 		std::string GetXMLProfileText(const XMLProfile& profile)
 		{

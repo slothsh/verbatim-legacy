@@ -146,7 +146,7 @@
 
 namespace vt
 {
-    namespace XML
+    namespace xml
     {
         enum class NSTag
         {

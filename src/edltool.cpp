@@ -51,19 +51,19 @@ int main(int argc, char** argv)
         std::exit(1);
     }
 
-	using namespace vt::XML;
+	using namespace vt::xml;
 	try {
 		EDLFILEPTX edlfile((std::string(argv[1])));
 		// RemoveBoundaryEvents(edlfile, "(cross fade)");
 		MergeBoundaryEvents(edlfile, "(cross fade)");
-		// edlfile.WriteOutput((std::string(argv[2])), vt::Format::File::edl_ptx_minimal);
+		// edlfile.WriteOutput((std::string(argv[2])), vt::format::File::edl_ptx_minimal);
 		TTML1p0_Netflix ttml;
 		ttml << edlfile;
 		// ttml.PrintNodes();
 		ttml.WriteFile((std::string(argv[2])));
 		// MergeBoundaryEvents(edlfile, "(cross fade)");
 		// edlfile.EnumerateEvents();
-		// edlfile.PrintOutput(Format::File::edl_ptx_minimal);
+		// edlfile.PrintOutputformat::File::edl_ptx_minimal);
 	} catch (const std::exception& e) {
 		std::cerr << e.what();
 		std::exit(1);

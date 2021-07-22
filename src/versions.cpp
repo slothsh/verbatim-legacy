@@ -9,7 +9,7 @@
 #include "../include/versions.hpp"
 
 // Aliases
-using namespace vt::XML;
+using namespace vt::xml;
 using namespace magic_enum;
 
 // TTML table defines --------------------------------------------------------------------------------------------------1 of 1-|
