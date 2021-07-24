@@ -12,7 +12,7 @@ int main()
 {
 	using namespace vt::dictionary;
 
-    constexpr XMLNode<NS, Tag, Attribute, ValueExpression, AttributeOption, Content,
+    constexpr XMLNode<NS, Tag, NS, Attribute, ValueExpression, AttributeOption, NS, Content,
             1, 1, 1, 1> a{};
     // constexpr XMLNode<NS, Tag, Attribute, ValueExpression, AttributeOption, Content,
     //         2, 2, 2, 2> b{};
