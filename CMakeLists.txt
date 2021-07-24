@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
-project(edltools VERSION 1.0 LANGUAGES CXX)
+project(verbatim_proj VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
+set(build_proj null)
 
 # Project include directories
 include_directories(
@@ -52,57 +53,55 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
-# Executable for edltool
-add_executable(edltool
-    ./src/filesink.cpp
-    ./src/xmlfile.cpp
-    ./src/edlfile.cpp
-    ./src/ptxedlstructure.cpp
-    ./src/helpers.cpp
-    ./src/edltool.cpp
+# Executables for prototype builds
+# ----------------------------------------------------------------------------|
+
+# parsettml
+add_executable(parsettml
+	./src/prototype/parsettml.cpp
+	./src/filesink.cpp
+	./src/xmlfile.cpp
+	./src/edlfile.cpp
+	./src/ptxedlstructure.cpp
+	./src/helpers.cpp
 	./src/versions.cpp
 	./src/node.cpp
-	${libtimecode_src}
 )
-set_target_properties(edltool PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 
-# add_custom_command(
-# 	TARGET edltool PRE_BUILD
-# 	COMMAND "./scripts/hashdictionary.sh"
-# )
+# ttmldictionary
+add_executable(ttmldictionary
+	./src/prototype/ttmldictionary.cpp
+)
+set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
+
+# ----------------------------------------------------------------------------|
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-# set_target_properties(edltool PROPERTIES COMPILE_FLAGS "-fsanitize=address" LINK_FLAGS "-fsanitize=address") # Configure this more appropriately
-# set_target_properties(edltool PROPERTIES COMPILE_FLAGS) # Configure this more appropriately
-target_link_libraries(edltool ${libfmt} ${libxmlpp})
+	target_link_libraries(parsettml ${libfmt} ${libxmlpp})
 
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-target_link_libraries(edltool ${libfmt} ${libxmlpp})
+	target_link_libraries(parsettml ${libfmt} ${libxmlpp})
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-add_custom_command(
-	TARGET edltool POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different  
-	"${libxmlpp_path}/bin/xml++-vc142-5.0-1.dll"      
-	$<TARGET_FILE_DIR:edltool>
-)
-add_custom_command(
-	TARGET edltool POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different  
-	"${libfmt_path}/lib/fmtd.dll"      
-	$<TARGET_FILE_DIR:edltool>
-)
-add_custom_command(
-	TARGET edltool POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different  
-	"${libfmt_path}/lib/fmtd.dll"      
-	$<TARGET_FILE_DIR:edltool>
-)
+	add_custom_command(
+		TARGET parsettml POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
+		"${libxmlpp_path}/bin/xml++-vc142-5.0-1.dll"      
+		$<TARGET_FILE_DIR:parsettml>
+	)
+	add_custom_command(
+		TARGET parsettml POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
+		"${libfmt_path}/lib/fmtd.dll"      
+		$<TARGET_FILE_DIR:parsettml>
+	)
+	add_custom_command(
+		TARGET parsettml POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
+		"${libfmt_path}/lib/fmtd.dll"      
+		$<TARGET_FILE_DIR:parsettml>
+	)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-
-# add_executable(xmltest
-#     ./src/examples/xmlexample.cpp
-# )
-# target_link_libraries(xmltest PUBLIC ${libxml})

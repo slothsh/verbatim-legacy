@@ -10,9 +10,9 @@
 #include <stdexcept>
 
 // Project headers
-#include "../include/xmlfile.hpp"
-#include "../include/edlfile.hpp"
-#include "../include/dictionaries.hpp"
+#include "../../include/xmlfile.hpp"
+#include "../../include/edlfile.hpp"
+#include "../../include/dictionaries.hpp"
 
 #ifdef EDL_DEBUG_MEMORY
 static size_t allocations = 0;
