@@ -1,171 +1,186 @@
 // Stefan "SoulXP" Olivier
 // File: node.hpp
-// Description: Namespace enumerations for various XML types
+// Description: header file for static TTML dictionary templates
 
-#ifndef NODE_HEADER
-#define NODE_HEADER
+#ifndef VTNODE_HEADER
+#define VTNODE_HEADER
 
+// Standard headers
+#include <iostream>
+#include <limits>
+#include <type_traits>
+#include <utility>
+#include <memory>
+
+// Project headers
 #include <magic_enum.hpp>
-#include <new>
+
+// Enumerations for XML nodes ------------------------------------------------------------------------------------------1 of 1-|
+// ============================================================================================================================|
 
 namespace vt
 {
-	namespace xml
+	namespace dictionary
 	{
-		enum class NS
+		// Enumerations
+		enum class NS : size_t
 		{
 			one, two, three, four,
-			none
+			none = std::numeric_limits<size_t>::max()
 		};
 
-		enum class Tag
+		enum class Tag : size_t
 		{
 			one, two, three, four,
-			none
+			none = std::numeric_limits<size_t>::max()
 		};
 
-		enum class Attribute
+		enum class Attribute : size_t
 		{
 			one, two, three, four,
-			none
+			none = std::numeric_limits<size_t>::max()
 		};
 
-		enum class ValueExpression
+		enum class ValueExpression : size_t
 		{
 			one, two, three, four,
-			none
+			none = std::numeric_limits<size_t>::max()
 		};
 
-		enum class ContentTypes
+		enum class AttributeOption : size_t
 		{
 			one, two, three, four,
-			none 
+			none = std::numeric_limits<size_t>::max()
 		};
 
-		enum class ContentOptions
+		enum class Content : size_t
 		{
 			one, two, three, four,
-			none
+			none = std::numeric_limits<size_t>::max()
 		};
-
-		template<typename T>
-		struct NodeID
-		{
-			T					type = T();
-			std::string_view	name = magic_enum::enum_name(T::none);
-		};
-
-		template<typename T>
-		struct AttributeOption
-		{
-			NodeID<T>			        expression;
-			std::string_view	        values[1];
-			size_t 				        value_default   = 0;
-		};
-
-		template<typename T>
-		struct AttribureItem
-		{
-			constexpr AttribureItem()          = default;
-			constexpr AttribureItem(NodeID<T> a, size_t b, auto c[])
-				: attribute(a), conditions(b)
-			{
-				for (int i = 0; i < 1; i++) {
-					this->options[i] = c[i];
-				}
-			}
-
-			NodeID<T>										attribute;
-			size_t											conditions = 0;
-			size_t 											documents = 0;
-			AttributeOption<ValueExpression>				options[1];		
-		};
-
-		template<class I>
-		struct TTMLEntry
-		{
-			constexpr TTMLEntry()                         = default;
-			constexpr TTMLEntry(NodeID<NS> a, NodeID<Tag> b, auto c[])
-				: ns(a), tag(b)
-			{
-				for (int i = 0; i < 3; i++) {
-					this->attributes[i] = c[i];
-				}
-			}
-
-			~TTMLEntry()						= default;
-			NodeID<NS>							ns;
-			NodeID<Tag>							tag;
-			size_t								documents = 0;
-			AttribureItem<Attribute> 			attributes[3];	
-		};
-
-		template<size_t Size>
-		struct TTMLDictionary
-		{
-			TTMLDictionary() 					= default;
-			~TTMLDictionary() 					= default;
-			NodeID<NS>							ns;
-			TTMLEntry<void> 					entries[Size];
-		};
-
-		constexpr inline auto sum(auto... Args)
-		{
-			return (Args + ... + 1);
-		}
-
-		template<auto... Entries>
-		constexpr inline auto InitDictionary()
-		{
-			using namespace magic_enum;
-			TTMLDictionary<sizeof...(Entries)> dictionary{};
-			constexpr auto ns = NS::one;
-			constexpr auto ns_name = enum_name(NS::one);
-			constexpr auto tag = Tag::one;
-			constexpr auto tag_name = enum_name(Tag::one);
-			constexpr auto attr = Attribute::one;
-			constexpr auto attr_name = enum_name(Attribute::one);
-			constexpr auto expr = ValueExpression::one;
-			constexpr auto expr_name = enum_name(ValueExpression::one);
-			constexpr AttributeOption<ValueExpression> expressions[] = { {{expr, expr_name}, {"Hello World!"}, 1} };
-			constexpr AttribureItem<Attribute> attributes[] = {{{attr, attr_name}, 1, expressions}, {{attr, attr_name}, 1, expressions}, {{attr, attr_name}, 1, expressions}}; 
-			constexpr TTMLEntry<void> entries = { {ns, ns_name}, {tag, tag_name}, attributes };
-
-			return dictionary;
-		}
-
-		template<typename T>
-		constexpr inline auto e(T t)
-		{
-			return magic_enum::enum_name(t);
-		}
-
-		template<class T>
-		constexpr inline size_t CountInit(const T t[])
-		{
-			size_t i = 0;
-			using namespace magic_enum;
-			while (t[i] != T::none) i++;
-			return i;
-		}
-
-		constexpr int fnc()
-		{
-			constexpr int a = 1;
-			return a;
-		}
 	}
 }
 
-/*
-	Interface:
-		constexpr TTMLDictionary dictionary(Entries);
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
 
-		std::array
+// Generic types for XML nodes -----------------------------------------------------------------------------------------1 of 3-|
+// ============================================================================================================================|
 
-		MakeTTMLEntries
-			NS::one
-			Tag::one
-*/
+template<class E>
+concept enumerable_node =
+    std::is_enum_v<E>
+    && (E::none == E::none);
 
-#endif //NODE_HEADER
+// Generic types
+template<enumerable_node E>
+struct NodeID
+{
+    E                     id;
+    std::string_view      value;
+};
+
+template<enumerable_node Tns, enumerable_node Telem>
+struct Node
+{
+    NodeID<Tns>                 ns;
+    NodeID<Telem>               element;
+};
+
+// XML node component templates ----------------------------------------------------------------------------------------2 of 3-|
+// ============================================================================================================================|
+
+template<class Tns, class Topt>
+struct AttributeOptionsNode
+{
+    Node<Tns, Topt>             option;
+    std::string_view            value;
+    size_t                      documents;
+};
+
+template<class Tns, class Tvexpr>
+struct ValueExpressionNode
+{
+    Node<Tns, Tvexpr>                   expression;
+    size_t                              documents;
+};
+
+template<class Tns, class Tattr, class Tvexpr, class Topt,
+            size_t SizeVexpr, size_t SizeOpt>
+struct AttributeNode
+{
+    Node<Tns, Tattr>                                        attribute;
+    ValueExpressionNode<Tns, Tvexpr>                        expressions[SizeVexpr];
+    AttributeOptionsNode<Tns, Topt>                         options[SizeOpt];
+    size_t                                                  _default;
+    size_t                                                  conditions;
+    size_t                                                  documents;
+};
+
+template<class Tns, class Tdata>
+struct ContentNode
+{
+    Node<Tns, Tdata>            type;
+    size_t                      documents;
+    size_t                      conditions;
+};
+
+template<class Tns, class Ttag, class Tattr, class Tvexpr, class Topt, class Tdata,
+            size_t SizeAttr, size_t SizeVexpr, size_t SizeOpt, size_t SizeData>
+struct XMLNode
+{
+    // constexpr XMLNode()                                              = default;
+    Node<Tns, Ttag>                                                  element;
+    AttributeNode<Tns, Tattr, Tvexpr, Topt, SizeVexpr, SizeOpt>      attributes[SizeAttr];
+    ContentNode<Tns, Tdata>                                          content[SizeData];
+    size_t                                                           documents;
+};
+
+// XML node dictionary template ----------------------------------------------------------------------------------------3 of 3-|
+// ============================================================================================================================|
+
+template<size_t E, class... Rest>
+struct GetHelper;
+
+template<class... E>
+class XMLDictionary {};
+
+template<class E, class... Rest>
+class XMLDictionary<E, Rest...>
+{
+public:
+    constexpr XMLDictionary(E entry, Rest... rest)
+        : entry(entry),
+        next(rest...)
+    {}
+
+    template<size_t index>
+    constexpr auto get() const
+    {
+        return GetHelper<index, XMLDictionary<E, Rest...>>::get(*this);
+    }
+
+    E                           entry;
+    XMLDictionary<Rest...>      next;
+};
+
+template<class E, class... Rest>
+struct GetHelper<0, XMLDictionary<E, Rest...>>
+{
+    static constexpr E get(XMLDictionary<E, Rest...> d)
+    {
+        return d.entry;
+    }
+};
+
+template<size_t I, class E, class... Rest>
+struct GetHelper<I, XMLDictionary<E, Rest...>>
+{
+    static constexpr auto get(XMLDictionary<E, Rest...> d)
+    {
+        return GetHelper<I-1, XMLDictionary<Rest...>>::get(d.next);
+    }
+};
+
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+#endif // VTNODE_HEADER

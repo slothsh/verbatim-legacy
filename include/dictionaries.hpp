@@ -1,5 +1,5 @@
 // Stefan "SoulXP" Olivier
-// File: extern const.hpp
+// File: dictionaries.hpp
 // Description: External linkage header for various tables & dictionaries
 
 #ifndef DICTIONARIES_HEADER

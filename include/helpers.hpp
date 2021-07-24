@@ -2,8 +2,8 @@
 // File: helpers.hpp
 // Description: Auxiliary functions to help with parsing EDL files
 
-#ifndef vt_HEADER
-#define vt_HEADER
+#ifndef VT_HEADER
+#define VT_HEADER
 
 // Standard headers
 #include <iostream>
