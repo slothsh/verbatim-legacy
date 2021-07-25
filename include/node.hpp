@@ -24,55 +24,55 @@
 
 namespace vt
 {
-	namespace dictionary
-	{
+    namespace dictionary
+    {
         // Dictionary constants
         static constexpr size_t VT_ENUM_ID = MAGIC_ENUM_RANGE_MIN;
         static constexpr size_t VT_ENUM_NONE = MAGIC_ENUM_RANGE_MAX;
 
-		// Enumerations
-		enum class NS : size_t
-		{
+        // Enumerations
+        enum class NS : size_t
+        {
             IS_NS = VT_ENUM_ID,
-			one, two, three, four,
-			none = VT_ENUM_NONE
-		};
+            one, two, three, four,
+            none = VT_ENUM_NONE
+        };
 
-		enum class Tag : size_t
-		{
+        enum class Tag : size_t
+        {
             IS_TAG = VT_ENUM_ID,
-			one, two, three, four,
-			none = VT_ENUM_NONE
-		};
+            one, two, three, four,
+            none = VT_ENUM_NONE
+        };
 
-		enum class Attribute : size_t
-		{
+        enum class Attribute : size_t
+        {
             IS_ATTRIBUTE = VT_ENUM_ID,
-			one, two, three, four,
-			none = VT_ENUM_NONE
-		};
+            one, two, three, four,
+            none = VT_ENUM_NONE
+        };
 
-		enum class ValueExpression : size_t
-		{
+        enum class ValueExpression : size_t
+        {
             IS_VALUE_EXPRESSION = VT_ENUM_ID,
-			one, two, three, four,
-			none = VT_ENUM_NONE
-		};
+            one, two, three, four,
+            none = VT_ENUM_NONE
+        };
 
-		enum class AttributeOption : size_t
-		{
+        enum class AttributeOption : size_t
+        {
             IS_ATTRIBUTE_OPTION = VT_ENUM_ID,
-			one, two, three, four,
-			none = VT_ENUM_NONE
-		};
+            one, two, three, four,
+            none = VT_ENUM_NONE
+        };
 
-		enum class Content : size_t
-		{
+        enum class Content : size_t
+        {
             IS_CONTENT = VT_ENUM_ID,
-			one, two, three, four,
-			none = VT_ENUM_NONE
-		};
-	}
+            one, two, three, four,
+            none = VT_ENUM_NONE
+        };
+    }
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -82,17 +82,17 @@ namespace vt
 
 namespace vt
 {
-	namespace dictionary
-	{
+    namespace dictionary
+    {
         using namespace magic_enum;
 
         // Concept for generic enumeration types
-		template<class E>
-		concept enumerable_node =
-			std::is_enum_v<E>
+        template<class E>
+        concept enumerable_node =
+            std::is_enum_v<E>
             && is_scoped_enum_v<E>
             && enum_contains<E>(E::none)
-			&& enum_integer(E::none) == VT_ENUM_NONE;
+            && enum_integer(E::none) == VT_ENUM_NONE;
 
         // Concept for enumeration types to be used for namespaces
         template<class Tns>
@@ -136,139 +136,177 @@ namespace vt
             && enum_contains<Tcont>(Tcont::IS_CONTENT)
             && enum_integer(Tcont::IS_CONTENT) == VT_ENUM_ID;
 
-		// Generic types
-		template<enumerable_node E>
-		struct NodeID
-		{
-			E                     id;
-			std::string_view      value;
-		};
+        // Generic types
+        template<enumerable_node E>
+        struct NodeID
+        {
+            E                     id;
+            std::string_view      value;
+        };
 
-		template<enumerable_node Tns, enumerable_node Telem>
-		struct Node
-		{
-			NodeID<Tns>                 ns;
-			NodeID<Telem>               element;
-		};
+        template<enumerable_node Tns, enumerable_node Telem>
+        struct Node
+        {
+            NodeID<Tns>                 ns;
+            NodeID<Telem>               element;
+        };
 
-// XML node component templates ----------------------------------------------------------------------------------------2 of 3-|
+// Entry Collector -----------------------------------------------------------------------------------------------------2 of 4-|
 // ============================================================================================================================|
 
-		template<class Tns, class Topt>
-		struct AttributeOptionsNode
-		{
-			Node<Tns, Topt>             option;
-			std::string_view            value;
-			size_t                      documents;
-		};
+namespace detail
+{
+	template<class... N> struct EntryCollector;
+	using accumulate_t = EntryCollector<void>;
 
-		template<class Tns, class Tvexpr>
-		struct ValueExpressionNode
+	template<class... N>
+	struct EntryCollector 
+	{
+		constexpr EntryCollector()
 		{
-			Node<Tns, Tvexpr>           expression;
-			size_t                      documents;
-		};
+			accumulate_t::entries = 0;
+		}
 
-		template<class Tns, class Tattr, class Tvexpr, class Topt,
-					size_t SizeVexpr, size_t SizeOpt>
-		struct AttributeNode
-		{
-			Node<Tns, Tattr>                       attribute;
-			ValueExpressionNode<Tns, Tvexpr>       expressions[SizeVexpr];
-			AttributeOptionsNode<Tns, Topt>        options[SizeOpt];
-			size_t                                 _default;
-			size_t                                 conditions;
-			size_t                                 documents;
-		};
+		static size_t entries;
+	};
 
-		template<class Tns, class Tdata>
-		struct ContentNode
+	template<>
+	size_t accumulate_t::entries = 0;
+
+	template<class E, class... N>
+	struct EntryCollector<E, N...>
+	{
+		using entry_t = E;
+		using next_t = EntryCollector<N...>;
+
+		constexpr EntryCollector()
 		{
-			Node<Tns, Tdata>            type;
-			size_t                      documents;
-			size_t                      conditions;
-		};
+			accumulate_t::entries++;
+		}
+
+		entry_t     entry;
+		next_t      next;
+	};
+}
+
+// XML node component templates ----------------------------------------------------------------------------------------3 of 4-|
+// ============================================================================================================================|
+
+        template<class Tns, class Topt>
+        struct AttributeOptionsNode
+        {
+            Node<Tns, Topt>             option;
+            std::string_view            value;
+            size_t                      documents;
+        };
+
+        template<class Tns, class Tvexpr>
+        struct ValueExpressionNode
+        {
+            Node<Tns, Tvexpr>           expression;
+            size_t                      documents;
+        };
+
+        template<class Tns, class Tattr, class Tvexpr, class Topt,
+                    size_t SizeVexpr, size_t SizeOpt>
+        struct AttributeNode
+        {
+            Node<Tns, Tattr>                       attribute;
+            ValueExpressionNode<Tns, Tvexpr>       expressions[SizeVexpr];
+            AttributeOptionsNode<Tns, Topt>        options[SizeOpt];
+            size_t                                 _default;
+            size_t                                 conditions;
+            size_t                                 documents;
+        };
+
+        template<class Tns, class Tdata>
+        struct ContentNode
+        {
+            Node<Tns, Tdata>            type;
+            size_t                      documents;
+            size_t                      conditions;
+        };
 
         namespace detail
         {
             template<enumerable_ns Ens, enumerable_tag Etag>
             using node_t = Node<Ens, Etag>;
 
-			template<enumerable_ns Ens, enumerable_attr Eattr, enumerable_vexpr Evexpr, enumerable_attropt Eopt,
+            template<enumerable_ns Ens, enumerable_attr Eattr, enumerable_vexpr Evexpr, enumerable_attropt Eopt,
                         size_t SizeVexpr, size_t SizeOpt>
             using attribute_t = AttributeNode<Ens, Eattr, Evexpr, Eopt, SizeVexpr, SizeOpt>;
 
-			template<enumerable_ns Ens, enumerable_content Edata>
+            template<enumerable_ns Ens, enumerable_content Edata>
             using content_t = ContentNode<Ens, Edata>;
         }
 
         // General XML node type for XML dictionary entries
-		template<enumerable_ns Tns, enumerable_tag Ttag,
+        template<enumerable_ns Tns, enumerable_tag Ttag,
                     enumerable_ns Tnsattr, enumerable_attr Tattr, enumerable_vexpr Tvexpr, enumerable_attropt Topt,
                     enumerable_ns Tnsdata, enumerable_content Tdata,
-					size_t SizeAttr, size_t SizeVexpr, size_t SizeOpt, size_t SizeData>
-		struct XMLNode
-		{
+                    size_t SizeAttr, size_t SizeVexpr, size_t SizeOpt, size_t SizeData>
+        struct XMLNode
+        {
 
             // Default Constructor
             constexpr XMLNode() = default;
 
-			detail::node_t<Tns, Ttag>			                        element;	
-			detail::attribute_t<Tnsattr, Tattr, Tvexpr, Topt,
+            detail::node_t<Tns, Ttag>			                        element;	
+            detail::attribute_t<Tnsattr, Tattr, Tvexpr, Topt,
                         SizeVexpr, SizeOpt>			                    attributes[SizeAttr];
-			detail::content_t<Tnsdata, Tdata>                           content[SizeData];
-			size_t				                                        documents;
-		};
+            detail::content_t<Tnsdata, Tdata>                           content[SizeData];
+            size_t				                                        documents;
+        };
 
-// XML node dictionary template ----------------------------------------------------------------------------------------3 of 3-|
+// XML node dictionary template ----------------------------------------------------------------------------------------4 of 4-|
 // ============================================================================================================================|
 
-		namespace detail
-		{
-			template<size_t E, class... Rest>
-			struct GetHelper;
-		}
+        namespace detail
+        {
+            template<size_t E, class... Rest>
+            struct GetHelper;
+        }
 
-		template<class... E>
-		class XMLDictionary {};
+        template<class... E>
+        class XMLDictionary {};
 
-		template<class E, class... Rest>
-		class XMLDictionary<E, Rest...>
-		{
-		public:
-			constexpr XMLDictionary(E entry, Rest... rest)
-				: entry(entry),
-				next(rest...)
-			{}
+        template<class E, class... Rest>
+        class XMLDictionary<E, Rest...>
+        {
+        public:
+            constexpr XMLDictionary(E entry, Rest... rest)
+                : entry(entry),
+                next(rest...)
+            {}
 
-			template<size_t index>
-			constexpr auto get() const
-			{
-				return detail::GetHelper<index, XMLDictionary<E, Rest...>>::get(*this);
-			}
+            template<size_t index>
+            constexpr auto get() const
+            {
+                return detail::GetHelper<index, XMLDictionary<E, Rest...>>::get(*this);
+            }
 
-			E                           entry;
-			XMLDictionary<Rest...>      next;
-		};
+            E                           entry;
+            XMLDictionary<Rest...>      next;
+        };
 
-		template<class E, class... Rest>
-		struct detail::GetHelper<0, XMLDictionary<E, Rest...>>
-		{
-			static constexpr E get(XMLDictionary<E, Rest...> d)
-			{
-				return d.entry;
-			}
-		};
+        template<class E, class... Rest>
+        struct detail::GetHelper<0, XMLDictionary<E, Rest...>>
+        {
+            static constexpr E get(XMLDictionary<E, Rest...> d)
+            {
+                return d.entry;
+            }
+        };
 
-		template<size_t I, class E, class... Rest>
-		struct detail::GetHelper<I, XMLDictionary<E, Rest...>>
-		{
-			static constexpr auto get(XMLDictionary<E, Rest...> d)
-			{
-				return detail::GetHelper<I-1, XMLDictionary<Rest...>>::get(d.next);
-			}
-		};
-	}
+        template<size_t I, class E, class... Rest>
+        struct detail::GetHelper<I, XMLDictionary<E, Rest...>>
+        {
+            static constexpr auto get(XMLDictionary<E, Rest...> d)
+            {
+                return detail::GetHelper<I-1, XMLDictionary<Rest...>>::get(d.next);
+            }
+        };
+    }
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
