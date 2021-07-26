@@ -5,6 +5,11 @@
 #ifndef XMLFILE_HEADER
 #define XMLFILE_HEADER
 
+// Configuration headers
+#ifndef VTCONFIG_HEADER
+#include "config.hpp"
+#endif
+
 // Standard headers
 #include <iostream>
 #include <cstdint>
@@ -14,7 +19,6 @@
 
 // Library headers
 #include <libxml++/libxml++.h>
-#include <magic_enum.hpp>
 
 // Project headers
 #include "filesink.hpp"

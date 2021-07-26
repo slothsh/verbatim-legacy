@@ -6,27 +6,16 @@
 #ifndef VTNODE_HEADER
 #define VTNODE_HEADER
 
-// Redefinitions for magic enum size constants
-#define MAGIC_ENUM_RANGE_MIN 0
-#define MAGIC_ENUM_RANGE_MAX 256
-
-#if !defined(VT_ENUM_NONE)
-#define VT_ENUM_NONE MAGIC_ENUM_RANGE_MAX
+// Configuration headers
+#ifndef VTCONFIG_HEADER
+#include "config.hpp"
 #endif
-
-#if !defined(VT_ENUM_ID)
-#define VT_ENUM_ID MAGIC_ENUM_RANGE_MIN
-#endif
-
 
 // Standard headers
 #include <iostream>
 #include <type_traits>
 #include <utility>
 #include <concepts>
-
-// Project headers
-#include <magic_enum.hpp>
 
 // Enumerations for XML nodes ------------------------------------------------------------------------------------------1 of 1-|
 // ============================================================================================================================|
@@ -265,12 +254,12 @@ namespace vt
                     size_t SizeVexpr, size_t SizeOpt>
         struct AttributeNode
         {
-            Node<Tns, Tattr>                       attribute;
+            Node<Tns, Tattr>                       		attribute;
             ValueExpressionNode<Tnsvexpr, Tvexpr>       expressions[SizeVexpr];
-            AttributeOptionsNode<Tnsopt, Topt>        options[SizeOpt];
-            size_t                                 _default;
-            size_t                                 conditions;
-            size_t                                 documents;
+            AttributeOptionsNode<Tnsopt, Topt>       	options[SizeOpt];
+            size_t                                 		_default;
+            size_t                                 		conditions;
+            size_t                                 		documents;
         };
 
         template<class Tns, class Tdata>

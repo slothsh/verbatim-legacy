@@ -5,9 +5,14 @@
 // Standard headers
 #include <iostream>
 
+// Configuration headers
+#ifndef VTCONFIG_HEADER
+#include "../../include/config.hpp"
+#endif
+
 // Project headers
-#include "../../include/dictionaries.hpp"
 #include "../../include/node.hpp"
+#include "../../include/dictionaries.hpp"
 
 int main()
 {
@@ -58,6 +63,10 @@ int main()
     static_assert(enum_integer(ValueExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
     static_assert(enum_integer(AttributeOption::IS_ATTRIBUTE_OPTION) == MAGIC_ENUM_RANGE_MIN);
     static_assert(enum_integer(Content::IS_CONTENT) == MAGIC_ENUM_RANGE_MIN);
+
+	constexpr ns_component_t a{};
+
+	std::cout << enum_integer(a.nstag_v) << '\n';
 
     std::cout << "\nend\n";
     return 0;

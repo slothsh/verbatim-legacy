@@ -2,8 +2,10 @@
 // File: versions.cpp
 // Description: Dictionary and macro definitions for different document types
 
-// Library headers
-#include <magic_enum.hpp>
+// Configuration headers
+#ifndef VTCONFIG_HEADER
+#include "../include/config.hpp"
+#endif
 
 // Project headers
 #include "../include/versions.hpp"

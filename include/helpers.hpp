@@ -5,6 +5,11 @@
 #ifndef VT_HEADER
 #define VT_HEADER
 
+// Configuration headers
+#ifndef VTCONFIG_HEADER
+#include "config.hpp"
+#endif
+
 // Standard headers
 #include <iostream>
 #include <cstdint>
@@ -12,8 +17,6 @@
 #include <vector>
 #include <regex>
 
-// Library Headers
-#include <magic_enum.hpp>
 
 // Project headers
 
