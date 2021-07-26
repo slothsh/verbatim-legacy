@@ -12,8 +12,9 @@ int main()
 {
 	using namespace vt::dictionary;
 
-    constexpr XMLNode<NS, Tag, NS, Attribute, ValueExpression, AttributeOption, NS, Content,
-            1, 1, 1, 1> a{};
+    // SECTION 1
+    // constexpr XMLNode<NS, Tag, NS, Attribute, ValueExpression, AttributeOption, NS, Content,
+    //         1, 1, 1, 1> a{};
     // constexpr XMLNode<NS, Tag, Attribute, ValueExpression, AttributeOption, Content,
     //         2, 2, 2, 2> b{};
     // constexpr XMLNode<NS, Tag, Attribute, ValueExpression, AttributeOption, Content,
@@ -31,6 +32,14 @@ int main()
     // dict.get<3>();
 
 	// std::cout << std::boolalpha << magic_enum::enum_contains<NS>(NS::none) << '\n';
+
+    // SECTION 2
+    vt::dictionary::detail::EntryCollector<size_t, size_t, size_t, size_t> a{1,2,3,4};
+
+    auto r = a.GetSize();
+    std::cout << "Accumulate total: " << vt::dictionary::detail::accumulate_t::total << '\n';
+    std::cout << "Total entries: " << r << '\n';
+
     std::cout << "\nend\n";
     return 0;
 }

@@ -11,10 +11,9 @@
 
 // Standard headers
 #include <iostream>
-#include <limits>
 #include <type_traits>
 #include <utility>
-#include <memory>
+#include <concepts>
 
 // Project headers
 #include <magic_enum.hpp>
@@ -156,37 +155,87 @@ namespace vt
 
 namespace detail
 {
-	template<class... N> struct EntryCollector;
-	using accumulate_t = EntryCollector<void>;
+	template<class... T>
+    struct AccumulateType
+    {
+        template<class I> requires(std::is_integral_v<I>) static void add(I i)
+        {
+            AccumulateType::total += i; 
+        }
 
-	template<class... N>
-	struct EntryCollector 
-	{
-		constexpr EntryCollector()
-		{
-			accumulate_t::entries = 0;
-		}
+        static void reset()
+        {
+            AccumulateType::total = 0;
+        }
 
-		static size_t entries;
-	};
+        static size_t total;
+    };
+    using accumulate_t = AccumulateType<void>;
 
-	template<>
-	size_t accumulate_t::entries = 0;
+    template<>
+    size_t accumulate_t::total = 0;
 
-	template<class E, class... N>
-	struct EntryCollector<E, N...>
-	{
-		using entry_t = E;
-		using next_t = EntryCollector<N...>;
+    template<class... N> struct EntryCollector;
 
-		constexpr EntryCollector()
-		{
-			accumulate_t::entries++;
-		}
+    template<class... N>
+    struct EntryCollector 
+    {
+        constexpr EntryCollector()
+        {
+            // Nothing to do here
+        }
 
-		entry_t     entry;
-		next_t      next;
-	};
+        constexpr void ForwardEntries(auto&&... n)
+        {
+            // Nothing to do here
+        }
+    };
+
+    template<class E, class... N>
+    struct EntryCollector<E, N...>
+    {
+        using entry_t = E;
+        using next_t = EntryCollector<N...>;
+
+        constexpr EntryCollector()
+        {
+            accumulate_t::add(1);
+        }
+
+        constexpr EntryCollector(E&& e, N&&... n)
+        {
+            accumulate_t::add(1);
+            this->ForwardEntries(std::forward<std::remove_reference_t<E&&>>(e),
+                            std::forward<std::remove_reference_t<N&&>>(n)...);
+        }
+
+        constexpr void ForwardEntries(E&& e, N&&... n)
+        {
+            this->entry = std::move(e);
+            if constexpr (sizeof...(n) > 0) this->next.ForwardEntries(std::move(n)...);
+        }
+
+        constexpr auto Recurse(const auto&& fn) const
+        {
+            accumulate_t::add(1);
+            if constexpr(std::is_invocable_v<decltype(this->next.GetSize()), void>) {
+                this->next.Recurse(fn);
+            }
+        }
+
+        constexpr size_t GetSize() const
+        {
+            this->Recurse([]() {
+                accumulate_t::add(1);
+            });
+            const auto total = accumulate_t::total - 1;
+            accumulate_t::reset();
+            return total;
+        }
+
+        entry_t     entry;
+        next_t      next;
+    };
 }
 
 // XML node component templates ----------------------------------------------------------------------------------------3 of 4-|
@@ -249,7 +298,7 @@ namespace detail
         {
 
             // Default Constructor
-            constexpr XMLNode() = default;
+            // constexpr XMLNode() = default;
 
             detail::node_t<Tns, Ttag>			                        element;	
             detail::attribute_t<Tnsattr, Tattr, Tvexpr, Topt,
