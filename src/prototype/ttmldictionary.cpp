@@ -6,6 +6,7 @@
 #include <iostream>
 
 // Project headers
+#include "../../include/dictionaries.hpp"
 #include "../../include/node.hpp"
 
 int main()
@@ -34,11 +35,29 @@ int main()
 	// std::cout << std::boolalpha << magic_enum::enum_contains<NS>(NS::none) << '\n';
 
     // SECTION 2
-    vt::dictionary::detail::EntryCollector<size_t, size_t, size_t, size_t> a{1,2,3,4};
+    // vt::dictionary::detail::EntryCollector<size_t, size_t, size_t, size_t> a{1,2,3,4};
 
-    auto r = a.GetSize();
-    std::cout << "Accumulate total: " << vt::dictionary::detail::accumulate_t::total << '\n';
-    std::cout << "Total entries: " << r << '\n';
+    // auto r = a.GetSize();
+    // std::cout << "Accumulate total: " << vt::dictionary::detail::accumulate_t::total << '\n';
+    // std::cout << "Total entries: " << r << '\n';
+
+    // SECTION 3
+    static_assert(MAGIC_ENUM_RANGE_MIN == 0);
+    static_assert(MAGIC_ENUM_RANGE_MAX == 256);
+
+    static_assert(enum_integer(NS::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(enum_integer(Tag::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(enum_integer(Attribute::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(enum_integer(ValueExpression::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(enum_integer(AttributeOption::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(enum_integer(Content::none) == MAGIC_ENUM_RANGE_MAX);
+
+    static_assert(enum_integer(NS::IS_NS) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(enum_integer(Tag::IS_TAG) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(enum_integer(Attribute::IS_ATTRIBUTE) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(enum_integer(ValueExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(enum_integer(AttributeOption::IS_ATTRIBUTE_OPTION) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(enum_integer(Content::IS_CONTENT) == MAGIC_ENUM_RANGE_MIN);
 
     std::cout << "\nend\n";
     return 0;

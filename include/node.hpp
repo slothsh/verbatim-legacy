@@ -2,12 +2,22 @@
 // File: node.hpp
 // Description: header file for static TTML dictionary templates
 
+
 #ifndef VTNODE_HEADER
 #define VTNODE_HEADER
 
 // Redefinitions for magic enum size constants
 #define MAGIC_ENUM_RANGE_MIN 0
 #define MAGIC_ENUM_RANGE_MAX 256
+
+#if !defined(VT_ENUM_NONE)
+#define VT_ENUM_NONE MAGIC_ENUM_RANGE_MAX
+#endif
+
+#if !defined(VT_ENUM_ID)
+#define VT_ENUM_ID MAGIC_ENUM_RANGE_MIN
+#endif
+
 
 // Standard headers
 #include <iostream>
@@ -25,10 +35,6 @@ namespace vt
 {
     namespace dictionary
     {
-        // Dictionary constants
-        static constexpr size_t VT_ENUM_ID = MAGIC_ENUM_RANGE_MIN;
-        static constexpr size_t VT_ENUM_NONE = MAGIC_ENUM_RANGE_MAX;
-
         // Enumerations
         enum class NS : size_t
         {
@@ -153,90 +159,87 @@ namespace vt
 // Entry Collector -----------------------------------------------------------------------------------------------------2 of 4-|
 // ============================================================================================================================|
 
-namespace detail
-{
-	template<class... T>
-    struct AccumulateType
-    {
-        template<class I> requires(std::is_integral_v<I>) static void add(I i)
+        namespace detail
         {
-            AccumulateType::total += i; 
+            template<class... T>
+            struct AccumulateType
+            {
+                template<class I> requires(std::is_integral_v<I>) static void add(I i)
+                {
+                    AccumulateType::total += i; 
+                }
+
+                static void reset()
+                {
+                    AccumulateType::total = 0;
+                }
+
+                static size_t total;
+            };
+            using accumulate_t = AccumulateType<void>;
+
+            template<class... N> struct EntryCollector;
+
+            template<class... N>
+            struct EntryCollector 
+            {
+                constexpr EntryCollector()
+                {
+                    // Nothing to do here
+                }
+
+                constexpr void ForwardEntries(auto&&... n)
+                {
+                    // Nothing to do here
+                }
+            };
+
+            template<class E, class... N>
+            struct EntryCollector<E, N...>
+            {
+                using entry_t = E;
+                using next_t = EntryCollector<N...>;
+
+                constexpr EntryCollector()
+                {
+                    accumulate_t::add(1);
+                }
+
+                constexpr EntryCollector(E&& e, N&&... n)
+                {
+                    accumulate_t::add(1);
+                    this->ForwardEntries(std::forward<std::remove_reference_t<E&&>>(e),
+                                    std::forward<std::remove_reference_t<N&&>>(n)...);
+                }
+
+                constexpr void ForwardEntries(E&& e, N&&... n)
+                {
+                    this->entry = std::move(e);
+                    if constexpr (sizeof...(n) > 0) this->next.ForwardEntries(std::move(n)...);
+                }
+
+                constexpr auto Recurse(const auto&& fn) const
+                {
+                    accumulate_t::add(1);
+                    if constexpr(std::is_invocable_v<decltype(this->next.GetSize()), void>) {
+                        this->next.Recurse(fn);
+                    }
+                }
+
+                constexpr size_t GetSize() const
+                {
+                    this->Recurse([]() {
+                        accumulate_t::add(1);
+                    });
+                    const auto total = accumulate_t::total - 1;
+                    accumulate_t::reset();
+                    return total;
+                }
+
+                entry_t     entry;
+                next_t      next;
+            };
         }
-
-        static void reset()
-        {
-            AccumulateType::total = 0;
-        }
-
-        static size_t total;
-    };
-    using accumulate_t = AccumulateType<void>;
-
-    template<>
-    size_t accumulate_t::total = 0;
-
-    template<class... N> struct EntryCollector;
-
-    template<class... N>
-    struct EntryCollector 
-    {
-        constexpr EntryCollector()
-        {
-            // Nothing to do here
-        }
-
-        constexpr void ForwardEntries(auto&&... n)
-        {
-            // Nothing to do here
-        }
-    };
-
-    template<class E, class... N>
-    struct EntryCollector<E, N...>
-    {
-        using entry_t = E;
-        using next_t = EntryCollector<N...>;
-
-        constexpr EntryCollector()
-        {
-            accumulate_t::add(1);
-        }
-
-        constexpr EntryCollector(E&& e, N&&... n)
-        {
-            accumulate_t::add(1);
-            this->ForwardEntries(std::forward<std::remove_reference_t<E&&>>(e),
-                            std::forward<std::remove_reference_t<N&&>>(n)...);
-        }
-
-        constexpr void ForwardEntries(E&& e, N&&... n)
-        {
-            this->entry = std::move(e);
-            if constexpr (sizeof...(n) > 0) this->next.ForwardEntries(std::move(n)...);
-        }
-
-        constexpr auto Recurse(const auto&& fn) const
-        {
-            accumulate_t::add(1);
-            if constexpr(std::is_invocable_v<decltype(this->next.GetSize()), void>) {
-                this->next.Recurse(fn);
-            }
-        }
-
-        constexpr size_t GetSize() const
-        {
-            this->Recurse([]() {
-                accumulate_t::add(1);
-            });
-            const auto total = accumulate_t::total - 1;
-            accumulate_t::reset();
-            return total;
-        }
-
-        entry_t     entry;
-        next_t      next;
-    };
-}
 
 // XML node component templates ----------------------------------------------------------------------------------------3 of 4-|
 // ============================================================================================================================|
@@ -256,13 +259,15 @@ namespace detail
             size_t                      documents;
         };
 
-        template<class Tns, class Tattr, class Tvexpr, class Topt,
+        template<class Tns, class Tattr,
+                    class Tnsvexpr, class Tvexpr,
+                    class Tnsopt, class Topt,
                     size_t SizeVexpr, size_t SizeOpt>
         struct AttributeNode
         {
             Node<Tns, Tattr>                       attribute;
-            ValueExpressionNode<Tns, Tvexpr>       expressions[SizeVexpr];
-            AttributeOptionsNode<Tns, Topt>        options[SizeOpt];
+            ValueExpressionNode<Tnsvexpr, Tvexpr>       expressions[SizeVexpr];
+            AttributeOptionsNode<Tnsopt, Topt>        options[SizeOpt];
             size_t                                 _default;
             size_t                                 conditions;
             size_t                                 documents;
@@ -281,9 +286,11 @@ namespace detail
             template<enumerable_ns Ens, enumerable_tag Etag>
             using node_t = Node<Ens, Etag>;
 
-            template<enumerable_ns Ens, enumerable_attr Eattr, enumerable_vexpr Evexpr, enumerable_attropt Eopt,
+            template<enumerable_ns Ens, enumerable_attr Eattr,
+                        enumerable_ns Ensvexpr, enumerable_vexpr Evexpr,
+                        enumerable_ns Ensopt, enumerable_attropt Eopt,
                         size_t SizeVexpr, size_t SizeOpt>
-            using attribute_t = AttributeNode<Ens, Eattr, Evexpr, Eopt, SizeVexpr, SizeOpt>;
+            using attribute_t = AttributeNode<Ens, Eattr, Ensvexpr, Evexpr, Ensopt, Eopt, SizeVexpr, SizeOpt>;
 
             template<enumerable_ns Ens, enumerable_content Edata>
             using content_t = ContentNode<Ens, Edata>;
@@ -291,7 +298,9 @@ namespace detail
 
         // General XML node type for XML dictionary entries
         template<enumerable_ns Tns, enumerable_tag Ttag,
-                    enumerable_ns Tnsattr, enumerable_attr Tattr, enumerable_vexpr Tvexpr, enumerable_attropt Topt,
+                    enumerable_ns Tnsattr, enumerable_attr Tattr, 
+                    enumerable_ns Tnsvexpr, enumerable_vexpr Tvexpr,
+                    enumerable_ns Tnsattropt, enumerable_attropt Topt,
                     enumerable_ns Tnsdata, enumerable_content Tdata,
                     size_t SizeAttr, size_t SizeVexpr, size_t SizeOpt, size_t SizeData>
         struct XMLNode
@@ -300,11 +309,13 @@ namespace detail
             // Default Constructor
             // constexpr XMLNode() = default;
 
-            detail::node_t<Tns, Ttag>			                        element;	
-            detail::attribute_t<Tnsattr, Tattr, Tvexpr, Topt,
-                        SizeVexpr, SizeOpt>			                    attributes[SizeAttr];
+            detail::node_t<Tns, Ttag>                                   element;
+            detail::attribute_t<Tnsattr, Tattr,
+                        Tnsvexpr, Tvexpr,
+                        Tnsattropt, Topt,
+                        SizeVexpr, SizeOpt>                             attributes[SizeAttr];
             detail::content_t<Tnsdata, Tdata>                           content[SizeData];
-            size_t				                                        documents;
+            size_t                                                      documents;
         };
 
 // XML node dictionary template ----------------------------------------------------------------------------------------4 of 4-|

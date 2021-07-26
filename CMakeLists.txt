@@ -72,6 +72,8 @@ set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 # ttmldictionary
 add_executable(ttmldictionary
 	./src/prototype/ttmldictionary.cpp
+	./src/dictionaries.cpp
+	./src/node.cpp
 )
 set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
 

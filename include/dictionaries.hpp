@@ -1,44 +1,64 @@
 // Stefan "SoulXP" Olivier
 // File: dictionaries.hpp
-// Description: External linkage header for various tables & dictionaries
+// Description: Definitions for various tables and dictionaries
 
-#ifndef DICTIONARIES_HEADER
-#define DICTIONARIES_HEADER
+#ifndef VTDICTIONARIES_HEADER
+#define VTDICTIONARIES_HEADER
+
+// Standard headers
+#include <iostream>
+#include <type_traits>
+#include <utility>
+#include <concepts>
+
+// Library headers
+#include <magic_enum.hpp>
 
 // Project headers
-#include "versions.hpp"
 #include "node.hpp"
 
-// Dictionary includes -------------------------------------------------------------------------------------------------1 of 1-|
+// Dictionary definitions ----------------------------------------------------------------------------------------------1 of 1-|
 // ============================================================================================================================|
 
-extern const NSTagVersion NS_DICTIONARY[];
-extern const NodeTagVersion TAG_DICTIONARY[];
-extern const AttrTagVersion ATTR_DICTIONARY_SET[];
-extern const AttrTagVersion ATTR_DICTIONARY_BODY[];
-extern const AttrTagVersion ATTR_DICTIONARY_DIV[];
-extern const AttrTagVersion ATTR_DICTIONARY_P[];
-extern const AttrTagVersion ATTR_DICTIONARY_SPAN[];
-extern const AttrTagVersion ATTR_DICTIONARY_BR[];
-extern const AttrTagVersion ATTR_DICTIONARY_TT[];
-extern const AttrTagVersion ATTR_DICTIONARY_HEAD[];
-extern const AttrTagVersion ATTR_DICTIONARY_LAYOUT[];
-extern const AttrTagVersion ATTR_DICTIONARY_REGION[];
-extern const AttrTagVersion ATTR_DICTIONARY_METADATA[];
-extern const AttrTagVersion ATTR_DICTIONARY_ACTOR[];
-extern const AttrTagVersion ATTR_DICTIONARY_AGENT[];
-extern const AttrTagVersion ATTR_DICTIONARY_COPYRIGHT[];
-extern const AttrTagVersion ATTR_DICTIONARY_DESC[];
-extern const AttrTagVersion ATTR_DICTIONARY_NAME[];
-extern const AttrTagVersion ATTR_DICTIONARY_TITLE[];
-extern const AttrTagVersion ATTR_DICTIONARY_PROFILE[];
-extern const AttrTagVersion ATTR_DICTIONARY_FEATURES[];
-extern const AttrTagVersion ATTR_DICTIONARY_FEATURE[];
-extern const AttrTagVersion ATTR_DICTIONARY_EXTENSIONS[];
-extern const AttrTagVersion ATTR_DICTIONARY_EXTENSION[];
-extern const AttrTagVersion ATTR_DICTIONARY_STYLING[];
-extern const AttrTagVersion ATTR_DICTIONARY_STYLE[];
+namespace vt
+{
+    namespace dictionary
+    {
+        template<enumerable_ns Tnstag, enumerable_tag Ttag,
+                    enumerable_ns Tnsattr, enumerable_attr Tattr,
+                    enumerable_ns Tnsvexpr, enumerable_vexpr Tvexpr,
+                    enumerable_ns Tnsattropt, enumerable_attropt Tattropt,
+                    enumerable_ns Tnsdata, enumerable_content Tdata>
+        struct XMLNodeTypes
+        {
+            using nstag_t                     = Tnstag;
+            using tag_t                       = Ttag;
+
+            using nsattribute_t               = Tnsattr;
+            using attribute_t                 = Tattr;
+
+            using nsvalueexpr_t               = Tnsvexpr;
+            using valueexpr_t                 = Tvexpr;
+            
+            using nsattroption_t              = Tnsattropt;
+            using attroption_t                = Tattropt;
+
+            using nscontent_t                 = Tnsdata;
+            using content_t                   = Tdata;
+        };
+
+        // Dictionary type definitions
+        // using ns_component_t = XMLNodeTypes<NS, Tag, NS, Attribute, NS, ValueExpression, NS, AttributeOption, NS, Content>;
+
+        // Helper function to create XML nodes for static dictionaries
+        template<class Fn> requires(std::is_invocable_v<Fn>)
+        constexpr void CreateXMLNode(const Fn&& fn)
+        {
+            fn();
+        }
+    }
+}
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
 
-#endif // DICTIONARIES_HEADER
+#endif // VTDICTIONARIES_HEADER
