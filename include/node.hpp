@@ -24,7 +24,7 @@ namespace vt
 {
     namespace dictionary
     {
-        // Enumerations
+        // Generic enumerations for prototyping
         enum class NS : size_t
         {
             IS_NS = VT_ENUM_ID,
@@ -109,26 +109,35 @@ namespace vt
             && enum_contains<Tattr>(Tattr::IS_ATTRIBUTE)
             && enum_integer(Tattr::IS_ATTRIBUTE) == VT_ENUM_ID;
 
-        // Concept for enumeration types to be used for attributes
+        // Concept for enumeration types to be used for value expressions
         template<class Tvexpr>
         concept enumerable_vexpr =
             enumerable_node<Tvexpr>
             && enum_contains<Tvexpr>(Tvexpr::IS_VALUE_EXPRESSION)
             && enum_integer(Tvexpr::IS_VALUE_EXPRESSION) == VT_ENUM_ID;
 
-        // Concept for enumeration types to be used for attributes
+        // Concept for enumeration types to be used for attribute options
         template<class Topt>
         concept enumerable_attropt =
             enumerable_node<Topt>
             && enum_contains<Topt>(Topt::IS_ATTRIBUTE_OPTION)
             && enum_integer(Topt::IS_ATTRIBUTE_OPTION) == VT_ENUM_ID;
 
-        // Concept for enumeration types to be used for attributes
+        // Concept for enumeration types to be used for content types
         template<class Tcont>
         concept enumerable_content =
             enumerable_node<Tcont>
             && enum_contains<Tcont>(Tcont::IS_CONTENT)
             && enum_integer(Tcont::IS_CONTENT) == VT_ENUM_ID;
+
+        template<class Telement>
+        concept enumerable_element =
+            enumerable_node<Telement>
+            && (enumerable_tag<Telement>
+            || enumerable_attr<Telement>
+            || enumerable_vexpr<Telement>
+            || enumerable_attropt<Telement>
+            || enumerable_content<Telement>);
 
         // Generic types
         template<enumerable_node E>
@@ -233,7 +242,7 @@ namespace vt
 // XML node component templates ----------------------------------------------------------------------------------------3 of 4-|
 // ============================================================================================================================|
 
-        template<class Tns, class Topt>
+        template<enumerable_ns Tns, enumerable_attropt Topt>
         struct AttributeOptionsNode
         {
             Node<Tns, Topt>             option;
@@ -241,16 +250,16 @@ namespace vt
             size_t                      documents;
         };
 
-        template<class Tns, class Tvexpr>
+        template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
         struct ValueExpressionNode
         {
             Node<Tns, Tvexpr>           expression;
             size_t                      documents;
         };
 
-        template<class Tns, class Tattr,
-                    class Tnsvexpr, class Tvexpr,
-                    class Tnsopt, class Topt,
+        template<enumerable_ns Tns, enumerable_attr Tattr,
+                    enumerable_ns Tnsvexpr, enumerable_vexpr Tvexpr,
+                    enumerable_ns Tnsopt, enumerable_attropt Topt,
                     size_t SizeVexpr, size_t SizeOpt>
         struct AttributeNode
         {
@@ -262,7 +271,7 @@ namespace vt
             size_t                                 		documents;
         };
 
-        template<class Tns, class Tdata>
+        template<enumerable_ns Tns, enumerable_content Tdata>
         struct ContentNode
         {
             Node<Tns, Tdata>            type;

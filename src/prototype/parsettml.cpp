@@ -54,13 +54,21 @@ int main(int argc, char** argv)
 	using namespace vt::xml;
 	try {
 		EDLFILEPTX edlfile((std::string(argv[1])));
+		
+		std::string name(argv[2]);
+
+		edlfile.FilterTracks([&name](PTXTrack track, size_t tIndex) {
+			return regex::FirstMatch(track.track_name, std::regex(name)) == name;
+		});
+
+		edlfile.PrintOutput(format::File::table_all);
 		// RemoveBoundaryEvents(edlfile, "(cross fade)");
-		MergeBoundaryEvents(edlfile, "(cross fade)");
+		// MergeBoundaryEvents(edlfile, "(cross fade)");
 		// edlfile.WriteOutput((std::string(argv[2])), vt::format::File::edl_ptx_minimal);
-		TTML1p0_Netflix ttml;
-		ttml << edlfile;
+		// TTML1p0_Netflix ttml;
+		// ttml << edlfile;
 		// ttml.PrintNodes();
-		ttml.WriteFile((std::string(argv[2])));
+		// ttml.WriteFile((std::string(argv[2])));
 		// MergeBoundaryEvents(edlfile, "(cross fade)");
 		// edlfile.EnumerateEvents();
 		// edlfile.PrintOutputformat::File::edl_ptx_minimal);
