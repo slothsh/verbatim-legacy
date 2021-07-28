@@ -177,7 +177,8 @@ namespace vt
                     AccumulateType::total = 0;
                 }
 
-                template<class I> requires(std::is_integral_v<I>) static void add(I i) noexcept
+                template<class I> requires(std::is_integral_v<I>)
+				static void add(I i) noexcept
                 {
                     AccumulateType::total += i; 
                 }
@@ -200,11 +201,6 @@ namespace vt
                 {
                     // Nothing to do here
                 }
-
-                constexpr void ForwardEntries(const auto&&... n)
-                {
-                    // Nothing to do here
-                }
             };
 
             template<class E, class... N>
@@ -218,14 +214,14 @@ namespace vt
                     accumulate_t::add(1);
                 }
 
-                constexpr EntryCollector(const E&& e, const N&&... n) noexcept
+                constexpr EntryCollector(E&& e, N&&... n) noexcept
                     : entry(e),
                     next(std::move(n)...)
                 {
                     accumulate_t::add(1);
                 }
 
-                constexpr auto Recurse(const auto&& fn) const noexcept
+                constexpr auto Recurse(auto&& fn) const noexcept
                 {
                     accumulate_t::add(1);
                     if constexpr(std::is_invocable_v<decltype(this->next.GetSize()), void>) {
@@ -296,7 +292,7 @@ namespace vt
         struct ContentNode
         {
             constexpr ContentNode(const Tns&& n_ns, const Tdata&& n_data,
-                                            const size_t&& n_conditions, const size_t&& n_documents) noexcept
+									const size_t&& n_conditions, const size_t&& n_documents) noexcept
                 : type({ n_ns, n_data }),
                 documents(n_documents),
                 conditions(n_conditions)
