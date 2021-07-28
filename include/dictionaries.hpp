@@ -60,11 +60,15 @@ namespace vt
             constexpr XMLNodeTypes(nselement_t ns, element_t element) noexcept
             {
                 namespace mge = magic_enum;
-                // this->size = mge::enum_count<element_t>() - 2;
+
+                this->nselement_v = ns;
+                this->element_v = element;
+
+                this->size = mge::enum_count<element_t>() - 2;
                 constexpr auto all_entries = mge::enum_entries<element_t>();
 
                 size_t i = 0, j = 0;
-                while (i++ < this->size + 2) // TODO: Make the + 2 into a static constant
+                while (i++ < this->size)
                 {
                     if (all_entries[i].first != element_t::none
                         || all_entries[i].first != mge::enum_value<element_t>(0) // TODO: Make control indexes for enums a static constant
@@ -86,7 +90,7 @@ namespace vt
             nscontent_t                 		nscontent_v 			                                    = nscontent_t::none;
             content_t                   		content_v 				                                    = content_t::none; */
 
-            size_t                        size                                                              = magic_enum::enum_count<element_t>() - 2;
+            size_t                              size                                                        = magic_enum::enum_count<element_t>() - 2;
             entry_t                             entries[magic_enum::enum_count<element_t>() - 2]            = {};
         };
 

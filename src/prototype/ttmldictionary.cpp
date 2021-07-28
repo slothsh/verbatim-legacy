@@ -64,22 +64,6 @@ int main()
     static_assert(enum_integer(AttributeOption::IS_ATTRIBUTE_OPTION) == MAGIC_ENUM_RANGE_MIN);
     static_assert(enum_integer(Content::IS_CONTENT) == MAGIC_ENUM_RANGE_MIN);
 
-    size_t i = enum_count<std::remove_reference_t<Tag>>();
-    int j = 5;
-
-	component_t a(NS::one, Tag::one);
-	attribute_t b(NS::one, Attribute::one);
-	vexpression_t c(NS::one, ValueExpression::one);
-	attroption_t d(NS::one, AttributeOption::one);
-	content_t e(NS::one, Content::one);
-
-	std::cout << j << '\n';
-	std::cout << a.size << '\n';
-	std::cout << b.size << '\n';
-	std::cout << c.size << '\n';
-	std::cout << d.size << '\n';
-	std::cout << e.size << '\n';
-
     std::cout << "\nend\n";
     return 0;
 }
