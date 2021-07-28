@@ -17,7 +17,7 @@
 #include <utility>
 #include <concepts>
 
-// Enumerations for XML nodes ------------------------------------------------------------------------------------------1 of 1-|
+// Enumerations for XML nodes ------------------------------------------------------------------------------------------1 of 5-|
 // ============================================================================================================================|
 
 namespace vt
@@ -71,7 +71,7 @@ namespace vt
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
 
-// Generic types for XML nodes -----------------------------------------------------------------------------------------1 of 3-|
+// Generic types for XML nodes -----------------------------------------------------------------------------------------2 of 5-|
 // ============================================================================================================================|
 
 namespace vt
@@ -143,6 +143,11 @@ namespace vt
         template<enumerable_node E>
         struct NodeID
         {
+            constexpr NodeID(const E& n_id) noexcept
+                : id(n_id),
+                value(magic_enum::enum_name<E>(n_id))
+            {}
+
             E                     id;
             std::string_view      value;
         };
@@ -150,11 +155,16 @@ namespace vt
         template<enumerable_node Tns, enumerable_node Telem>
         struct Node
         {
+            constexpr Node(const Tns& n_ns, const Telem& n_element) noexcept
+                : ns(n_ns),
+                element(n_element)
+            {}
+
             NodeID<Tns>                 ns;
             NodeID<Telem>               element;
         };
 
-// Entry Collector -----------------------------------------------------------------------------------------------------2 of 4-|
+// Entry Collector -----------------------------------------------------------------------------------------------------2 of 5-|
 // ============================================================================================================================|
 
         namespace detail
@@ -162,12 +172,17 @@ namespace vt
             template<class... T>
             struct AccumulateType
             {
-                template<class I> requires(std::is_integral_v<I>) static void add(I i)
+                constexpr AccumulateType() noexcept
+                {
+                    AccumulateType::total = 0;
+                }
+
+                template<class I> requires(std::is_integral_v<I>) static void add(I i) noexcept
                 {
                     AccumulateType::total += i; 
                 }
 
-                static void reset()
+                static void reset() noexcept
                 {
                     AccumulateType::total = 0;
                 }
@@ -186,7 +201,7 @@ namespace vt
                     // Nothing to do here
                 }
 
-                constexpr void ForwardEntries(auto&&... n)
+                constexpr void ForwardEntries(const auto&&... n)
                 {
                     // Nothing to do here
                 }
@@ -203,20 +218,14 @@ namespace vt
                     accumulate_t::add(1);
                 }
 
-                constexpr EntryCollector(E&& e, N&&... n)
+                constexpr EntryCollector(const E&& e, const N&&... n) noexcept
+                    : entry(e),
+                    next(std::move(n)...)
                 {
                     accumulate_t::add(1);
-                    this->ForwardEntries(std::forward<std::remove_reference_t<E&&>>(e),
-                                    std::forward<std::remove_reference_t<N&&>>(n)...);
                 }
 
-                constexpr void ForwardEntries(E&& e, N&&... n)
-                {
-                    this->entry = std::move(e);
-                    if constexpr (sizeof...(n) > 0) this->next.ForwardEntries(std::move(n)...);
-                }
-
-                constexpr auto Recurse(const auto&& fn) const
+                constexpr auto Recurse(const auto&& fn) const noexcept
                 {
                     accumulate_t::add(1);
                     if constexpr(std::is_invocable_v<decltype(this->next.GetSize()), void>) {
@@ -224,7 +233,7 @@ namespace vt
                     }
                 }
 
-                constexpr size_t GetSize() const
+                constexpr size_t GetSize() const noexcept
                 {
                     this->Recurse([]() {
                         accumulate_t::add(1);
@@ -239,12 +248,19 @@ namespace vt
             };
         }
 
-// XML node component templates ----------------------------------------------------------------------------------------3 of 4-|
+// XML node component templates ----------------------------------------------------------------------------------------3 of 5-|
 // ============================================================================================================================|
 
         template<enumerable_ns Tns, enumerable_attropt Topt>
         struct AttributeOptionsNode
         {
+            constexpr AttributeOptionsNode(const Tns&& n_ns, const Topt&& n_attropt,
+                                            const std::string_view&& n_value, const size_t&& n_documents) noexcept
+                : option({ n_ns, n_attropt }),
+                value(n_value),
+                documents(n_documents)
+            {} 
+
             Node<Tns, Topt>             option;
             std::string_view            value;
             size_t                      documents;
@@ -253,6 +269,11 @@ namespace vt
         template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
         struct ValueExpressionNode
         {
+            constexpr ValueExpressionNode(const Tns&& n_ns, const Tvexpr&& n_vexpr, const size_t&& n_documents) noexcept
+                : expression({ n_ns, n_vexpr }),
+                documents(n_documents)
+            {}
+
             Node<Tns, Tvexpr>           expression;
             size_t                      documents;
         };
@@ -274,6 +295,13 @@ namespace vt
         template<enumerable_ns Tns, enumerable_content Tdata>
         struct ContentNode
         {
+            constexpr ContentNode(const Tns&& n_ns, const Tdata&& n_data,
+                                            const size_t&& n_conditions, const size_t&& n_documents) noexcept
+                : type({ n_ns, n_data }),
+                documents(n_documents),
+                conditions(n_conditions)
+            {}
+
             Node<Tns, Tdata>            type;
             size_t                      documents;
             size_t                      conditions;
@@ -290,6 +318,12 @@ namespace vt
                         size_t SizeVexpr, size_t SizeOpt>
             using attribute_t = AttributeNode<Ens, Eattr, Ensvexpr, Evexpr, Ensopt, Eopt, SizeVexpr, SizeOpt>;
 
+            template<enumerable_ns Ens, enumerable_vexpr Evexpr>
+            using vexpression_t = ValueExpressionNode<Ens, Evexpr>;
+
+            template<enumerable_ns Ens, enumerable_attropt Eattrop>
+            using attroption_t = AttributeOptionsNode<Ens, Eattrop>;
+
             template<enumerable_ns Ens, enumerable_content Edata>
             using content_t = ContentNode<Ens, Edata>;
         }
@@ -303,10 +337,6 @@ namespace vt
                     size_t SizeAttr, size_t SizeVexpr, size_t SizeOpt, size_t SizeData>
         struct XMLNode
         {
-
-            // Default Constructor
-            // constexpr XMLNode() = default;
-
             detail::node_t<Tns, Ttag>                                   element;
             detail::attribute_t<Tnsattr, Tattr,
                         Tnsvexpr, Tvexpr,
@@ -316,7 +346,7 @@ namespace vt
             size_t                                                      documents;
         };
 
-// XML node dictionary template ----------------------------------------------------------------------------------------4 of 4-|
+// XML node dictionary template ----------------------------------------------------------------------------------------4 of 5-|
 // ============================================================================================================================|
 
         namespace detail

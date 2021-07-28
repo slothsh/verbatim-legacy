@@ -64,6 +64,34 @@ int main()
     static_assert(enum_integer(AttributeOption::IS_ATTRIBUTE_OPTION) == MAGIC_ENUM_RANGE_MIN);
     static_assert(enum_integer(Content::IS_CONTENT) == MAGIC_ENUM_RANGE_MIN);
 
+    namespace vtd = vt::dictionary::detail;
+
+    // Attributes for protype tag
+    using vexpr_t = vtd::vexpression_t<NS, ValueExpression>;
+    vtd::EntryCollector<vexpr_t, vexpr_t, vexpr_t> vexpr_entries
+        (
+            vexpr_t(NS::two, ValueExpression::one, 0), 
+            vexpr_t(NS::two, ValueExpression::one, 0),
+            vexpr_t(NS::two, ValueExpression::one, 0)
+        );
+
+    // Value expressions for attribute 1 for protype tag
+    using attropt_t = vtd::attroption_t<NS, AttributeOption>;
+    vtd::EntryCollector<attropt_t, attropt_t, attropt_t> attropt_entries
+        (
+            attropt_t(NS::two, AttributeOption::one, "Hello", 0), 
+            attropt_t(NS::two, AttributeOption::one, "Hello", 0),
+            attropt_t(NS::two, AttributeOption::one, "Hello", 0)
+        );
+
+    using content_t = vtd::content_t<NS, Content>;
+    vtd::EntryCollector<content_t, content_t, content_t> data_entries
+        (
+            content_t(NS::two, Content::one, 0, 0), 
+            content_t(NS::two, Content::one, 0, 0),
+            content_t(NS::two, Content::one, 0, 0)
+        );
+
     std::cout << "\nend\n";
     return 0;
 }
