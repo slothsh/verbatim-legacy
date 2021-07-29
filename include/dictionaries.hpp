@@ -42,7 +42,6 @@ namespace vt
             using nselement_t                   = Tnselement;
             using element_t                     = Telement;
             using entry_t                       = std::pair<element_t, std::string_view>;
-            using firstentry_t                  = std::disjunction<>;
 /*             using nsattribute_t               	= Tnsattr;
             using attribute_t                 	= Tattr;
             using nsvalueexpr_t               	= Tnsvexpr;
@@ -87,20 +86,23 @@ namespace vt
         };
 
         // Dictionary type definitions
-        template<enumerable_ns Tns, enumerable_tag Telement>
-        using comp_tag_t = XMLNodeTypes<Tns, Telement>;
+        namespace detail
+        {
+            template<enumerable_ns Tns, enumerable_tag Telement>
+            using comp_tag_t = XMLNodeTypes<Tns, Telement>;
 
-        template<enumerable_ns Tns, enumerable_attr Tattr>
-        using comp_attribute_t = XMLNodeTypes<Tns, Tattr>;
+            template<enumerable_ns Tns, enumerable_attr Tattr>
+            using comp_attribute_t = XMLNodeTypes<Tns, Tattr>;
 
-        template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
-        using comp_vexpression_t = XMLNodeTypes<Tns, Tvexpr>;
+            template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
+            using comp_vexpression_t = XMLNodeTypes<Tns, Tvexpr>;
 
-        template<enumerable_ns Tns, enumerable_attropt Tattropt>
-        using comp_attroption_t = XMLNodeTypes<Tns, Tattropt>;
+            template<enumerable_ns Tns, enumerable_attropt Tattropt>
+            using comp_attroption_t = XMLNodeTypes<Tns, Tattropt>;
 
-        template<enumerable_ns Tns, enumerable_content Tdata>
-        using comp_content_t = XMLNodeTypes<Tns, Tdata>;
+            template<enumerable_ns Tns, enumerable_content Tdata>
+            using comp_content_t = XMLNodeTypes<Tns, Tdata>;
+        }
 
         // Function to create XMLNodeType objects
         template<enumerable_node Tenum>

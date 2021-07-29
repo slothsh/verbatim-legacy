@@ -50,47 +50,73 @@ int main()
     static_assert(MAGIC_ENUM_RANGE_MIN == 0);
     static_assert(MAGIC_ENUM_RANGE_MAX == 256);
 
-    static_assert(enum_integer(NS::none) == MAGIC_ENUM_RANGE_MAX);
-    static_assert(enum_integer(Tag::none) == MAGIC_ENUM_RANGE_MAX);
-    static_assert(enum_integer(Attribute::none) == MAGIC_ENUM_RANGE_MAX);
-    static_assert(enum_integer(ValueExpression::none) == MAGIC_ENUM_RANGE_MAX);
-    static_assert(enum_integer(AttributeOption::none) == MAGIC_ENUM_RANGE_MAX);
-    static_assert(enum_integer(Content::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(mge::enum_integer(NS::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(mge::enum_integer(Tag::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(mge::enum_integer(Attribute::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(mge::enum_integer(StyleExpression::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(mge::enum_integer(TimeExpression::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(mge::enum_integer(AttributeOption::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(mge::enum_integer(GenericData::none) == MAGIC_ENUM_RANGE_MAX);
 
-    static_assert(enum_integer(NS::IS_NS) == MAGIC_ENUM_RANGE_MIN);
-    static_assert(enum_integer(Tag::IS_TAG) == MAGIC_ENUM_RANGE_MIN);
-    static_assert(enum_integer(Attribute::IS_ATTRIBUTE) == MAGIC_ENUM_RANGE_MIN);
-    static_assert(enum_integer(ValueExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
-    static_assert(enum_integer(AttributeOption::IS_ATTRIBUTE_OPTION) == MAGIC_ENUM_RANGE_MIN);
-    static_assert(enum_integer(Content::IS_CONTENT) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(mge::enum_integer(NS::IS_NS) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(mge::enum_integer(Tag::IS_TAG) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(mge::enum_integer(Attribute::IS_ATTRIBUTE) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(mge::enum_integer(StyleExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(mge::enum_integer(TimeExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(mge::enum_integer(AttributeOption::IS_ATTRIBUTE_OPTION) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(mge::enum_integer(GenericData::IS_DATA) == MAGIC_ENUM_RANGE_MIN);
 
-    namespace vtd = vt::dictionary::detail;
+    using attroption_t = AttributeOptionsNode<NS, AttributeOption>;
+    using vexpression_t = ValueExpressionNode<NS, StyleExpression>;
+    using content_data_t = ContentNode<NS, GenericData>;
+    using content_tag_t = ContentNode<NS, Tag>;
 
-    // Attributes for protype tag
-    using vexpr_t = vtd::vexpression_t<NS, ValueExpression>;
-    vtd::EntryCollector<vexpr_t, vexpr_t, vexpr_t> vexpr_entries
-        (
-            vexpr_t(NS::two, ValueExpression::one, 0), 
-            vexpr_t(NS::two, ValueExpression::one, 0),
-            vexpr_t(NS::two, ValueExpression::one, 0)
-        );
+    // Value expressions
+    using vexpr_1_t = XMLNodeTree<vexpression_t, vexpression_t, vexpression_t, vexpression_t>;
+    vexpr_1_t vexpr1 {
+        vexpression_t(NS::tt, StyleExpression::digit, 0),
+        vexpression_t(NS::tt, StyleExpression::digit, 0),
+        vexpression_t(NS::tt, StyleExpression::digit, 0),
+        vexpression_t(NS::tt, StyleExpression::digit, 0)
+    };
 
-    // Value expressions for attribute 1 for protype tag
-    using attropt_t = vtd::attroption_t<NS, AttributeOption>;
-    vtd::EntryCollector<attropt_t, attropt_t, attropt_t> attropt_entries
-        (
-            attropt_t(NS::two, AttributeOption::one, "Hello", 0), 
-            attropt_t(NS::two, AttributeOption::one, "Hello", 0),
-            attropt_t(NS::two, AttributeOption::one, "Hello", 0)
-        );
+    // Attribute options
+    using attropts_1_t = XMLNodeTree<attroption_t, attroption_t, attroption_t, attroption_t>;
+    attropts_1_t attropts1 {
+        attroption_t(NS::tt, AttributeOption::one, "Value", 0),
+        attroption_t(NS::tt, AttributeOption::one, "Value", 0),
+        attroption_t(NS::tt, AttributeOption::one, "Value", 0),
+        attroption_t(NS::tt, AttributeOption::one, "Value", 0)
+    };
 
-    using content_t = vtd::content_t<NS, Content>;
-    vtd::EntryCollector<content_t, content_t, content_t> data_entries
-        (
-            content_t(NS::two, Content::one, 0, 0), 
-            content_t(NS::two, Content::one, 0, 0),
-            content_t(NS::two, Content::one, 0, 0)
-        );
+    // Attribute
+    using attribute_1_t = AttributeNode<NS, Attribute, vexpr_1_t, attropts_1_t>;
+    attribute_1_t attribute_1 {
+        0, 0, 0,
+        NS::tt, Attribute::display,
+        vexpr1, attropts1
+    };
+
+    // Content
+    using content_1_t = XMLNodeTree<content_data_t, content_tag_t>;
+    content_1_t content_1 {
+        content_data_t(NS::tt, GenericData::PCDATA, 0, 0),
+        content_tag_t(NS::tt, Tag::div, 0, 0)
+    };
+
+    // Node
+    using node_1_t = XMLNode<NS, Tag, attribute_1_t, content_1_t>;
+    node_1_t node_1 {
+        0,
+        NS::tt, Tag::div,
+        attribute_1, content_1
+    };
+
+    XMLDictionary
+        <node_1_t>
+    dictionary (
+        node_1
+    );
 
     std::cout << "\nend\n";
     return 0;
