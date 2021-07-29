@@ -223,6 +223,11 @@ namespace vt
             {
                 // Nothing to do here
             }
+
+            constexpr XMLNodeTree(auto& init_list, size_t&& offset = 0)
+            {
+                // Nothing to do here
+            }
         };
 
         template<class Tnode, class... Tnext>
@@ -231,19 +236,19 @@ namespace vt
             using value_t = Tnode;
             using next_t = XMLNodeTree<Tnext...>;
 
-            constexpr XMLNodeTree()
-            {
-                detail::accumulate_t::add(1);
-            }
+            constexpr XMLNodeTree() = delete;
 
-            constexpr XMLNodeTree(Tnode&& v, Tnext&&... n) noexcept
+            constexpr XMLNodeTree(Tnode&& v, Tnext&&... n)
                 : value(v),
                 next(std::move(n)...)
-            {
-                detail::accumulate_t::add(1);
-            }
+            {}
 
-            constexpr auto Recurse(auto&& fn) const noexcept
+            constexpr XMLNodeTree(const std::initializer_list<Tnode>& init_list, size_t&& offset = 0)
+                : value(*(init_list.begin() + offset)),
+                next(std::move(init_list), offset + 1)
+            {}
+
+            constexpr auto Recurse(auto&& fn) const
             {
                 detail::accumulate_t::add(1);
                 if constexpr(std::is_invocable_v<decltype(this->next.GetSize()), void>) {
@@ -286,9 +291,10 @@ namespace vt
             constexpr ValueExpressionNode(Tns&& n_ns, Tvexpr&& n_vexpr, size_t&& n_documents) noexcept
                 : expression({ n_ns, n_vexpr }),
                 documents(n_documents)
-            {}
+            {} 
 
             Node<Tns, Tvexpr>           expression;
+            size_t                      quantifier;
             size_t                      documents;
         };
 
@@ -296,13 +302,13 @@ namespace vt
                     class Nvexpr, class Nopt>
         struct AttributeNode
         {
-            constexpr AttributeNode(size_t&& n_default, size_t&& n_conditions, size_t&& n_documents,
+            constexpr AttributeNode(size_t&& n_default, size_t&& n_quantifiers, size_t&& n_documents,
                                     Tns&& n_ns,  Tattr&& n_attr, const Nvexpr& n_vexpr, const Nopt& n_opt)
                 : attribute({ n_ns, n_attr }),
                 expressions(n_vexpr),
                 options(n_opt),
                 _default(n_default),
-                conditions(n_conditions),
+                quantifiers(n_quantifiers),
                 documents(n_documents)
             {}
 
@@ -310,7 +316,7 @@ namespace vt
             Nvexpr                      expressions;
             Nopt       	                options;
             size_t                      _default;
-            size_t                      conditions;
+            size_t                      quantifiers;
             size_t                      documents;
         };
 
@@ -318,14 +324,14 @@ namespace vt
         struct ContentNode
         {
             constexpr ContentNode(Tns&& n_ns, Tdata&& n_data,
-									size_t&& n_conditions, size_t&& n_documents) noexcept
+									size_t&& n_quantifiers, size_t&& n_documents) noexcept
                 : type({ n_ns, n_data }),
                 documents(n_documents),
-                conditions(n_conditions)
+                quantifiers(n_quantifiers)
             {}
 
             Node<Tns, Tdata>            type;
-            size_t                      conditions;
+            size_t                      quantifiers;
             size_t                      documents;
         };
 

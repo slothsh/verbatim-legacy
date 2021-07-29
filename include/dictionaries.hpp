@@ -19,39 +19,113 @@
 // Project headers
 #include "node.hpp"
 
-// Dictionary definitions ----------------------------------------------------------------------------------------------1 of 1-|
+// Master TTML definition function -------------------------------------------------------------------------------------1 of 1-|
 // ============================================================================================================================|
 
 namespace vt
 {
     namespace dictionary
     {
-        namespace detail
+        namespace contstants
         {
-            // Nothing to do here, yet...
+            // Constants for dictionary entrt and document configurations
+            static constexpr 
         }
 
-        template<enumerable_ns Tnselement, enumerable_element Telement/* ,
-                    enumerable_ns Tnsattr, enumerable_attr Tattr,
-                    enumerable_ns Tnsvexpr, enumerable_vexpr Tvexpr,
-                    enumerable_ns Tnsattropt, enumerable_attropt Tattropt,
-                    enumerable_ns Tnsdata, enumerable_content Tdata */>
-        struct XMLNodeTypes
+        enum class NodeCondition
+        {
+            IS_CONDITION            = VT_ENUM_ID,
+            kleene_asterisk         = (1 << 0),
+            kleene_plus             = (1 << 1),
+            explicit_value          = (1 << 16),
+            none                    = VT_ENUM_NONE
+        };
+
+        static constexpr auto CreateTTMLDictionary()
+        {
+            // Generic alias types
+            using attroption_t          = AttributeOptionsNode<NS, AttributeOption>;
+            using vexpression_t         = ValueExpressionNode<NS, StyleExpression>;
+            using content_data_t        = ContentNode<NS, GenericData>;
+            using content_tag_t         = ContentNode<NS, Tag>;
+
+            // Naming format:
+            // <ns:tag/> [nsentry:entry]
+            // type_nstag_tag_nsentry_entry(_t | _init)
+
+            // SECTION: <tt:tt/> ---------------------------------------------------------------------------------|
+            // ===================================================================================================|
+
+            // TODO: document & conditions member variable constants
+            // Value expressions for <tt:tt/> [tts:extent]
+            std::initializer_list<vexpression_t> vexpr_tt_tt_tts_extent_init 
+            { 
+                vexpression_t( NS::tt,          StyleExpression::digit,         0),
+                vexpression_t( NS::tts,         StyleExpression::color,         0),
+                vexpression_t( NS::ttp,         StyleExpression::namedColor,    0),
+                vexpression_t( NS::ttm,         StyleExpression::duration,      0)
+            };
+            using vexpr_tt_tt_tts_extent_t = XMLNodeTree<vexpression_t, vexpression_t, vexpression_t, vexpression_t>;
+            vexpr_tt_tt_tts_extent_t vexpr_tt_tt_tts_extent { vexpr_tt_tt_tts_extent_init };
+
+            // Attribute options for <tt:tt/> [tts:extent]
+            std::initializer_list<attroption_t> list2 { 
+                attroption_t(NS::tt, AttributeOption::one, "Value", 0),
+                attroption_t(NS::tt, AttributeOption::one, "Value", 0),
+                attroption_t(NS::tt, AttributeOption::one, "Value", 0),
+                attroption_t(NS::tt, AttributeOption::one, "Value", 0)
+            };
+            using attropts_1_t = XMLNodeTree<attroption_t, attroption_t, attroption_t, attroption_t>;
+            attropts_1_t attropts1 { list2 };
+
+            // Attribute node for <tt:tt/> [tts:extent]
+            using attribute_1_t = AttributeNode<NS, Attribute, vexpr_tt_tt_tts_extent_t, attropts_1_t>;
+            attribute_1_t attribute1 {
+                0, 0, 0,
+                NS::tt, Attribute::display,
+                vexpr1, attropts1
+            };
+
+            // Attribute tree for <tt:tt/>
+            using attributetree_1_t = XMLNodeTree<attribute_1_t>;
+            attributetree_1_t attributetree1 {
+                attribute1
+            };
+
+            // Content tree
+            using content_1_t = XMLNodeTree<content_data_t, content_tag_t>;
+            content_1_t contenttree1 {
+                content_data_t(NS::tt, GenericData::PCDATA, 0, 0),
+                content_tag_t(NS::tt, Tag::div, 0, 0)
+            };
+
+            // Node
+            using node_1_t = XMLNode<NS, Tag, attributetree_1_t, content_1_t>;
+            node_1_t node_1 {
+                0,
+                NS::tt, Tag::div,
+                attributetree1, contenttree1
+            };
+
+            // ---------------------------------------------------------------------------------------------------|
+
+            return node_1;
+        }
+
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+// Dictionary helpers ---------------------------------------------------------------------------------------------------1 of 1-|
+// ============================================================================================================================|
+
+        template<enumerable_ns Tnselement, enumerable_element Telement>
+        struct EnumerationCollector
         {
             
             using nselement_t                   = Tnselement;
             using element_t                     = Telement;
             using entry_t                       = std::pair<element_t, std::string_view>;
-/*             using nsattribute_t               	= Tnsattr;
-            using attribute_t                 	= Tattr;
-            using nsvalueexpr_t               	= Tnsvexpr;
-            using valueexpr_t                 	= Tvexpr;
-            using nsattroption_t              	= Tnsattropt;
-            using attroption_t                	= Tattropt;
-            using nscontent_t                 	= Tnsdata;
-            using content_t                   	= Tdata; */
 
-            constexpr XMLNodeTypes() noexcept
+            constexpr EnumerationCollector() noexcept
             {
                 namespace mge = magic_enum;
 
@@ -70,57 +144,9 @@ namespace vt
                 }
             }
 
-            // nselement_t                     	nselement_v 			                                    = nselement_t::none;
-            // element_t                       	element_v 				                                    = element_t::none;
-/*             nsattribute_t               		nsattribute_v 			                                    = nsattribute_t::none;
-            attribute_t                 		attribute_v 			                                    = attribute_t::none;
-            nsvalueexpr_t               		nsvalueexpr_v 			                                    = nsvalueexpr_t::none;
-            valueexpr_t                 		valueexpr_v 			                                    = valueexpr_t::none;
-            nsattroption_t              		nsattroption_v 			                                    = nsattroption_t::none;
-            attroption_t                		attroption_v 			                                    = attroption_t::none;
-            nscontent_t                 		nscontent_v 			                                    = nscontent_t::none;
-            content_t                   		content_v 				                                    = content_t::none; */
-
             size_t                              size                                                        = magic_enum::enum_count<element_t>() - 2;
             entry_t                             entries[magic_enum::enum_count<element_t>() - 2]            = {};
         };
-
-        // Dictionary type definitions
-        namespace detail
-        {
-            template<enumerable_ns Tns, enumerable_tag Telement>
-            using comp_tag_t = XMLNodeTypes<Tns, Telement>;
-
-            template<enumerable_ns Tns, enumerable_attr Tattr>
-            using comp_attribute_t = XMLNodeTypes<Tns, Tattr>;
-
-            template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
-            using comp_vexpression_t = XMLNodeTypes<Tns, Tvexpr>;
-
-            template<enumerable_ns Tns, enumerable_attropt Tattropt>
-            using comp_attroption_t = XMLNodeTypes<Tns, Tattropt>;
-
-            template<enumerable_ns Tns, enumerable_content Tdata>
-            using comp_content_t = XMLNodeTypes<Tns, Tdata>;
-        }
-
-        // Function to create XMLNodeType objects
-        template<enumerable_node Tenum>
-        constexpr inline auto CreateAttributeNode(Tenum e) noexcept
-        {
-            namespace mge = magic_enum;
-            // constexpr auto mge::enum_entries<Tenum>(e);
-
-        }
-
-        // Helper function to create XML nodes for static dictionaries
-        template<class Fn> requires(std::is_invocable_v<Fn>)
-        constexpr void CreateXMLNode(const Fn&& fn)
-        {
-            fn();
-        }
-
-        // constexpr inline auto MakeTTMLNodes();
     }
 }
 
