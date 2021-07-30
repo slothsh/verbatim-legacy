@@ -51,31 +51,25 @@ namespace vt
             none = VT_ENUM_NONE
         };
 
-        enum class StyleExpression : size_t
+        enum class ValueExpression : size_t
         {
             IS_VALUE_EXPRESSION = VT_ENUM_ID,
-            alpha, color, digit, duration, familyName, genericFamilyName, hexDigit, integer, length, namedColor, quotedString, string,
-            none = VT_ENUM_NONE
-        };
-
-        enum class TimeExpression : size_t
-        {
-            IS_VALUE_EXPRESSION = VT_ENUM_ID,
-            timeExpression,
+            alpha, color, digit, duration, familyName, genericFamilyName, hexDigit, integer, length, namedColor, quotedString, string, timeExpression,
+            automatic, id, string_option,
             none = VT_ENUM_NONE
         };
 
         enum class AttributeOption : size_t
         {
             IS_ATTRIBUTE_OPTION = VT_ENUM_ID,
-            one, two, three, four,
+            string,
             none = VT_ENUM_NONE
         };
 
         enum class GenericData : size_t
         {
             IS_DATA = VT_ENUM_ID,
-            CDATA, PCDATA,
+            CDATA, PCDATA, IMPLIED,
             none = VT_ENUM_NONE
         };
     }
@@ -288,12 +282,15 @@ namespace vt
         template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
         struct ValueExpressionNode
         {
-            constexpr ValueExpressionNode(Tns&& n_ns, Tvexpr&& n_vexpr, size_t&& n_documents) noexcept
+            constexpr ValueExpressionNode(Tns&& n_ns, Tvexpr&& n_vexpr, std::string_view&& n_value, size_t&& n_quantifier, size_t&& n_documents) noexcept
                 : expression({ n_ns, n_vexpr }),
+                value(n_value),
+                quantifier(n_quantifier),
                 documents(n_documents)
             {} 
 
             Node<Tns, Tvexpr>           expression;
+            std::string_view            value;
             size_t                      quantifier;
             size_t                      documents;
         };
@@ -302,21 +299,21 @@ namespace vt
                     class Nvexpr, class Nopt>
         struct AttributeNode
         {
-            constexpr AttributeNode(size_t&& n_default, size_t&& n_quantifiers, size_t&& n_documents,
+            constexpr AttributeNode(size_t&& n_condition, size_t&& n_quantifier, size_t&& n_documents,
                                     Tns&& n_ns,  Tattr&& n_attr, const Nvexpr& n_vexpr, const Nopt& n_opt)
                 : attribute({ n_ns, n_attr }),
                 expressions(n_vexpr),
                 options(n_opt),
-                _default(n_default),
-                quantifiers(n_quantifiers),
+                condition(n_condition),
+                quantifier(n_quantifier),
                 documents(n_documents)
             {}
 
             Node<Tns, Tattr>            attribute;
             Nvexpr                      expressions;
             Nopt       	                options;
-            size_t                      _default;
-            size_t                      quantifiers;
+            size_t                      condition;
+            size_t                      quantifier;
             size_t                      documents;
         };
 
@@ -324,14 +321,14 @@ namespace vt
         struct ContentNode
         {
             constexpr ContentNode(Tns&& n_ns, Tdata&& n_data,
-									size_t&& n_quantifiers, size_t&& n_documents) noexcept
+									size_t&& n_quantifier, size_t&& n_documents) noexcept
                 : type({ n_ns, n_data }),
                 documents(n_documents),
-                quantifiers(n_quantifiers)
+                quantifier(n_quantifier)
             {}
 
             Node<Tns, Tdata>            type;
-            size_t                      quantifiers;
+            size_t                      quantifier;
             size_t                      documents;
         };
 
