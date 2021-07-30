@@ -237,8 +237,13 @@ namespace vt
                 next(std::move(n)...)
             {}
 
-            constexpr XMLNodeTree(const std::initializer_list<Tnode>& init_list, size_t&& offset = 0)
+            constexpr XMLNodeTree(const std::initializer_list<value_t>& init_list, size_t&& offset = 0)
                 : value(*(init_list.begin() + offset)),
+                next(std::move(init_list), offset + 1)
+            {}
+
+            constexpr XMLNodeTree(const std::initializer_list<std::initializer_list<value_t>>& init_list, size_t&& offset = 0)
+                : value(*(*(init_list.begin() + offset)).begin()),
                 next(std::move(init_list), offset + 1)
             {}
 
@@ -282,11 +287,20 @@ namespace vt
         template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
         struct ValueExpressionNode
         {
+            using init_t = ValueExpressionNode<Tns, Tvexpr>;
+
             constexpr ValueExpressionNode(Tns&& n_ns, Tvexpr&& n_vexpr, std::string_view&& n_value, size_t&& n_quantifier, size_t&& n_documents) noexcept
                 : expression({ n_ns, n_vexpr }),
                 value(n_value),
                 quantifier(n_quantifier),
                 documents(n_documents)
+            {}
+
+            constexpr ValueExpressionNode(const std::initializer_list<init_t>& init_list) noexcept
+                : expression({ init_list.begin(), init_list.begin() + 1 }),
+                value(init_list.begin() + 2),
+                quantifier(init_list.begin() + 3),
+                documents(init_list.begin() + 4)
             {} 
 
             Node<Tns, Tvexpr>           expression;

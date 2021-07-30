@@ -69,6 +69,22 @@ namespace vt
             };
         }
 
+        namespace detail
+        {
+            struct NodeTypes
+            {
+                using attroption_t          = AttributeOptionsNode<NS, AttributeOption>;
+                using vexpression_t         = ValueExpressionNode<NS, ValueExpression>;
+                using content_data_t        = ContentNode<NS, GenericData>;
+                using content_tag_t         = ContentNode<NS, Tag>;
+            };
+        }
+
+        template<class Texpr, class... Trest> // TODO: Concept for XMLNodeTree
+        constexpr inline auto CreateValueExpressionNode(std::initializer_list<std::initializer_list<Texpr>>&& expressions)
+        {
+            return XMLNodeTree<Texpr, Trest...>{expressions};
+        }
 
         static constexpr auto CreateTTMLDictionary()
         {
@@ -100,6 +116,13 @@ namespace vt
             // TODO: value expression regex helper functions
 
             // <tt:tt/> [tts:extent] ----------------------------------------------- Value expressions -|
+
+            // constexpr auto vexpr_tt_tt_tts_extent
+            // = CreateValueExpressionNode <vexpression_t, vexpression_t>
+            // ({
+            //     {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }},
+            //     {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+            // });
 
             std::initializer_list<vexpression_t> vexpr_tt_tt_tts_extent_init 
             { 
@@ -267,7 +290,8 @@ namespace vt
             
             // <tt:tt/> --------------------------------------------------------------- Attribute Tree -|
 
-            using attr_tt_tt_t                                    = XMLNodeTree<attr_tt_tt_tts_extent_t>;
+            using attr_tt_tt_t                 = XMLNodeTree<attr_tt_tt_tts_extent_t, attr_tt_tt_xml_id_t,
+                                                          attr_tt_tt_xml_lang_t, attr_tt_tt_xml_space_t>;
             attr_tt_tt_t attr_tt_tt
             {
                 attr_tt_tt_tts_extent,
