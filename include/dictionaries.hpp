@@ -117,19 +117,27 @@ namespace vt
 
             // <tt:tt/> [tts:extent] ----------------------------------------------- Value expressions -|
 
-            // constexpr auto vexpr_tt_tt_tts_extent
-            // = CreateValueExpressionNode <vexpression_t, vexpression_t>
-            // ({
-            //     {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }},
-            //     {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
-            // });
+            using vexpr_tt_tt_tts_extent_t                    = XMLNodeTree<vexpression_t, vexpression_t,
+							  vexpression_t, vexpression_t, vexpression_t, vexpression_t, vexpression_t>;
+            constexpr vexpr_tt_tt_tts_extent_t vexpr_tt_tt_tts_extent
+            = CreateValueExpressionNode 	 <vexpression_t, vexpression_t, vexpression_t, vexpression_t, 
+															 vexpression_t, vexpression_t, vexpression_t>
+            ({
+                {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }},
+                {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }},
+                {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }},
+                {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }},
+                {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }},
+                {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }},
+                {{ NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+            });
 
-            std::initializer_list<vexpression_t> vexpr_tt_tt_tts_extent_init 
-            { 
-                vexpression_t( NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) ),
-            };
-            using vexpr_tt_tt_tts_extent_t                                  = XMLNodeTree<vexpression_t>;
-            vexpr_tt_tt_tts_extent_t vexpr_tt_tt_tts_extent              { vexpr_tt_tt_tts_extent_init };
+            // std::initializer_list<vexpression_t> vexpr_tt_tt_tts_extent_init 
+			// { 
+            //     vexpression_t( NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) ),
+            //     vexpression_t( NS::none,          ValueExpression::string,        ":<auto>|<length> <length>",        0,         enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) )
+            // };
+            // vexpr_tt_tt_tts_extent_t vexpr_tt_tt_tts_extent              { vexpr_tt_tt_tts_extent_init };
 
             // -----------------------------------------------------------------------------------------|
 
@@ -138,11 +146,11 @@ namespace vt
             // <tt:tt/> [tts:extent] ----------------------------------------------- Attribute Options -|
             
             // TODO: Is AttributeNode needed?
+            using attropt_tt_tt_tts_extent_t                                 = XMLNodeTree<attroption_t>;
             std::initializer_list<attroption_t> attropt_tt_tt_tts_extent_init
             { 
                 attroption_t( NS::tt,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) )
             };
-            using attropt_tt_tt_tts_extent_t                                 = XMLNodeTree<attroption_t>;
             attropt_tt_tt_tts_extent_t attropt_tt_tt_tts_extent        { attropt_tt_tt_tts_extent_init };
 
             // -----------------------------------------------------------------------------------------|
@@ -166,11 +174,11 @@ namespace vt
 
             // <tt:tt/> [xml:id] --------------------------------------------------- Value expressions -|
 
+            using vexpr_tt_tt_xml_id_t                                      = XMLNodeTree<vexpression_t>;
             std::initializer_list<vexpression_t> vexpr_tt_tt_xml_id_init 
             { 
                 vexpression_t( NS::none,          ValueExpression::string,        "<id>",        0,                             enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) ),
             };
-            using vexpr_tt_tt_xml_id_t                                      = XMLNodeTree<vexpression_t>;
             vexpr_tt_tt_xml_id_t vexpr_tt_tt_xml_id                          { vexpr_tt_tt_xml_id_init };
 
             // -----------------------------------------------------------------------------------------|
@@ -180,11 +188,11 @@ namespace vt
             // <tt:tt/> [xml:id] --------------------------------------------------- Attribute Options -|
             
             // TODO: Is AttributeNode needed?
+            using attropt_tt_tt_xml_id_t                                     = XMLNodeTree<attroption_t>;
             std::initializer_list<attroption_t> attropt_tt_tt_xml_id_init
             { 
                 attroption_t( NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) )
             };
-            using attropt_tt_tt_xml_id_t                                     = XMLNodeTree<attroption_t>;
             attropt_tt_tt_xml_id_t attropt_tt_tt_xml_id                    { attropt_tt_tt_xml_id_init };
 
             // -----------------------------------------------------------------------------------------|
@@ -207,11 +215,11 @@ namespace vt
 
             // <tt:tt/> [xml:lang] ------------------------------------------------- Value expressions -|
 
+            using vexpr_tt_tt_xml_lang_t                                    = XMLNodeTree<vexpression_t>;
             std::initializer_list<vexpression_t> vexpr_tt_tt_xml_lang_init 
             { 
                 vexpression_t( NS::none,          ValueExpression::string,        "<language>",        0,           enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) ),
             };
-            using vexpr_tt_tt_xml_lang_t                                    = XMLNodeTree<vexpression_t>;
             vexpr_tt_tt_xml_lang_t vexpr_tt_tt_xml_lang                    { vexpr_tt_tt_xml_lang_init };
 
             // -----------------------------------------------------------------------------------------|
@@ -221,11 +229,11 @@ namespace vt
             // <tt:tt/> [xml:lang] ------------------------------------------------- Attribute Options -|
             
             // TODO: Is AttributeNode needed?
+            using attropt_tt_tt_xml_lang_t                                   = XMLNodeTree<attroption_t>;
             std::initializer_list<attroption_t> attropt_tt_tt_xml_lang_init
             { 
                 attroption_t( NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) )
             };
-            using attropt_tt_tt_xml_lang_t                                   = XMLNodeTree<attroption_t>;
             attropt_tt_tt_xml_lang_t attropt_tt_tt_xml_lang              { attropt_tt_tt_xml_lang_init };
 
             // -----------------------------------------------------------------------------------------|
@@ -248,11 +256,11 @@ namespace vt
 
             // <tt:tt/> [xml:space] ------------------------------------------------ Value expressions -|
 
+            using vexpr_tt_tt_xml_space_t                                   = XMLNodeTree<vexpression_t>;
             std::initializer_list<vexpression_t> vexpr_tt_tt_xml_space_init 
             { 
                 vexpression_t( NS::none,          ValueExpression::string_option,        ":default|preserve",        0,           enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) ),
             };
-            using vexpr_tt_tt_xml_space_t                                   = XMLNodeTree<vexpression_t>;
             vexpr_tt_tt_xml_space_t vexpr_tt_tt_xml_space                 { vexpr_tt_tt_xml_space_init };
 
             // -----------------------------------------------------------------------------------------|
@@ -262,11 +270,11 @@ namespace vt
             // <tt:tt/> [xml:space] ------------------------------------------------ Attribute Options -|
             
             // TODO: Is AttributeNode needed?
+            using attropt_tt_tt_xml_space_t                                  = XMLNodeTree<attroption_t>;
             std::initializer_list<attroption_t> attropt_tt_tt_xml_space_init
             { 
                 attroption_t( NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) )
             };
-            using attropt_tt_tt_xml_space_t                                  = XMLNodeTree<attroption_t>;
             attropt_tt_tt_xml_space_t attropt_tt_tt_xml_space           { attropt_tt_tt_xml_space_init };
 
             // -----------------------------------------------------------------------------------------|
@@ -280,7 +288,7 @@ namespace vt
                 enum_integer(cnd::none),
                 enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::one),
                 enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1),
-                NS::xml, Attribute::id,
+                NS::xml, Attribute::space,
                 vexpr_tt_tt_xml_space, attropt_tt_tt_xml_space
             };
 
@@ -290,7 +298,7 @@ namespace vt
             
             // <tt:tt/> --------------------------------------------------------------- Attribute Tree -|
 
-            using attr_tt_tt_t                 = XMLNodeTree<attr_tt_tt_tts_extent_t, attr_tt_tt_xml_id_t,
+            using attr_tt_tt_t                = XMLNodeTree<attr_tt_tt_tts_extent_t, attr_tt_tt_xml_id_t,
                                                           attr_tt_tt_xml_lang_t, attr_tt_tt_xml_space_t>;
             attr_tt_tt_t attr_tt_tt
             {

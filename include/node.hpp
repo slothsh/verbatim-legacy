@@ -232,7 +232,7 @@ namespace vt
 
             constexpr XMLNodeTree() = delete;
 
-            constexpr XMLNodeTree(Tnode&& v, Tnext&&... n)
+            constexpr XMLNodeTree(const Tnode& v, const Tnext&... n)
                 : value(v),
                 next(std::move(n)...)
             {}
