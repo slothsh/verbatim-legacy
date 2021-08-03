@@ -24,17 +24,14 @@
 // Master TTML definition function ----------------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
 
-namespace vt
+namespace vt::dictionary
 {
-    namespace dictionary
+    static constexpr auto CreateTTMLDictionary()
     {
-        static constexpr auto CreateTTMLDictionary()
-        {
-            constexpr auto node_tt_tt = detail::CreateTTMLNode<NS::tt, Tag::tt>();
-            constexpr auto node_tt_head = detail::CreateTTMLNode<NS::tt, Tag::head>();
+        constexpr auto node_tt_tt = detail::CreateTTMLNode<NS::tt, Tag::tt>();
+        constexpr auto node_tt_head = detail::CreateTTMLNode<NS::tt, Tag::head>();
 
-            return node_tt_tt;
-        }
+        return node_tt_tt;
     }
 }
 
@@ -43,41 +40,38 @@ namespace vt
 // Dictionary helpers ------------------------------------------------------------------------------------------------ 1 of 1 -|
 // ============================================================================================================================|
 
-namespace vt
+namespace vt::dictionary
 {
-    namespace dictionary
+    template<enumerable_ns Tnselement, enumerable_element Telement>
+    struct EnumerationCollector
     {
-        template<enumerable_ns Tnselement, enumerable_element Telement>
-        struct EnumerationCollector
+        
+        using nselement_t                   = Tnselement;
+        using element_t                     = Telement;
+        using entry_t                       = std::pair<element_t, std::string_view>;
+
+        constexpr EnumerationCollector() noexcept
         {
-            
-            using nselement_t                   = Tnselement;
-            using element_t                     = Telement;
-            using entry_t                       = std::pair<element_t, std::string_view>;
+            namespace mge = magic_enum;
 
-            constexpr EnumerationCollector() noexcept
+            this->size = mge::enum_count<element_t>() - 2;
+            constexpr auto all_entries = mge::enum_entries<element_t>();
+
+            size_t i = 0, j = 0;
+            while (i++ < this->size)
             {
-                namespace mge = magic_enum;
-
-                this->size = mge::enum_count<element_t>() - 2;
-                constexpr auto all_entries = mge::enum_entries<element_t>();
-
-                size_t i = 0, j = 0;
-                while (i++ < this->size)
+                if (all_entries[i].first != element_t::none
+                    || all_entries[i].first != mge::enum_value<element_t>(0) // TODO: Make control indexes for enums a static constant
+                    && j < this->size)
                 {
-                    if (all_entries[i].first != element_t::none
-                        || all_entries[i].first != mge::enum_value<element_t>(0) // TODO: Make control indexes for enums a static constant
-                        && j < this->size)
-                    {
-                        this->entries[j++] = all_entries[i];
-                    }
+                    this->entries[j++] = all_entries[i];
                 }
             }
+        }
 
-            size_t                              size                                                        = magic_enum::enum_count<element_t>() - 2;
-            entry_t                             entries[magic_enum::enum_count<element_t>() - 2]            = {};
-        };
-    }
+        size_t                              size                                                        = magic_enum::enum_count<element_t>() - 2;
+        entry_t                             entries[magic_enum::enum_count<element_t>() - 2]            = {};
+    };
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
