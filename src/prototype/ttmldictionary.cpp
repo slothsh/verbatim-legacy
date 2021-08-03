@@ -64,7 +64,7 @@ int main()
     static_assert(mge::enum_integer(AttributeOption::IS_ATTRIBUTE_OPTION) == MAGIC_ENUM_RANGE_MIN);
     static_assert(mge::enum_integer(GenericData::IS_DATA) == MAGIC_ENUM_RANGE_MIN);
 
-    auto node = CreateTTMLDictionary();
+    constexpr auto node = CreateTTMLDictionary();
 
     std::cout << "\nend\n";
     return 0;

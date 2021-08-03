@@ -73,6 +73,49 @@ namespace vt
             none = VT_ENUM_NONE
         };
     }
+
+    namespace constants
+    {
+        // Constants for dictionary entrt and document configurations
+        enum class TTMLDocument : size_t
+        {
+            IS_DOCUMENT_TYPE        = VT_ENUM_ID,
+            w3c_ttml1               = (1 << 0),
+            w3c_ttml2               = (1 << 1),
+            w3c_ttml3               = (1 << 2),
+            ebu_ttml1               = (1 << 3),
+            smpte_ttml1             = (1 << 4),
+            w3c_imsc1               = (1 << 5),
+            w3c_imsc2               = (1 << 6),
+            none                    = VT_ENUM_NONE
+        };
+
+        enum class NodeCondition  : size_t
+        {
+            IS_CONDITION            = VT_ENUM_ID,
+            required                = (1 << 0),
+            none                    = VT_ENUM_NONE
+        };
+
+        enum class NodeQuantifier : size_t
+        {
+            IS_QUANTIFIER           = VT_ENUM_ID,
+            kleene_asterisk         = (1 << 0),
+            kleene_plus             = (1 << 1),
+            kleene_question         = (1 << 2),
+            kleene_one              = (1 << 3),
+            kleene_ranged           = (1 << 16),
+            none                    = VT_ENUM_NONE
+        };
+
+        enum ByteGroup : size_t
+        {
+            one             = 0,
+            two             = 8,
+            three           = 16,
+            four            = 32  
+        };
+    }
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -377,6 +420,15 @@ namespace vt
         {
             template<size_t E, class... Rest>
             struct GetHelper;
+
+            template<NS Tns = NS::none, Tag Ttag = Tag::none>
+            constexpr inline auto CreateTTMLNode() { return; }
+
+            template<class Texpr, class... Trest> // TODO: Concept for XMLNodeTree
+            constexpr inline auto CreateValueExpressionNode(std::initializer_list<std::initializer_list<Texpr>>&& expressions)
+            {
+                return XMLNodeTree<Texpr, Trest...>{expressions};
+            }
         }
 
         template<class... E>
