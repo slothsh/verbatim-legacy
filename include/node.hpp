@@ -52,7 +52,7 @@ namespace vt::dictionary
     enum class ValueExpression : size_t
     {
         IS_VALUE_EXPRESSION = VT_ENUM_ID,
-        alpha, color, digit, duration, familyName, genericFamilyName, hexDigit, integer, length, namedColor, quotedString, string, timeExpression,
+        undefined, alpha, color, digit, duration, familyName, genericFamilyName, hexDigit, integer, length, namedColor, quotedString, string, timeExpression,
         automatic, id, string_option,
         none = VT_ENUM_NONE
     };
@@ -60,14 +60,14 @@ namespace vt::dictionary
     enum class AttributeOption : size_t
     {
         IS_ATTRIBUTE_OPTION = VT_ENUM_ID,
-        string,
+        undefined, string,
         none = VT_ENUM_NONE
     };
 
     enum class GenericData : size_t
     {
         IS_DATA = VT_ENUM_ID,
-        CDATA, PCDATA, IMPLIED,
+        undefined, CDATA, PCDATA, IMPLIED,
         none = VT_ENUM_NONE
     };
 }
@@ -426,7 +426,7 @@ namespace vt::dictionary
         constexpr inline auto CreateTTMLNode() { static_assert(Tns != NS::none && Ttag != Tag::none, "Invalid TTMLNode type\n"); }
 
         template<class Texpr, class... Trest> // TODO: Concept for XMLNodeTree
-        constexpr inline auto CreateValueExpressionNode(std::initializer_list<std::initializer_list<Texpr>>&& expressions)
+        constexpr inline auto CreateXMLNodeTree(std::initializer_list<std::initializer_list<Texpr>>&& expressions)
         {
             return XMLNodeTree<Texpr, Trest...>{expressions};
         }

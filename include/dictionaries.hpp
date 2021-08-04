@@ -18,8 +18,7 @@
 
 // Project headers
 #include "node.hpp"
-#include "./dictionaries/node_tt_tt.hpp"
-#include "./dictionaries/node_tt_head.hpp"
+#include "./dictionaries/nodes.hpp"
 
 // Master TTML definition function ----------------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
