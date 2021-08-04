@@ -70,6 +70,16 @@ namespace vt::dictionary
         undefined, CDATA, PCDATA, IMPLIED,
         none = VT_ENUM_NONE
     };
+
+    enum AttributeGroup : size_t
+    {
+        IS_GROUP        = VT_ENUM_ID,
+        xml_core,
+        tt_core, tt_core_styling, tt_core_layout, tt_core_timing,
+        tt_parameter, tt_metadata, tt_styling,
+        tt_class_animation, tt_class_block, tt_class_inline, tt_class_metadata, tt_class_parameters,
+        none            = VT_ENUM_NONE  
+    };
 }
 
 namespace constants

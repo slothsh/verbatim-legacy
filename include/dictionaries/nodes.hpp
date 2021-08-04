@@ -82,111 +82,28 @@ namespace vt::dictionary::detail
 
         // -----------------------------------------------------------------------------------------|
 
+        // TT Parameter Attributes ----------------------------------------------- Attribute Group -|
 
-
-        // <tt:tt/> [ttp:cellResolution] --------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_cellResolution
-        = CreateAttributeNode<NS::ttp, Attribute::cellResolution> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:clockMode] -------------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_clockMode
-        = CreateAttributeNode<NS::ttp, Attribute::clockMode> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:dropMode] --------------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_dropMode
-        = CreateAttributeNode<NS::ttp, Attribute::dropMode> ();
+        const auto& [
+            attr_tt_tt_ttp_cellResolution,
+            attr_tt_tt_ttp_clockMode,
+            attr_tt_tt_ttp_dropMode,
+            attr_tt_tt_ttp_frameRate,
+            attr_tt_tt_ttp_frameRateMultiplier,
+            attr_tt_tt_ttp_markerMode,
+            attr_tt_tt_ttp_pixelAspectRatio,
+            attr_tt_tt_ttp_profile,
+            attr_tt_tt_ttp_subFrameRate,
+            attr_tt_tt_ttp_tickRate,
+            attr_tt_tt_ttp_timeBase
+        ] = CreateAttributeGroup<AttributeGroup::tt_parameter>();
 
         // -----------------------------------------------------------------------------------------|
 
-
-
-        // <tt:tt/> [ttp:frameRate] -------------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_frameRate
-        = CreateAttributeNode<NS::ttp, Attribute::frameRate> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:frameRateMultiplier] ---------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_frameRateMultiplier
-        = CreateAttributeNode<NS::ttp, Attribute::frameRateMultiplier> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:markerMode] ------------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_markerMode
-        = CreateAttributeNode<NS::ttp, Attribute::markerMode> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:pixelAspectRatio] ------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_pixelAspectRatio
-        = CreateAttributeNode<NS::ttp, Attribute::pixelAspectRatio> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:profile] ---------------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_profile
-        = CreateAttributeNode<NS::ttp, Attribute::profile> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:subFrameRate] ----------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_subFrameRate
-        = CreateAttributeNode<NS::ttp, Attribute::subFrameRate> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:tickRate] --------------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_tickRate
-        = CreateAttributeNode<NS::ttp, Attribute::tickRate> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-
-        // <tt:tt/> [ttp:timeBase] --------------------------------------------- Value expressions -|
-
-        constexpr auto attr_tt_tt_ttp_timeBase
-        = CreateAttributeNode<NS::ttp, Attribute::timeBase> ();
-
-        // -----------------------------------------------------------------------------------------|
-
-
-        
         // <tt:tt/> --------------------------------------------------------------- Attribute Tree -|
 
         using attr_tt_tt_t = XMLNodeTree <
-            // Default
+            // Explicitly Declared
             decltype(attr_tt_tt_tts_extent),
             decltype(attr_tt_tt_xml_id),
             decltype(attr_tt_tt_xml_lang),
