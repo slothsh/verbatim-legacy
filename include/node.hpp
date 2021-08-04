@@ -53,7 +53,7 @@ namespace vt::dictionary
     {
         IS_VALUE_EXPRESSION = VT_ENUM_ID,
         undefined, alpha, color, digit, duration, familyName, genericFamilyName, hexDigit, integer, length, namedColor, quotedString, string, timeExpression,
-        automatic, id, string_option,
+        automatic, id, literal, language, regex, any_uri,
         none = VT_ENUM_NONE
     };
 
@@ -92,6 +92,7 @@ namespace constants
     {
         IS_CONDITION            = VT_ENUM_ID,
         required                = (1 << 0),
+        is_default              = (1 << 1),
         none                    = VT_ENUM_NONE
     };
 
@@ -330,23 +331,23 @@ namespace vt::dictionary
     {
         using init_t = ValueExpressionNode<Tns, Tvexpr>;
 
-        constexpr ValueExpressionNode(Tns&& n_ns, Tvexpr&& n_vexpr, std::string_view&& n_value, size_t&& n_quantifier, size_t&& n_documents) noexcept
+        constexpr ValueExpressionNode(Tns&& n_ns, Tvexpr&& n_vexpr, std::string_view&& n_value, size_t&& n_conditions, size_t&& n_documents) noexcept
             : expression({ n_ns, n_vexpr }),
             value(n_value),
-            quantifier(n_quantifier),
+            conditions(n_conditions),
             documents(n_documents)
         {}
 
         constexpr ValueExpressionNode(const std::initializer_list<init_t>& init_list) noexcept
             : expression({ init_list.begin(), init_list.begin() + 1 }),
             value(init_list.begin() + 2),
-            quantifier(init_list.begin() + 3),
+            conditions(init_list.begin() + 3),
             documents(init_list.begin() + 4)
         {} 
 
         Node<Tns, Tvexpr>           expression;
         std::string_view            value;
-        size_t                      quantifier;
+        size_t                      conditions;
         size_t                      documents;
     };
 

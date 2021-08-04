@@ -35,7 +35,7 @@ namespace vt::dictionary::detail
     // Base template type
     template<NS Tns = NS::none, Attribute Tattr = Attribute::none>
     constexpr inline auto CreateAttributeNode(size_t&& condition = enum_integer(cnd::none),
-                                                size_t&& quantity = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two),
+                                                size_t&& quantity = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two),
                                                 size_t&& documents = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1))
     { static_assert(Tns != NS::none && Tattr != Attribute::none, "Invalid AttributeNode type\n"); }
 }
@@ -57,7 +57,7 @@ namespace vt::dictionary::detail
         constexpr auto vexpr_tt_tt_xml_id
         = detail::CreateXMLNodeTree<vexpression_t> 
         ({ 
-            { CreateValueExpressionNode(NS::none,          ValueExpression::string,        "<id>") }
+            { CreateValueExpressionNode(NS::none,          ValueExpression::id,        "<id>") }
         });
 
         // -----------------------------------------------------------------------------------------|
@@ -82,9 +82,9 @@ namespace vt::dictionary::detail
                         = AttributeNode<NS, Attribute, decltype(vexpr_tt_tt_xml_id), decltype(attropt_tt_tt_xml_id)>;
 
         return attr_tt_tt_xml_id_t {
-            enum_integer(cnd::none),
-            enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two),
-            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1),
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
             NS::xml, Attribute::id,
             vexpr_tt_tt_xml_id, attropt_tt_tt_xml_id
         };
@@ -102,7 +102,7 @@ namespace vt::dictionary::detail
         constexpr auto vexpr_tt_tt_xml_lang
         = detail::CreateXMLNodeTree<vexpression_t> 
         ({ 
-            {{ NS::none,          ValueExpression::string,        "<language>",        0,           enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+            { CreateValueExpressionNode(NS::none,          ValueExpression::language,        "<language>") }
         });
 
         // -----------------------------------------------------------------------------------------|
@@ -145,7 +145,8 @@ namespace vt::dictionary::detail
         constexpr auto vexpr_tt_tt_xml_space
         = detail::CreateXMLNodeTree<vexpression_t> 
         ({ 
-            { CreateValueExpressionNode(NS::none,          ValueExpression::string_option,        ":default|preserve") }
+            { CreateValueExpressionNode(NS::none,          ValueExpression::literal,        "default",           enum_integer(cnd::is_default)) },
+            { CreateValueExpressionNode(NS::none,          ValueExpression::literal,        "preserve")                                         }
         });
 
         // -----------------------------------------------------------------------------------------|
@@ -168,9 +169,9 @@ namespace vt::dictionary::detail
 
         using attr_tt_tt_xml_space_t = AttributeNode<NS, Attribute, decltype(vexpr_tt_tt_xml_space), decltype(attropt_tt_tt_xml_space)>;
         return attr_tt_tt_xml_space_t {
-            enum_integer(cnd::none),
-            enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two),
-            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1),
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
             NS::xml, Attribute::space,
             vexpr_tt_tt_xml_space, attropt_tt_tt_xml_space
         };
@@ -196,7 +197,8 @@ namespace vt::dictionary::detail
         constexpr auto vexpr_ttp_cellResolution
         = detail::CreateXMLNodeTree
         ({ 
-            { detail::CreateValueExpressionNode(NS::none, ValueExpression::digit, ":32 15|<digit>+ <digit>+") }
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,              "32 15",                enum_integer(cnd::is_default)) },
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::regex,                "<digit>+ <digit>+")                                   }
         });
 
         // -----------------------------------------------------------------------------------------|
@@ -228,6 +230,443 @@ namespace vt::dictionary::detail
 
         // -----------------------------------------------------------------------------------------|
     }
+
+    // [ttp:clockMode]  ----------------------------------------------------------- Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::clockMode>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:clockMode] ----------------------------------------------------- Value expressions -|
+
+        constexpr auto vexpr_ttp_clockMode
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "local",       enum_integer(cnd::is_default)) },
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "gps")                                        },
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "utc")                                        }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:clockMode] ----------------------------------------------------- Attribute Options -|
+        
+        constexpr auto attropt_ttp_clockMode
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:clockMode] -------------------------------------------------------- Attribute Node -|
+
+        using attr_ttp_clockMode_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_clockMode), decltype(attropt_ttp_clockMode)>;
+        return attr_ttp_clockMode_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::clockMode,
+            vexpr_ttp_clockMode, attropt_ttp_clockMode
+        };
+
+        // -----------------------------------------------------------------------------------------|
+    }
+
+    // [ttp:dropMode]  ------------------------------------------------------------ Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::dropMode>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:dropMode] ------------------------------------------------------ Value expressions -|
+
+        constexpr auto vexpr_ttp_dropMode
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "dropNTSC",           enum_integer(cnd::is_default)) },
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "dropPAL")                                           },
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "nonDrop")                                           }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:dropMode] ------------------------------------------------------ Attribute Options -|
+        
+        constexpr auto attropt_ttp_dropMode
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:dropMode] --------------------------------------------------------- Attribute Node -|
+
+        using attr_ttp_dropMode_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_dropMode), decltype(attropt_ttp_dropMode)>;
+        return attr_ttp_dropMode_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::dropMode,
+            vexpr_ttp_dropMode, attropt_ttp_dropMode
+        };
+
+        // -----------------------------------------------------------------------------------------|
+    }
+
+    // [ttp:frameRate]  ----------------------------------------------------------- Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::frameRate>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:frameRate] ----------------------------------------------------- Value expressions -|
+
+        constexpr auto vexpr_ttp_frameRate
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::digit,         "<digit>+",           enum_integer(cnd::is_default)) }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:frameRate] ----------------------------------------------------- Attribute Options -|
+        
+        constexpr auto attropt_ttp_frameRate
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // ----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:frameRate] ------------------------------------------------------- Attribute Node -|
+
+        using attr_ttp_frameRate_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_frameRate), decltype(attropt_ttp_frameRate)>;
+        return attr_ttp_frameRate_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::frameRate,
+            vexpr_ttp_frameRate, attropt_ttp_frameRate
+        };
+
+        // ----------------------------------------------------------------------------------------|
+    }
+
+    // [ttp:frameRateMultiplier]  ------------------------------------------------- Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::frameRateMultiplier>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:frameRateMultiplier] ------------------------------------------- Value expressions -|
+
+        constexpr auto vexpr_ttp_frameRateMultiplier
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::regex,         "<digit>+ <digit>+",           enum_integer(cnd::is_default)) }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:frameRateMultiplier] ------------------------------------------- Attribute Options -|
+        
+        constexpr auto attropt_ttp_frameRateMultiplier
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:frameRateMultiplier] ----------------------------------------------- Attribute Node -|
+
+        using attr_ttp_frameRateMultiplier_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_frameRateMultiplier), decltype(attropt_ttp_frameRateMultiplier)>;
+        return attr_ttp_frameRateMultiplier_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::frameRateMultiplier,
+            vexpr_ttp_frameRateMultiplier, attropt_ttp_frameRateMultiplier
+        };
+
+        // -----------------------------------------------------------------------------------------|
+    }
+
+    // [ttp:markerMode]  ---------------------------------------------------------- Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::markerMode>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:markerMode] ---------------------------------------------------- Value expressions -|
+
+        constexpr auto vexpr_ttp_markerMode
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "continuous",           enum_integer(cnd::is_default)) },
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "discontinuous")                                       }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:markerMode] ---------------------------------------------------- Attribute Options -|
+        
+        constexpr auto attropt_ttp_markerMode
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // ----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:markerMode] ------------------------------------------------------ Attribute Node -|
+
+        using attr_ttp_markerMode_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_markerMode), decltype(attropt_ttp_markerMode)>;
+        return attr_ttp_markerMode_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::markerMode,
+            vexpr_ttp_markerMode, attropt_ttp_markerMode
+        };
+
+        // ----------------------------------------------------------------------------------------|
+    }
+
+    // [ttp:pixelAspectRatio]  ---------------------------------------------------------- Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::pixelAspectRatio>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:pixelAspectRatio] ---------------------------------------------------- Value expressions -|
+
+        constexpr auto vexpr_ttp_pixelAspectRatio
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::regex,         "<digit>+ <digit>+",           enum_integer(cnd::is_default)) }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:pixelAspectRatio] ---------------------------------------------------- Attribute Options -|
+        
+        constexpr auto attropt_ttp_pixelAspectRatio
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // ----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:pixelAspectRatio] ------------------------------------------------------ Attribute Node -|
+
+        using attr_ttp_pixelAspectRatio_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_pixelAspectRatio), decltype(attropt_ttp_pixelAspectRatio)>;
+        return attr_ttp_pixelAspectRatio_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::pixelAspectRatio,
+            vexpr_ttp_pixelAspectRatio, attropt_ttp_pixelAspectRatio
+        };
+
+        // ----------------------------------------------------------------------------------------|
+    }
+
+    // [ttp:profile]  ------------------------------------------------------------ Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::profile>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:profile] ------------------------------------------------------ Value expressions -|
+
+        constexpr auto vexpr_ttp_profile
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::any_uri,         "<anyURI>",           enum_integer(cnd::is_default)) }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:profile] ------------------------------------------------------ Attribute Options -|
+        
+        constexpr auto attropt_ttp_profile
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // ----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:profile] -------------------------------------------------------- Attribute Node -|
+
+        using attr_ttp_profile_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_profile), decltype(attropt_ttp_profile)>;
+        return attr_ttp_profile_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::profile,
+            vexpr_ttp_profile, attropt_ttp_profile
+        };
+
+        // ----------------------------------------------------------------------------------------|
+    }
+    
+    // [ttp:subFrameRate]  ------------------------------------------------------- Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::subFrameRate>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:subFrameRate] ------------------------------------------------- Value expressions -|
+
+        constexpr auto vexpr_ttp_subFrameRate
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::digit,         "<digit>+",           enum_integer(cnd::is_default)) }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:subFrameRate] ------------------------------------------------- Attribute Options -|
+        
+        constexpr auto attropt_ttp_subFrameRate
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // ----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:subFrameRate] --------------------------------------------------- Attribute Node -|
+
+        using attr_ttp_subFrameRate_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_subFrameRate), decltype(attropt_ttp_subFrameRate)>;
+        return attr_ttp_subFrameRate_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::subFrameRate,
+            vexpr_ttp_subFrameRate, attropt_ttp_subFrameRate
+        };
+
+        // ----------------------------------------------------------------------------------------|
+    }
+
+    // [ttp:tickRate]  ------------------------------------------------------------ Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::tickRate>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:tickRate] ------------------------------------------------------ Value expressions -|
+
+        constexpr auto vexpr_ttp_tickRate
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::digit,         "<digit>+",           enum_integer(cnd::is_default)) }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:tickRate] ------------------------------------------------------ Attribute Options -|
+        
+        constexpr auto attropt_ttp_tickRate
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // ----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:tickRate] -------------------------------------------------------- Attribute Node -|
+
+        using attr_ttp_tickRate_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_tickRate), decltype(attropt_ttp_tickRate)>;
+        return attr_ttp_tickRate_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::tickRate,
+            vexpr_ttp_tickRate, attropt_ttp_tickRate
+        };
+
+        // ----------------------------------------------------------------------------------------|
+    }
+
+    // [ttp:timeBase]  ------------------------------------------------------------ Specialization -|
+    template<>
+    constexpr inline auto CreateAttributeNode<NS::ttp, Attribute::timeBase>
+    (size_t&& condition, size_t&& quantity, size_t&& documents)
+    {
+        // [ttp:timeBase] ------------------------------------------------------ Value expressions -|
+
+        constexpr auto vexpr_ttp_timeBase
+        = detail::CreateXMLNodeTree
+        ({ 
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "media",           enum_integer(cnd::is_default)) },
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "smpte")                                          },
+            { detail::CreateValueExpressionNode(NS::none,       ValueExpression::literal,         "clock")                                          }
+        });
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:timeBase] ------------------------------------------------------ Attribute Options -|
+        
+        constexpr auto attropt_ttp_timeBase
+        = detail::CreateXMLNodeTree<attroption_t>
+        ({ 
+            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
+        });
+
+        // ----------------------------------------------------------------------------------------|
+
+
+
+        // [ttp:timeBase] -------------------------------------------------------- Attribute Node -|
+
+        using attr_ttp_timeBase_t = AttributeNode<NS, Attribute, decltype(vexpr_ttp_timeBase), decltype(attropt_ttp_timeBase)>;
+        return attr_ttp_timeBase_t {
+            std::move(condition),
+            std::move(quantity),
+            std::move(documents),
+            NS::ttp, Attribute::timeBase,
+            vexpr_ttp_timeBase, attropt_ttp_timeBase
+        };
+
+        // ----------------------------------------------------------------------------------------|
+    }
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -247,7 +686,8 @@ namespace vt::dictionary::detail
         constexpr auto vexpr_tt_tt_tts_extent
         = detail::CreateXMLNodeTree<vexpression_t>
         ({
-            { detail::CreateValueExpressionNode(NS::none,          ValueExpression::string,        ":<auto>|<length> <length>") }
+            { detail::CreateValueExpressionNode(NS::none,          ValueExpression::automatic,        "<auto>",               enum_integer(cnd::is_default)) },
+            { detail::CreateValueExpressionNode(NS::none,          ValueExpression::regex,            "<length> <length>")                                   }
         });
 
         // -----------------------------------------------------------------------------------------|

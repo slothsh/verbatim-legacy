@@ -66,6 +66,8 @@ int main()
 
     constexpr auto node = CreateTTMLDictionary();
 
+    std::cout << "Total size: " << sizeof(node) << " bytes" << '\n';
+
     std::cout << "\nend\n";
     return 0;
 }

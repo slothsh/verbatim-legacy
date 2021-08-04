@@ -2,8 +2,8 @@
 // File: node_tt_tt.hpp
 // Description: TTML dictionary entry for tt:tt tag
 
-#ifndef VTNODEENTRY_TT_TT_HEADER
-#define VTNODEENTRY_TT_TT_HEADER
+#ifndef VTNODEENTRIES_HEADER
+#define VTNODEENTRIES_HEADER
 
 // Configuration headers
 #ifndef VTCONFIG_HEADER
@@ -49,10 +49,7 @@ namespace vt::dictionary::detail
         // <tt:tt/> [tts:extent] -------------------------------------------------- Attribute Node -|
 
         constexpr auto attr_tt_tt_tts_extent
-        = detail::CreateAttributeNode<NS::tts, Attribute::extent> (
-            enum_integer(cnd::none),
-            enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two)
-        );
+        = detail::CreateAttributeNode<NS::tts, Attribute::extent> ();
 
         // -----------------------------------------------------------------------------------------|
 
@@ -61,32 +58,126 @@ namespace vt::dictionary::detail
         // <tt:tt/> [xml:id] --------------------------------------------------- Value expressions -|
 
         constexpr auto attr_tt_tt_xml_id
-        = detail::CreateAttributeNode<NS::xml, Attribute::id> (
-            enum_integer(cnd::none),
-            enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two)
-        );
+        = detail::CreateAttributeNode<NS::xml, Attribute::id> ();
 
         // -----------------------------------------------------------------------------------------|
+
 
 
         // <tt:tt/> [xml:lang] ------------------------------------------------- Value expressions -|
 
         constexpr auto attr_tt_tt_xml_lang
         = CreateAttributeNode<NS::xml, Attribute::lang> (
-            enum_integer(cnd::required),
-            enum_integer(qty::kleene_one) | (0 << grp::one) | (0 << grp::two)
+            enum_integer(cnd::required)
         );
 
         // -----------------------------------------------------------------------------------------|
 
 
+
         // <tt:tt/> [xml:space] ------------------------------------------------ Value expressions -|
 
         constexpr auto attr_tt_tt_xml_space
-        = CreateAttributeNode<NS::xml, Attribute::space> (
-            enum_integer(cnd::none),
-            enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two)
-        );
+        = CreateAttributeNode<NS::xml, Attribute::space> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:cellResolution] --------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_cellResolution
+        = CreateAttributeNode<NS::ttp, Attribute::cellResolution> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:clockMode] -------------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_clockMode
+        = CreateAttributeNode<NS::ttp, Attribute::clockMode> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:dropMode] --------------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_dropMode
+        = CreateAttributeNode<NS::ttp, Attribute::dropMode> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:frameRate] -------------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_frameRate
+        = CreateAttributeNode<NS::ttp, Attribute::frameRate> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:frameRateMultiplier] ---------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_frameRateMultiplier
+        = CreateAttributeNode<NS::ttp, Attribute::frameRateMultiplier> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:markerMode] ------------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_markerMode
+        = CreateAttributeNode<NS::ttp, Attribute::markerMode> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:pixelAspectRatio] ------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_pixelAspectRatio
+        = CreateAttributeNode<NS::ttp, Attribute::pixelAspectRatio> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:profile] ---------------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_profile
+        = CreateAttributeNode<NS::ttp, Attribute::profile> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:subFrameRate] ----------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_subFrameRate
+        = CreateAttributeNode<NS::ttp, Attribute::subFrameRate> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:tickRate] --------------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_tickRate
+        = CreateAttributeNode<NS::ttp, Attribute::tickRate> ();
+
+        // -----------------------------------------------------------------------------------------|
+
+
+
+        // <tt:tt/> [ttp:timeBase] --------------------------------------------- Value expressions -|
+
+        constexpr auto attr_tt_tt_ttp_timeBase
+        = CreateAttributeNode<NS::ttp, Attribute::timeBase> ();
 
         // -----------------------------------------------------------------------------------------|
 
@@ -94,13 +185,43 @@ namespace vt::dictionary::detail
         
         // <tt:tt/> --------------------------------------------------------------- Attribute Tree -|
 
-        using attr_tt_tt_t = XMLNodeTree<decltype(attr_tt_tt_tts_extent), decltype(attr_tt_tt_xml_id),
-                                       decltype(attr_tt_tt_xml_lang), decltype(attr_tt_tt_xml_space)>;
+        using attr_tt_tt_t = XMLNodeTree <
+            // Default
+            decltype(attr_tt_tt_tts_extent),
+            decltype(attr_tt_tt_xml_id),
+            decltype(attr_tt_tt_xml_lang),
+            decltype(attr_tt_tt_xml_space),
+
+            // { any in TT Parameter namespace }
+            decltype(attr_tt_tt_ttp_cellResolution),
+            decltype(attr_tt_tt_ttp_clockMode),
+            decltype(attr_tt_tt_ttp_dropMode),
+            decltype(attr_tt_tt_ttp_frameRate),
+            decltype(attr_tt_tt_ttp_frameRateMultiplier),
+            decltype(attr_tt_tt_ttp_markerMode),
+            decltype(attr_tt_tt_ttp_pixelAspectRatio),
+            decltype(attr_tt_tt_ttp_profile),
+            decltype(attr_tt_tt_ttp_subFrameRate),
+            decltype(attr_tt_tt_ttp_tickRate),
+            decltype(attr_tt_tt_ttp_timeBase)
+        >;
+
         attr_tt_tt_t attr_tt_tt {
             attr_tt_tt_tts_extent,
             attr_tt_tt_xml_id,
             attr_tt_tt_xml_lang,
-            attr_tt_tt_xml_space
+            attr_tt_tt_xml_space,
+            attr_tt_tt_ttp_cellResolution,
+            attr_tt_tt_ttp_clockMode,
+            attr_tt_tt_ttp_dropMode,
+            attr_tt_tt_ttp_frameRate,
+            attr_tt_tt_ttp_frameRateMultiplier,
+            attr_tt_tt_ttp_markerMode,
+            attr_tt_tt_ttp_pixelAspectRatio,
+            attr_tt_tt_ttp_profile,
+            attr_tt_tt_ttp_subFrameRate,
+            attr_tt_tt_ttp_tickRate,
+            attr_tt_tt_ttp_timeBase
         };
 
         // -----------------------------------------------------------------------------------------|
@@ -110,7 +231,7 @@ namespace vt::dictionary::detail
         // <tt:tt/> ----------------------------------------------------------------- Content Node -|
 
         using content_tt_tt_t            = XMLNodeTree<content_data_t, content_tag_t, content_tag_t>;
-        
+
         content_tt_tt_t content_tt_tt
         {
             content_data_t( NS::none,         GenericData::PCDATA,    enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two),          enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1)),
@@ -234,4 +355,4 @@ namespace vt::dictionary::detail
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
 
-#endif // VTNODEENTRY_TT_TT_HEADER
+#endif // VTNODEENTRIES_HEADER

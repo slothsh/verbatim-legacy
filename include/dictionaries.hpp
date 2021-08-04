@@ -30,7 +30,11 @@ namespace vt::dictionary
         constexpr auto node_tt_tt = detail::CreateTTMLNode<NS::tt, Tag::tt>();
         constexpr auto node_tt_head = detail::CreateTTMLNode<NS::tt, Tag::head>();
 
-        return node_tt_tt;
+        using ttml_dictionary_t = XMLNodeTree<decltype(node_tt_tt), decltype(node_tt_head)>;
+        return ttml_dictionary_t {
+            node_tt_tt,
+            node_tt_head
+        };
     }
 }
 
