@@ -441,6 +441,13 @@ namespace vt::dictionary
         {
             return XMLNodeTree<Texpr, Trest...>{expressions};
         }
+
+        template<class Texpr, class... Trest> // TODO: Concept for XMLNodeTree
+        constexpr inline auto CreateXMLNodeTree(Texpr expr, Trest... rest)
+        {
+            return XMLNodeTree<Texpr, Trest...>{expr, rest...};
+        }
+        
     }
 
     template<class... E>

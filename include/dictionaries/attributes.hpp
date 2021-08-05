@@ -36,11 +36,11 @@ namespace vt::dictionary::detail
     using qty = constants::NodeQuantifier;
 
     // Base template type
-    template<NS Tns = NS::none, Attribute Tattr = Attribute::none>
+    template<NS Vns = NS::none, Attribute Vattr = Attribute::none>
     constexpr inline auto CreateAttributeNode(size_t&& condition = enum_integer(cnd::none),
                                                 size_t&& quantity = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two),
                                                 size_t&& documents = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1))
-    { static_assert(Tns != NS::none && Tattr != Attribute::none, "Invalid AttributeNode type\n"); }
+    { static_assert(Vns != NS::none && Vattr != Attribute::none, "Invalid AttributeNode type\n"); }
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -56,16 +56,14 @@ namespace vt::dictionary::detail
     (size_t&& condition, size_t&& quantity, size_t&& documents)
     {
         constexpr auto vexpr_xml_id
-        = detail::CreateXMLNodeTree<vexpression_t> 
-        ({ 
-            { CreateValueExpressionNode(NS::none,          ValueExpression::id,        "<id>") }
-        });
+        = detail::CreateXMLNodeTree<vexpression_t> (
+            CreateValueExpressionNode( NS::none,          ValueExpression::id,        "<id>" )
+        );
 
         constexpr auto attropt_xml_id
-        = detail::CreateXMLNodeTree<attroption_t>
-        ({ 
-            {{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }}
-        });
+        = detail::CreateXMLNodeTree<attroption_t> (
+            attroption_t{ NS::none,           AttributeOption::none,          "<null>",            enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1) }
+        );
 
         using attr_xml_id_t
                         = AttributeNode<NS, Attribute, decltype(vexpr_xml_id), decltype(attropt_xml_id)>;
