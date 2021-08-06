@@ -19,7 +19,6 @@ namespace vt::dictionary::detail
     using namespace magic_enum::bitwise_operators;
     using magic_enum::enum_integer;
 
-    using attroption_t          = AttributeOptionsNode<NS, AttributeOption>;
     using vexpression_t         = ValueExpressionNode<NS, ValueExpression>;
     using content_data_t        = ContentNode<NS, GenericData>;
     using content_tag_t         = ContentNode<NS, Tag>;
@@ -102,7 +101,7 @@ namespace vt::dictionary::detail
 
         // <tt:tt/> --------------------------------------------------------------- Attribute Tree -|
 
-        using attr_tt_tt_t = XMLNodeTree <
+        using attr_tt_tt_t = std::tuple <
             // Explicitly Declared
             decltype(attr_tt_tt_tts_extent),
             decltype(attr_tt_tt_xml_id),
@@ -147,7 +146,7 @@ namespace vt::dictionary::detail
 
         // <tt:tt/> ----------------------------------------------------------------- Content Node -|
 
-        using content_tt_tt_t            = XMLNodeTree<content_data_t, content_tag_t, content_tag_t>;
+        using content_tt_tt_t            = std::tuple<content_data_t, content_tag_t, content_tag_t>;
 
         content_tt_tt_t content_tt_tt
         {
@@ -221,7 +220,7 @@ namespace vt::dictionary::detail
         
         // <tt:head/> --------------------------------------------------------------- Attribute Tree -|
 
-        using attr_tt_head_t               = XMLNodeTree<decltype(attr_tt_head_xml_id),decltype(attr_tt_head_xml_lang),
+        using attr_tt_head_t               = std::tuple<decltype(attr_tt_head_xml_id),decltype(attr_tt_head_xml_lang),
                                                             decltype(attr_tt_head_xml_space)>;
         attr_tt_head_t attr_tt_tt
         {
@@ -237,7 +236,7 @@ namespace vt::dictionary::detail
         // <tt:head/> ----------------------------------------------------------------- Content Node -|
 
         using content_tt_head_t
-                = XMLNodeTree<content_tag_t, content_tag_t, content_tag_t, content_tag_t, content_tag_t,
+                = std::tuple<content_tag_t, content_tag_t, content_tag_t, content_tag_t, content_tag_t,
                                 content_tag_t, content_tag_t, content_tag_t>;
 
         content_tt_head_t content_tt_head

@@ -57,13 +57,6 @@ namespace vt::dictionary
         none = VT_ENUM_NONE
     };
 
-    enum class AttributeOption : size_t
-    {
-        IS_ATTRIBUTE_OPTION = VT_ENUM_ID,
-        undefined, string,
-        none = VT_ENUM_NONE
-    };
-
     enum class GenericData : size_t
     {
         IS_DATA = VT_ENUM_ID,
@@ -171,13 +164,6 @@ namespace vt::dictionary
         && mge::enum_contains<Tvexpr>(Tvexpr::IS_VALUE_EXPRESSION)
         && mge::enum_integer(Tvexpr::IS_VALUE_EXPRESSION) == VT_ENUM_ID;
 
-    // Concept for enumeration types to be used for attribute options
-    template<class Topt>
-    concept enumerable_attropt =
-        enumerable_node<Topt>
-        && mge::enum_contains<Topt>(Topt::IS_ATTRIBUTE_OPTION)
-        && mge::enum_integer(Topt::IS_ATTRIBUTE_OPTION) == VT_ENUM_ID;
-
     // Concept for enumeration types to be used for data tag data types
     template<class Tdata>
     concept enumerable_data =
@@ -198,7 +184,6 @@ namespace vt::dictionary
         && (enumerable_tag<Telement>
         || enumerable_attr<Telement>
         || enumerable_vexpr<Telement>
-        || enumerable_attropt<Telement>
         || enumerable_data<Telement>);
 
     // Generic types
@@ -227,115 +212,11 @@ namespace vt::dictionary
     };
 }
 
-// Entry Collector -----------------------------------------------------------------------------------------------------2 of 5-|
-// ============================================================================================================================|
-
-namespace vt::dictionary::detail
-{
-    template<class... T>
-    struct AccumulateType
-    {
-        constexpr AccumulateType() noexcept
-        {
-            AccumulateType::total = 0;
-        }
-
-        template<class I> requires(std::is_integral_v<I>)
-        static void add(I i) noexcept
-        {
-            AccumulateType::total += i; 
-        }
-
-        static void reset() noexcept
-        {
-            AccumulateType::total = 0;
-        }
-
-        static size_t total;
-    };
-
-    using accumulate_t = AccumulateType<void>;
-}
-
 // XML node component templates ----------------------------------------------------------------------------------------3 of 5-|
 // ============================================================================================================================|
 
 namespace vt::dictionary
 {
-    template<class... N>
-    struct XMLNodeTree
-    {
-        constexpr XMLNodeTree()
-        {
-            // Nothing to do here
-        }
-
-        constexpr XMLNodeTree(auto& init_list, size_t&& offset = 0)
-        {
-            // Nothing to do here
-        }
-    };
-
-    template<class Tnode, class... Tnext>
-    struct XMLNodeTree<Tnode, Tnext...>
-    {
-        using value_t = Tnode;
-        using next_t = XMLNodeTree<Tnext...>;
-
-        constexpr XMLNodeTree() = delete;
-
-        constexpr XMLNodeTree(const Tnode& v, const Tnext&... n)
-            : value(v),
-            next(std::move(n)...)
-        {}
-
-        constexpr XMLNodeTree(const std::initializer_list<value_t>& init_list, size_t&& offset = 0)
-            : value(*(init_list.begin() + offset)),
-            next(std::move(init_list), offset + 1)
-        {}
-
-        constexpr XMLNodeTree(const std::initializer_list<std::initializer_list<value_t>>& init_list, size_t&& offset = 0)
-            : value(*(*(init_list.begin() + offset)).begin()),
-            next(std::move(init_list), offset + 1)
-        {}
-
-        constexpr auto Recurse(auto&& fn) const
-        {
-            detail::accumulate_t::add(1);
-            if constexpr(std::is_invocable_v<decltype(this->next.GetSize()), void>) {
-                this->next.Recurse(fn);
-            }
-        }
-
-        constexpr size_t GetSize() const noexcept
-        {
-            this->Recurse([]() {
-                detail::accumulate_t::add(1);
-            });
-            const auto total = detail::accumulate_t::total - 1;
-            detail::accumulate_t::reset();
-            return total;
-        }
-
-        value_t             value;
-        next_t              next;
-    };
-
-    template<enumerable_ns Tns, enumerable_attropt Topt>
-    struct AttributeOptionsNode
-    {
-        constexpr AttributeOptionsNode(Tns&& n_ns, Topt&& n_attropt,
-                                        std::string_view&& n_value, size_t&& n_documents) noexcept
-            : option({ n_ns, n_attropt }),
-            value(n_value),
-            documents(n_documents)
-        {} 
-
-        Node<Tns, Topt>             option;
-        std::string_view            value;
-        size_t                      documents;
-    };
-
     template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
     struct ValueExpressionNode
     {
@@ -362,14 +243,13 @@ namespace vt::dictionary
     };
 
     template<enumerable_ns Tns, enumerable_attr Tattr,
-                class Nvexpr, class Nopt>
+                class Nvexpr>
     struct AttributeNode
     {
         constexpr AttributeNode(size_t&& n_condition, size_t&& n_quantifier, size_t&& n_documents,
-                                Tns&& n_ns,  Tattr&& n_attr, const Nvexpr& n_vexpr, const Nopt& n_opt)
+                                Tns&& n_ns,  Tattr&& n_attr, const Nvexpr& n_vexpr)
             : attribute({ n_ns, n_attr }),
             expressions(n_vexpr),
-            options(n_opt),
             condition(n_condition),
             quantifier(n_quantifier),
             documents(n_documents)
@@ -377,7 +257,6 @@ namespace vt::dictionary
 
         Node<Tns, Tattr>            attribute;
         Nvexpr                      expressions;
-        Nopt       	                options;
         size_t                      condition;
         size_t                      quantifier;
         size_t                      documents;
@@ -426,69 +305,10 @@ namespace vt::dictionary
 // XML node dictionary template ----------------------------------------------------------------------------------------4 of 5-|
 // ============================================================================================================================|
 
-namespace vt::dictionary
+namespace vt::dictionary::detail
 {
-    namespace detail
-    {
-        template<size_t E, class... Rest>
-        struct GetHelper;
-
-        template<NS Tns = NS::none, Tag Ttag = Tag::none>
-        constexpr inline auto CreateTTMLNode() { static_assert(Tns != NS::none && Ttag != Tag::none, "Invalid TTMLNode type\n"); }
-
-        template<class Texpr, class... Trest> // TODO: Concept for XMLNodeTree
-        constexpr inline auto CreateXMLNodeTree(std::initializer_list<std::initializer_list<Texpr>>&& expressions)
-        {
-            return XMLNodeTree<Texpr, Trest...>{expressions};
-        }
-
-        template<class Texpr, class... Trest> // TODO: Concept for XMLNodeTree
-        constexpr inline auto CreateXMLNodeTree(Texpr expr, Trest... rest)
-        {
-            return XMLNodeTree<Texpr, Trest...>{expr, rest...};
-        }
-        
-    }
-
-    template<class... E>
-    class XMLDictionary {};
-
-    template<class E, class... Rest>
-    class XMLDictionary<E, Rest...>
-    {
-    public:
-        constexpr XMLDictionary(E entry, Rest... rest)
-            : entry(entry),
-            next(rest...)
-        {}
-
-        template<size_t index>
-        constexpr auto get() const
-        {
-            return detail::GetHelper<index, XMLDictionary<E, Rest...>>::get(*this);
-        }
-
-        E                           entry;
-        XMLDictionary<Rest...>      next;
-    };
-
-    template<class E, class... Rest>
-    struct detail::GetHelper<0, XMLDictionary<E, Rest...>>
-    {
-        static constexpr E get(XMLDictionary<E, Rest...> d)
-        {
-            return d.entry;
-        }
-    };
-
-    template<size_t I, class E, class... Rest>
-    struct detail::GetHelper<I, XMLDictionary<E, Rest...>>
-    {
-        static constexpr auto get(XMLDictionary<E, Rest...> d)
-        {
-            return detail::GetHelper<I-1, XMLDictionary<Rest...>>::get(d.next);
-        }
-    };
+    template<NS Tns = NS::none, Tag Ttag = Tag::none>
+    constexpr inline auto CreateTTMLNode() { static_assert(Tns != NS::none && Ttag != Tag::none, "Invalid TTMLNode type\n"); }
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|

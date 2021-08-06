@@ -54,14 +54,12 @@ int main()
     static_assert(mge::enum_integer(Tag::none) == MAGIC_ENUM_RANGE_MAX);
     static_assert(mge::enum_integer(Attribute::none) == MAGIC_ENUM_RANGE_MAX);
     static_assert(mge::enum_integer(ValueExpression::none) == MAGIC_ENUM_RANGE_MAX);
-    static_assert(mge::enum_integer(AttributeOption::none) == MAGIC_ENUM_RANGE_MAX);
     static_assert(mge::enum_integer(GenericData::none) == MAGIC_ENUM_RANGE_MAX);
 
     static_assert(mge::enum_integer(NS::IS_NS) == MAGIC_ENUM_RANGE_MIN);
     static_assert(mge::enum_integer(Tag::IS_TAG) == MAGIC_ENUM_RANGE_MIN);
     static_assert(mge::enum_integer(Attribute::IS_ATTRIBUTE) == MAGIC_ENUM_RANGE_MIN);
     static_assert(mge::enum_integer(ValueExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
-    static_assert(mge::enum_integer(AttributeOption::IS_ATTRIBUTE_OPTION) == MAGIC_ENUM_RANGE_MIN);
     static_assert(mge::enum_integer(GenericData::IS_DATA) == MAGIC_ENUM_RANGE_MIN);
 
     constexpr auto node = CreateTTMLDictionary();
