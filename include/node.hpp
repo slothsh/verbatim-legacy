@@ -14,6 +14,7 @@
 // Standard headers
 #include <iostream>
 #include <type_traits>
+#include <tuple>
 #include <utility>
 #include <concepts>
 
@@ -229,6 +230,13 @@ namespace vt::dictionary
             documents(n_documents)
         {}
 
+        constexpr ValueExpressionNode(const Tns&& n_ns, const Tvexpr&& n_vexpr, const std::string_view&& n_value, const size_t&& n_conditions, const size_t&& n_documents) noexcept
+            : expression({ n_ns, n_vexpr }),
+            value(n_value),
+            conditions(n_conditions),
+            documents(n_documents)
+        {}
+
         constexpr ValueExpressionNode(const std::initializer_list<init_t>& init_list) noexcept
             : expression({ init_list.begin(), init_list.begin() + 1 }),
             value(init_list.begin() + 2),
@@ -247,7 +255,16 @@ namespace vt::dictionary
     struct AttributeNode
     {
         constexpr AttributeNode(size_t&& n_condition, size_t&& n_quantifier, size_t&& n_documents,
-                                Tns&& n_ns,  Tattr&& n_attr, const Nvexpr& n_vexpr)
+                                Tns&& n_ns,  Tattr&& n_attr, Nvexpr& n_vexpr)
+            : attribute({ n_ns, n_attr }),
+            expressions(n_vexpr),
+            condition(n_condition),
+            quantifier(n_quantifier),
+            documents(n_documents)
+        {}
+
+        constexpr AttributeNode(const size_t&& n_condition, const size_t&& n_quantifier, const size_t&& n_documents,
+                                const Tns&& n_ns,  const Tattr&& n_attr, const Nvexpr& n_vexpr)
             : attribute({ n_ns, n_attr }),
             expressions(n_vexpr),
             condition(n_condition),
@@ -307,8 +324,37 @@ namespace vt::dictionary
 
 namespace vt::dictionary::detail
 {
-    template<NS Tns = NS::none, Tag Ttag = Tag::none>
-    constexpr inline auto CreateTTMLNode() { static_assert(Tns != NS::none && Ttag != Tag::none, "Invalid TTMLNode type\n"); }
+    template<class Tns = NS, class Ttag = Tag, class Tfnattr, class Tfndata> // TODO: invocable concept for Tfn
+    constexpr inline auto CreateTTMLNode(const size_t&& docs, Tns&& ns, Ttag&& tag, Tfnattr&& fn_attr, Tfndata&& fn_data)
+    {
+        // static_assert(Tns != NS::none && Ttag != Tag::none, "Invalid TTMLNode type\n");
+
+        constexpr decltype(auto) attributes = fn_attr(std::move(ns), std::move(tag));
+        // constexpr decltype(auto) content = fn_data(std::move(ns), std::move(tag));
+        constexpr ContentNode content{ NS::none, Tag::none, 0, 0 };
+
+        using node_t = XMLNode<NS, Tag, decltype(attributes), decltype(content)>;
+
+        return node_t {
+            std::move(docs),
+            std::move(ns), std::move(tag),
+            std::move(attributes), std::move(content)
+        };
+    }
+
+    template<class Ttup, class S, S... Sseq>
+    constexpr inline auto CreateTTMLNodes(const Ttup&& tup, std::integer_sequence<S, Sseq...> sequence)
+    {
+        return std::tuple {
+            CreateTTMLNode(
+                std::move(std::get<0>(std::get<Sseq>(tup))),
+                std::move(std::get<1>(std::get<Sseq>(tup))),
+                std::move(std::get<2>(std::get<Sseq>(tup))),
+                std::move(std::get<3>(std::get<Sseq>(tup))),
+                std::move(std::get<4>(std::get<Sseq>(tup)))
+            )...
+        };
+    }
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|

@@ -20,7 +20,7 @@ namespace vt::dictionary::detail
 {
     using namespace magic_enum::bitwise_operators;
 
-    template<enumerable_ns Tns = NS, enumerable_vexpr Tvexpr = ValueExpression> // TODO: Concept for XMLNodeTree
+    template<class Tns = NS, class Tvexpr = ValueExpression> // TODO: Concept for XMLNodeTree
     constexpr inline auto CreateValueExpressionNode(Tns&& ns, Tvexpr&& vexpr,
                                                     std::string_view&& value = "",
                                                     size_t&& quantifier = 0,

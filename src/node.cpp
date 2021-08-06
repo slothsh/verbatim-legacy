@@ -4,5 +4,3 @@
 
 // Project headers;
 #include "../include/node.hpp"
-
-using namespace vt::dictionary::detail;

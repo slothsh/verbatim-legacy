@@ -18,7 +18,9 @@
 
 // Project headers
 #include "node.hpp"
+#include "functor.hpp"
 #include "./dictionaries/nodes.hpp"
+#include "./dictionaries/attributes.hpp"
 
 // Master TTML definition function ----------------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
@@ -27,54 +29,50 @@ namespace vt::dictionary
 {
     static constexpr auto CreateTTMLDictionary()
     {
-        constexpr auto node_tt_tt = detail::CreateTTMLNode<NS::tt, Tag::tt>();
-        constexpr auto node_tt_head = detail::CreateTTMLNode<NS::tt, Tag::head>();
+        using namespace magic_enum::bitwise_operators;
+        using namespace vt::functional;
+        using magic_enum::enum_integer;
 
-        using ttml_dictionary_t = std::tuple<decltype(node_tt_tt), decltype(node_tt_head)>;
-        return ttml_dictionary_t {
-            node_tt_tt,
-            node_tt_head
+        using grp = constants::ByteGroup;
+        using doc = constants::TTMLDocument;
+        using cnd = constants::NodeCondition;
+        using qty = constants::NodeQuantifier;
+
+        constexpr size_t default_vexpr_condition    = enum_integer(cnd::none);
+        constexpr size_t default_vexpr_quantifier   = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
+        constexpr size_t default_vexpr_document     = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
+        constexpr size_t default_node_document      = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
+
+        constexpr auto fnc_tt_tt_attribute =
+            [default_vexpr_condition, default_vexpr_quantifier, default_vexpr_document]
+            (const NS&& ns, const Tag&& tag) {
+                constexpr std::tuple flags{ default_vexpr_condition, default_vexpr_quantifier, default_vexpr_document };
+                constexpr std::tuple value_expressions { 
+                    std::tuple { NS::tt, ValueExpression::string, "<string1>", 0, 0 },
+                    std::tuple { NS::tt, ValueExpression::string, "<string2>", 0, 0 },
+                    std::tuple { NS::tt, ValueExpression::string, "<string3>", 0, 0 }
+                };
+
+                return std::tuple {
+                    detail::CreateAttributeNode(
+                        NS::xml,
+                        Attribute::id,
+                        std::move(flags),
+                        std::move(value_expressions),
+                        std::make_index_sequence<std::tuple_size_v<decltype(value_expressions)>>{}
+                    )
+                };
+            };
+
+        constexpr auto fnc_tt_tt_content = []() { return 1; };
+
+        constexpr std::tuple nodes {
+            std::tuple{ std::move(default_node_document), NS::tt, Tag::tt, VTFunctor{std::move(fnc_tt_tt_attribute)}, VTFunctor{std::move(fnc_tt_tt_content)} },
+            std::tuple{ std::move(default_node_document), NS::tt, Tag::tt, VTFunctor{std::move(fnc_tt_tt_attribute)}, VTFunctor{std::move(fnc_tt_tt_content)} }
         };
+
+        return detail::CreateTTMLNodes(std::move(nodes), std::make_index_sequence<std::tuple_size_v<decltype(nodes)>>{});
     }
-}
-
-// ------------------------------------------------------------|END|-----------------------------------------------------------|
-
-// Dictionary helpers ------------------------------------------------------------------------------------------------ 1 of 1 -|
-// ============================================================================================================================|
-
-namespace vt::dictionary
-{
-    template<enumerable_ns Tnselement, enumerable_element Telement>
-    struct EnumerationCollector
-    {
-        
-        using nselement_t                   = Tnselement;
-        using element_t                     = Telement;
-        using entry_t                       = std::pair<element_t, std::string_view>;
-
-        constexpr EnumerationCollector() noexcept
-        {
-            namespace mge = magic_enum;
-
-            this->size = mge::enum_count<element_t>() - 2;
-            constexpr auto all_entries = mge::enum_entries<element_t>();
-
-            size_t i = 0, j = 0;
-            while (i++ < this->size)
-            {
-                if (all_entries[i].first != element_t::none
-                    || all_entries[i].first != mge::enum_value<element_t>(0) // TODO: Make control indexes for enums a static constant
-                    && j < this->size)
-                {
-                    this->entries[j++] = all_entries[i];
-                }
-            }
-        }
-
-        size_t                              size                                                        = magic_enum::enum_count<element_t>() - 2;
-        entry_t                             entries[magic_enum::enum_count<element_t>() - 2]            = {};
-    };
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
