@@ -73,9 +73,11 @@ set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 add_executable(ttmldictionary
 	./src/prototype/ttmldictionary.cpp
 	./src/dictionaries.cpp
-	./src/node.cpp
 )
 set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
+# if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+# 	target_link_libraries(ttmldictionary ${libfmt} ${libxmlpp})
+# endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
 # ----------------------------------------------------------------------------|
 

@@ -11,6 +11,7 @@
 #endif
 
 // Project headers
+#include "../../include/xmlfile.hpp"
 #include "../../include/node.hpp"
 #include "../../include/dictionaries.hpp"
 

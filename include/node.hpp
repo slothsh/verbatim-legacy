@@ -255,7 +255,7 @@ namespace vt::dictionary
     struct AttributeNode
     {
         constexpr AttributeNode(size_t&& n_condition, size_t&& n_quantifier, size_t&& n_documents,
-                                Tns&& n_ns,  Tattr&& n_attr, Nvexpr& n_vexpr)
+                                Tns&& n_ns,  Tattr&& n_attr, Nvexpr&& n_vexpr)
             : attribute({ n_ns, n_attr }),
             expressions(n_vexpr),
             condition(n_condition),
@@ -264,7 +264,7 @@ namespace vt::dictionary
         {}
 
         constexpr AttributeNode(const size_t&& n_condition, const size_t&& n_quantifier, const size_t&& n_documents,
-                                const Tns&& n_ns,  const Tattr&& n_attr, const Nvexpr& n_vexpr)
+                                const Tns&& n_ns,  const Tattr&& n_attr, const Nvexpr&& n_vexpr)
             : attribute({ n_ns, n_attr }),
             expressions(n_vexpr),
             condition(n_condition),
@@ -367,7 +367,7 @@ namespace vt::dictionary::detail
     }
 
     template<class Ttup, class S, S... Sseq>
-    constexpr inline auto CreateTTMLNodes(Ttup&& tup, std::integer_sequence<S, Sseq...> sequence)
+    constexpr inline auto CreateTTMLNodeList(const Ttup&& tup, std::integer_sequence<S, Sseq...> sequence)
     {
         return std::tuple {
             CreateTTMLNode(

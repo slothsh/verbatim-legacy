@@ -130,6 +130,9 @@ std::shared_ptr<xmlpp::Element*> XMLFile::GetIdNode(const std::string& id) noexc
 // TTML1 Netflix object declarations -----------------------------------------------------------------------------------1 of 1-|
 // ============================================================================================================================|
 
+// Static data members
+// static constexpr auto TTML1p0_Netflix::dictionary = vt::dictionary::CreateTTMLDictionary();
+
 TTML1p0_Netflix::TTML1p0_Netflix()
   : ttml_head(nullptr),
   ttml_body(nullptr),

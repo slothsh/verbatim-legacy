@@ -43,22 +43,24 @@ namespace vt::dictionary::detail
 
         std::tuple value_expressions {
             CreateValueExpressionNode(
-                std::forward<decltype(std::get<0>(std::get<Sseq>(vexprs)))>(std::get<0>(std::get<Sseq>(vexprs))),
-                std::forward<decltype(std::get<1>(std::get<Sseq>(vexprs)))>(std::get<1>(std::get<Sseq>(vexprs))),
-                std::forward<decltype(std::get<2>(std::get<Sseq>(vexprs)))>(std::get<2>(std::get<Sseq>(vexprs))),
-                std::forward<decltype(std::get<3>(std::get<Sseq>(vexprs)))>(std::get<3>(std::get<Sseq>(vexprs))),
-                std::forward<decltype(std::get<4>(std::get<Sseq>(vexprs)))>(std::get<4>(std::get<Sseq>(vexprs)))
+                std::move(std::get<0>(std::get<Sseq>(vexprs))),
+                std::move(std::get<1>(std::get<Sseq>(vexprs))),
+                std::move(std::get<2>(std::get<Sseq>(vexprs))),
+                std::move(std::get<3>(std::get<Sseq>(vexprs))),
+                std::move(std::get<4>(std::get<Sseq>(vexprs)))
             )
             ...
         };
 
+        using ns_t = decltype(ns);
+        using attribute_t = decltype(attribute);
         using attributes = AttributeNode<NS, Attribute, decltype(value_expressions)>;
 
         return attributes {
             std::move(std::get<0>(flags)),
             std::move(std::get<1>(flags)),
             std::move(std::get<2>(flags)),
-            std::move(ns), std::move(attribute),
+            std::forward<ns_t>(ns), std::forward<attribute_t>(attribute),
             std::move(value_expressions)
         };
     }
