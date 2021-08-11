@@ -45,8 +45,8 @@ namespace vt::dictionary
         using qty = constants::NodeQuantifier;
 
         // Default expressions
-        constexpr size_t vexpr_isDefault            = enum_integer(cnd::is_default)
-        constexpr size_t default_vexpr_condition    = enum_integer(cnd::none);
+        constexpr size_t default_vexpr_isDefault    = enum_integer(cnd::is_default);
+        constexpr size_t default_vexpr_none         = enum_integer(cnd::none);
         constexpr size_t default_vexpr_quantifier   = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t default_node_document      = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
         constexpr size_t default_vexpr_document     = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
@@ -115,96 +115,310 @@ namespace vt::dictionary
         constexpr std::tuple attr_tts_writingMode     { NS::tts,         Attribute::writingMode     };
         constexpr std::tuple attr_tts_zIndex          { NS::tts,         Attribute::zIndex          };
 
-        /// Value Expression Entries
+        // Value Expression Entries
         // ---------------------------------------------------------------------------------------------------|
+
+        // XML Namespace -------------------------------------------------|
 
         // [xml:id]
         constexpr std::tuple vexpr_xml_id {
-            std::tuple { NS::none,       ValueExpression::id,               "<id>"                                          }
+            std::tuple { NS::none,       ValueExpression::id,               "<id>",                         default_vexpr_none,                         default_vexpr_document }
         };
 
         // [xml:lang]
         constexpr std::tuple vexpr_xml_lang {
-            std::tuple { NS::none,       ValueExpression::language,         "<language>"                                    }
+            std::tuple { NS::none,       ValueExpression::language,         "<language>",                   default_vexpr_none,                         default_vexpr_document }
         };
 
         // [xml:space]
         constexpr std::tuple vexpr_xml_space {
-            std::tuple { NS::none,       ValueExpression::literal,          "default",                      vexpr_isDefault },
-            std::tuple { NS::none,       ValueExpression::literal,          "preserve"                                      }
+            std::tuple { NS::none,       ValueExpression::literal,          "default",                      default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "preserve",                     default_vexpr_none,                         default_vexpr_document }
         };
+
+        constexpr std::tuple vexpr_xml {
+            vexpr_xml_id,
+            vexpr_xml_lang,
+            vexpr_xml_space 
+        };
+
+        // TT Namespace --------------------------------------------------|
+
+        // [tt:style]
+        constexpr std::tuple vexpr_tt_style {
+            std::tuple { NS::none,       ValueExpression::idrefs,           "<idrefs>",                     default_vexpr_isDefault,                    default_vexpr_document }
+        };
+
+        constexpr std::tuple vexpr_tt {
+            vexpr_tt_style
+        };
+
+        // TTP Namespace -------------------------------------------------|
 
         // [ttp:cellResolution]
         constexpr std::tuple vexpr_ttp_cellResolution {
-            std::tuple { NS::none,       ValueExpression::literal,          "32 15",                        vexpr_isDefault },
-            std::tuple { NS::none,       ValueExpression::regex,            "<digit>+ <digit>+"                             }
+            std::tuple { NS::none,       ValueExpression::literal,          "32 15",                        default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+ <digit>+",            default_vexpr_none,                         default_vexpr_document }
         };
 
         // [ttp:clockMode]
         constexpr std::tuple vexpr_ttp_clockMode {
-            std::tuple { NS::none,       ValueExpression::literal,          "local",                        vexpr_isDefault },
-            std::tuple { NS::none,       ValueExpression::literal,          "gps"                                           },
-            std::tuple { NS::none,       ValueExpression::literal,          "utc"                                           }
+            std::tuple { NS::none,       ValueExpression::literal,          "local",                        default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "gps",                          default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "utc",                          default_vexpr_none,                         default_vexpr_document }
         };
 
         // [ttp:dropMode]
         constexpr std::tuple vexpr_ttp_dropMode {
-            std::tuple { NS::none,       ValueExpression::literal,          "dropNTSC",                     vexpr_isDefault },
-            std::tuple { NS::none,       ValueExpression::literal,          "dropPAL"                                       },
-            std::tuple { NS::none,       ValueExpression::literal,          "nonDrop"                                       }
+            std::tuple { NS::none,       ValueExpression::literal,          "dropNTSC",                     default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "dropPAL",                      default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "nonDrop",                      default_vexpr_none,                         default_vexpr_document }
         };
 
         // [ttp:frameRate]
         constexpr std::tuple vexpr_ttp_frameRate {
-            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+",                     vexpr_isDefault }
+            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+",                     default_vexpr_isDefault,                    default_vexpr_document }
         };
 
         // [ttp:frameRateMultiplier]
         constexpr std::tuple vexpr_ttp_frameRateMultiplier {
-            std::tuple { NS::none,       ValueExpression::regex,            "<digit>+ <digit>+",            vexpr_isDefault }
+            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+ <digit>+",            default_vexpr_isDefault,                    default_vexpr_document }
         };
 
         // [ttp:markerMode]
         constexpr std::tuple vexpr_ttp_markerMode {
-            std::tuple { NS::none,       ValueExpression::literal,          "continuous",                   vexpr_isDefault },
-            std::tuple { NS::none,       ValueExpression::literal,          "discontinuous"                                 }
+            std::tuple { NS::none,       ValueExpression::literal,          "continuous",                   default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "discontinuous",                default_vexpr_none,                         default_vexpr_document }
         };
 
         // [ttp:pixelAspectRatio]
         constexpr std::tuple vexpr_ttp_pixelAspectRatio {
-            std::tuple { NS::none,       ValueExpression::regex,            "<digit>+ <digit>+",            vexpr_isDefault }
+            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+ <digit>+",            default_vexpr_isDefault,                    default_vexpr_document }
         };
 
         // [ttp:profile]
         constexpr std::tuple vexpr_ttp_profile {
-            std::tuple { NS::none,       ValueExpression::any_uri,          "<anyURI>",                     vexpr_isDefault }
+            std::tuple { NS::none,       ValueExpression::any_uri,          "<anyURI>",                     default_vexpr_isDefault,                    default_vexpr_document }
         };
 
         // [ttp:subFrameRate]
         constexpr std::tuple vexpr_ttp_subFrameRate {
-            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+",                     vexpr_isDefault }
+            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+",                     default_vexpr_isDefault,                    default_vexpr_document }
         };
 
         // [ttp:tickRate]
         constexpr std::tuple vexpr_ttp_tickRate {
-            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+",                     vexpr_isDefault }
+            std::tuple { NS::none,       ValueExpression::digit,            "<digit>+",                     default_vexpr_isDefault,                    default_vexpr_document }
         };
 
         // [ttp:timeBase]
         constexpr std::tuple vexpr_ttp_timeBase {
-            std::tuple { NS::none,       ValueExpression::literal,          "media",                        vexpr_isDefault },
-            std::tuple { NS::none,       ValueExpression::literal,          "smpte"                                         },
-            std::tuple { NS::none,       ValueExpression::literal,          "clock"                                         }
+            std::tuple { NS::none,       ValueExpression::literal,          "media",                        default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "smpte",                        default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "clock",                        default_vexpr_none,                         default_vexpr_document }
+        };
+
+        constexpr std::tuple vexpr_ttp {
+            vexpr_ttp_cellResolution,
+            vexpr_ttp_clockMode,
+            vexpr_ttp_dropMode,
+            vexpr_ttp_frameRate,
+            vexpr_ttp_frameRateMultiplier,
+            vexpr_ttp_markerMode,
+            vexpr_ttp_pixelAspectRatio,
+            vexpr_ttp_profile,
+            vexpr_ttp_subFrameRate,
+            vexpr_ttp_tickRate,
+            vexpr_ttp_timeBase
+        };
+
+        // TTS Namespace -------------------------------------------------|
+
+        // [tts:backgroundColor]
+        constexpr std::tuple vexpr_tts_backgroundColor {
+            std::tuple { NS::none,       ValueExpression::color,            "<color>",                                                 default_vexpr_isDefault,                    default_vexpr_document },
+        };
+
+        // [tts:color]
+        constexpr std::tuple vexpr_tts_color {
+            std::tuple { NS::none,       ValueExpression::color,            "<color>",                                                 default_vexpr_isDefault,                    default_vexpr_document },
+        };
+
+        // [tts:direction]
+        constexpr std::tuple vexpr_tts_direction {
+            std::tuple { NS::none,       ValueExpression::literal,          "ltr",                                                     default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "rtl",                                                     default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:display]
+        constexpr std::tuple vexpr_tts_display {
+            std::tuple { NS::none,       ValueExpression::literal,          "auto",                                                    default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "none",                                                    default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:displayAlign]
+        constexpr std::tuple vexpr_tts_displayAlign {
+            std::tuple { NS::none,       ValueExpression::literal,          "before",                                                  default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "center",                                                  default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "after",                                                   default_vexpr_none,                         default_vexpr_document }
         };
 
         // [tts:extent]
         constexpr std::tuple vexpr_tts_extent {
-            std::tuple { NS::none,       ValueExpression::automatic,        "<auto>",                       vexpr_isDefault },
-            std::tuple { NS::none,       ValueExpression::regex,            "<length> <length>"                             }
+            std::tuple { NS::none,       ValueExpression::literal,          "auto",                                                    default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::length,           "<length> <length>",                                       default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:fontFamily]
+        constexpr std::tuple vexpr_tts_fontFamily {
+            std::tuple { NS::none,       ValueExpression::literal,          "default",                                                 default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::font,             "<familyName>|<genericFamilyName>*",                       default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:fontSize]
+        constexpr std::tuple vexpr_tts_fontSize {
+            std::tuple { NS::none,       ValueExpression::literal,          "1c",                                                      default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::length,           "<length> <length>?",                                      default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:fontSyle]
+        constexpr std::tuple vexpr_tts_fontSyle {
+            std::tuple { NS::none,       ValueExpression::literal,          "normal",                                                  default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "italic",                                                  default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "oblique",                                                 default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:fontWeight]
+        constexpr std::tuple vexpr_tts_fontWeight {
+            std::tuple { NS::none,       ValueExpression::literal,          "normal",                                                  default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "bold",                                                    default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:lineHeight]
+        constexpr std::tuple vexpr_tts_lineHeight {
+            std::tuple { NS::none,       ValueExpression::literal,          "normal",                                                  default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::length,           "<length>",                                                default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:opacity]
+        constexpr std::tuple vexpr_tts_opacity {
+            std::tuple { NS::none,       ValueExpression::literal,          "1.0",                                                     default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::alpha,            "<alpha>",                                                 default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:origin]
+        constexpr std::tuple vexpr_tts_origin {
+            std::tuple { NS::none,       ValueExpression::literal,          "auto",                                                    default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::length,           "<length> <length>",                                       default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:overflow]
+        constexpr std::tuple vexpr_tts_overflow {
+            std::tuple { NS::none,       ValueExpression::literal,          "visible",                                                 default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "hidden",                                                  default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:padding]
+        constexpr std::tuple vexpr_tts_padding {
+            std::tuple { NS::none,       ValueExpression::literal,          "0px",                                                     default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::length,           "<length>",                                                default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::length,           "<length> <length>",                                       default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::length,           "<length> <length> <length>",                              default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::length,           "<length> <length> <length> <length>",                     default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:showBackground]
+        constexpr std::tuple vexpr_tts_showBackground {
+            std::tuple { NS::none,       ValueExpression::literal,          "always",                                                  default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "whenActive",                                              default_vexpr_none,                         default_vexpr_document }
         };
         
+        // [tts:textAlign]
+        constexpr std::tuple vexpr_tts_textAlign {
+            std::tuple { NS::none,       ValueExpression::literal,          "start",                                                   default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "left",                                                    default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "center",                                                  default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "right",                                                   default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "end",                                                     default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:textDecoration]
+        constexpr std::tuple vexpr_tts_textDecoration {
+            std::tuple { NS::none,       ValueExpression::literal,          "none",                                                                                 default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::string,           "underline|noUnderline||lineThrough|noLineThrough||overline|noOverline",                default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:textOutline]
+        constexpr std::tuple vexpr_tts_textOutline {
+            std::tuple { NS::none,       ValueExpression::literal,          "none",                                                    default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::compound,         "<color>? <length> <length>?",                             default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:unicodeBidi]
+        constexpr std::tuple vexpr_tts_unicodeBidi {
+            std::tuple { NS::none,       ValueExpression::literal,          "none",                                                    default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "embed",                                                   default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "bidiOverride",                                            default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:visibility]
+        constexpr std::tuple vexpr_tts_visibility {
+            std::tuple { NS::none,       ValueExpression::literal,          "visible",                                                 default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "hidden",                                                  default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:wrapOption]
+        constexpr std::tuple vexpr_tts_wrapOption {
+            std::tuple { NS::none,       ValueExpression::literal,          "wrap",                                                    default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "noWrap",                                                  default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:writingMode]
+        constexpr std::tuple vexpr_tts_writingMode {
+            std::tuple { NS::none,       ValueExpression::literal,          "lrtb",                                                    default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "rltb",                                                    default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "tbrl",                                                    default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "tblr",                                                    default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "lr",                                                      default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "rl",                                                      default_vexpr_none,                         default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "tb",                                                      default_vexpr_none,                         default_vexpr_document }
+        };
+
+        // [tts:zIndex]
+        constexpr std::tuple vexpr_tts_zIndex {
+            std::tuple { NS::none,       ValueExpression::literal,          "auto",                                                    default_vexpr_isDefault,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::integer,          "<integer>",                                               default_vexpr_none,                         default_vexpr_document }
+        };
+
+        constexpr std::tuple vexpr_tts {
+            vexpr_tts_backgroundColor,
+            vexpr_tts_color,
+            vexpr_tts_direction,
+            vexpr_tts_display,
+            vexpr_tts_displayAlign,
+            vexpr_tts_extent,
+            vexpr_tts_fontFamily,
+            vexpr_tts_fontSize,
+            vexpr_tts_fontSyle,
+            vexpr_tts_fontWeight,
+            vexpr_tts_lineHeight,
+            vexpr_tts_opacity,
+            vexpr_tts_origin,
+            vexpr_tts_overflow,
+            vexpr_tts_padding,
+            vexpr_tts_showBackground,
+            vexpr_tts_textAlign,
+            vexpr_tts_textDecoration,
+            vexpr_tts_textOutline,
+            vexpr_tts_unicodeBidi,
+            vexpr_tts_visibility,
+            vexpr_tts_wrapOption,
+            vexpr_tts_writingMode,
+            vexpr_tts_zIndex
+        };
+
         // Old Value Expressions
-        constexpr std::tuple flags{ default_vexpr_condition, default_vexpr_quantifier, default_vexpr_document };
+        constexpr std::tuple flags{ default_vexpr_none, default_vexpr_quantifier, default_vexpr_document };
         constexpr std::tuple value_expressions { 
             std::tuple { NS::tt, ValueExpression::string, "<string1>", 0, 0 },
             std::tuple { NS::tt, ValueExpression::string, "<string2>", 0, 0 },

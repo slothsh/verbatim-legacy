@@ -5,6 +5,10 @@
 #ifndef VTFUNCTOR_HEADER
 #define VTFUNCTOR_HEADER
 
+// Stanard Headers
+#include <type_traits>
+#include <concepts>
+
 // Configuration headers
 #ifndef VTCONFIG_HEADER
 #include "config.hpp"

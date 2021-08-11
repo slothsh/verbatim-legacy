@@ -53,8 +53,8 @@ namespace vt::dictionary
     enum class ValueExpression : size_t
     {
         IS_VALUE_EXPRESSION = VT_ENUM_ID,
-        undefined, alpha, color, digit, duration, familyName, genericFamilyName, hexDigit, integer, length, namedColor, quotedString, string, timeExpression,
-        automatic, id, literal, language, regex, any_uri,
+        undefined, alpha, color, compound, digit, duration, font, familyName, genericFamilyName, hexDigit, integer, length, namedColor, quotedString, string,
+        timeExpression, id, idref, idrefs, literal, language, regex, any_uri,
         none = VT_ENUM_NONE
     };
 
