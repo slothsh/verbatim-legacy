@@ -97,6 +97,8 @@ namespace constants
         IS_CONDITION            = VT_ENUM_ID,
         required                = (1 << 0),
         is_default              = (1 << 1),
+        negate                  = (1 << 2),
+        not_empty               = (1 << 3),
         none                    = VT_ENUM_NONE
     };
 
