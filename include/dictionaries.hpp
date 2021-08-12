@@ -149,8 +149,66 @@ namespace vt::dictionary
             std::tuple { NS::none,       ValueExpression::idrefs,           "<idrefs>",                     default_vexpr_isDefault,                    default_vexpr_document }
         };
 
+        // [tt:begin]
+        constexpr std::tuple vexpr_tt_begin {
+            std::tuple { NS::none,       ValueExpression::timeExpression,   "<timeExpression>",             default_vexpr_isDefault,                    default_vexpr_document }
+        };
+
+        // [tt:end]
+        constexpr std::tuple vexpr_tt_end {
+            std::tuple { NS::none,       ValueExpression::timeExpression,   "<timeExpression>",             default_vexpr_isDefault,                    default_vexpr_document }
+        };
+
+        // [tt:dur]
+        constexpr std::tuple vexpr_tt_dur {
+            std::tuple { NS::none,       ValueExpression::timeExpression,   "<timeExpression>",             default_vexpr_isDefault,                    default_vexpr_document }
+        };
+
+        // [tt:region]
+        constexpr std::tuple vexpr_tt_region {
+            std::tuple { NS::none,       ValueExpression::idref,            "<idref>",                      default_vexpr_isDefault,                    default_vexpr_document }
+        };
+
         constexpr std::tuple vexpr_tt {
-            vexpr_tt_style
+            vexpr_tt_style,
+            vexpr_tt_begin,
+            vexpr_tt_end,
+            vexpr_tt_dur,
+            vexpr_tt_region
+        };
+
+        // TTM Namespace -------------------------------------------------|
+
+        // [ttm:agent]
+        constexpr std::tuple vexpr_ttm_agent {
+            std::tuple { NS::none,       ValueExpression::idrefs,           "<idrefs>",                                                default_vexpr_isDefault,               default_vexpr_document },
+        };
+
+        // [ttm:actor]
+        constexpr std::tuple vexpr_ttm_actor {
+            std::tuple { NS::none,       ValueExpression::literal,          "action",                                                  default_vexpr_isDefault,               default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "caption",                                                 default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "description",                                             default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "dialog",                                                  default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "expletive",                                               default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "kinesic",                                                 default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "lyrics",                                                  default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "music",                                                   default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "narration",                                               default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "quality",                                                 default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "sound",                                                   default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "source",                                                  default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "suppressed",                                              default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "reproduction",                                            default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "thought",                                                 default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "title",                                                   default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::literal,          "transcription",                                           default_vexpr_none,                    default_vexpr_document },
+            std::tuple { NS::none,       ValueExpression::token_char,       "<extenstionRole>",                                        default_vexpr_none,                    default_vexpr_document }
+        };
+
+        constexpr std::tuple vexpr_ttm {
+            vexpr_ttm_agent,
+            vexpr_ttm_actor
         };
 
         // TTP Namespace -------------------------------------------------|
@@ -417,6 +475,11 @@ namespace vt::dictionary
             vexpr_tts_zIndex
         };
 
+        // Attribute Node Entries
+        // ---------------------------------------------------------------------------------------------------|
+
+        
+
         // Old Value Expressions
         constexpr std::tuple flags{ default_vexpr_none, default_vexpr_quantifier, default_vexpr_document };
         constexpr std::tuple value_expressions { 
@@ -425,8 +488,7 @@ namespace vt::dictionary
             std::tuple { NS::tt, ValueExpression::string, "<string3>", 0, 0 }
         };
 
-        constexpr auto fnc_create_attribute = []
-        <class Telem, class Ttup, class Tflags, size_t Stup = std::tuple_size_v<Ttup>>
+        constexpr auto fnc_create_attribute = [] <class Telem, class Ttup, class Tflags, size_t Stup = std::tuple_size_v<Ttup>>
         (const Telem&& element, const Ttup&& value_expressions, const Tflags&& flags) {
             using vexpr_t = decltype(value_expressions);
             using flags_t = decltype(flags);
