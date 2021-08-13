@@ -495,15 +495,15 @@ namespace vt::dictionary
         };
 
         constexpr std::tuple attr_tt_tt_xml_lang {
-            cnd_node_none, qty_node_zeroOrMore, doc_node_all,
+            cnd_node_none, qty_node_zeroOrOne, doc_node_all,
             attrelem_tt_tt,
             vexpr_xml_lang
         };
 
         constexpr std::tuple attr_tt_tt_xml_space {
-            cnd_node_none, qty_node_zeroOrMore, doc_node_all,
+            cnd_node_none, qty_node_zeroOrOne, doc_node_all,
             attrelem_tt_tt,
-            vexpr_xml_lang
+            vexpr_xml_space
         };
 
         // TTM Namespace -------------------------------------------------|
