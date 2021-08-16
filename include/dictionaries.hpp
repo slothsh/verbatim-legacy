@@ -485,26 +485,66 @@ namespace vt::dictionary
         // Attribute Node Entries
         // ---------------------------------------------------------------------------------------------------|
 
+        // TTP group attribute factory
+        constexpr auto attr_join_parameters = []
+        <class Tattr, class Tparam, class Telem, class S, S... Sseq>
+        (const Tattr&& value_expressions, const Tparam&& parameters, const Telem&& element, std::integer_sequence<S, Sseq...> sequence) {
+            return std::tuple {
+                std::tuple{ 
+                    std::get<0>(parameters),
+                    std::get<1>(parameters),
+                    std::get<2>(parameters),
+                    element,
+                    std::get<Sseq>(value_expressions)
+                }
+                ...
+            };
+        };
+
         // TT Namespace -------------------------------------------------|
 
         // <tt:tt/>
-        constexpr std::tuple attr_tt_tt_xml_id {
-            cnd_node_none, qty_node_zeroOrOne, doc_node_all,
-            attrelem_tt_tt,
-            vexpr_xml_id
+        constexpr std::tuple attrgrp_tt_tt_main {
+            std::tuple {
+                cnd_node_none, qty_node_zeroOrOne, doc_node_all,
+                attrelem_tt_tt,
+                vexpr_xml_id
+            },
+
+            std::tuple {
+                cnd_node_required, qty_node_zeroOrOne, doc_node_all,
+                attrelem_tt_tt,
+                vexpr_xml_lang
+            },
+
+            std::tuple {
+                cnd_node_none, qty_node_zeroOrOne, doc_node_all,
+                attrelem_tt_tt,
+                vexpr_xml_space
+            },
+
+            std::tuple {
+                cnd_node_none, qty_node_zeroOrOne, doc_node_all,
+                attrelem_tt_tt,
+                vexpr_tts_extent
+            }
         };
 
-        constexpr std::tuple attr_tt_tt_xml_lang {
-            cnd_node_none, qty_node_zeroOrOne, doc_node_all,
-            attrelem_tt_tt,
-            vexpr_xml_lang
-        };
+        constexpr std::tuple attrgrp_tt_tt_ttp = attr_join_parameters (
+            std::move(vexpr_ttp),
+            std::tuple{ cnd_node_none, qty_node_zeroOrMore, doc_node_all },
+            std::move(attrelem_tt_tt),
+            std::make_index_sequence<std::tuple_size_v<decltype(vexpr_ttp)>>{}
+        );
 
-        constexpr std::tuple attr_tt_tt_xml_space {
-            cnd_node_none, qty_node_zeroOrOne, doc_node_all,
-            attrelem_tt_tt,
-            vexpr_xml_space
-        };
+        // TODO: {any attribute not in default or any TT namespace}
+
+        constexpr std::tuple attr_tt_tt = std::tuple_cat(
+            attrgrp_tt_tt_main,
+            attrgrp_tt_tt_ttp
+        );
+
+        return attr_tt_tt;
 
         // TTM Namespace -------------------------------------------------|
         // TTP Namespace -------------------------------------------------|
@@ -534,14 +574,14 @@ namespace vt::dictionary
             };
         };
 
-        constexpr auto fnc_create_content = []() { return 1; };
+        // constexpr auto fnc_create_content = []() { return 1; };
 
-        constexpr std::tuple nodes {
-            std::tuple{ std::move(doc_node_all), NS::tt, Tag::tt, attr_xml_id, value_expressions, flags, VTFunctor{ std::move(fnc_create_attribute) }, VTFunctor{ std::move(fnc_create_content) } },
-            std::tuple{ std::move(doc_node_all), NS::tt, Tag::tt, attr_xml_id, value_expressions, flags, VTFunctor{ std::move(fnc_create_attribute) }, VTFunctor{ std::move(fnc_create_content) } }
-        };
+        // constexpr std::tuple nodes {
+        //     std::tuple{ std::move(doc_node_all), NS::tt, Tag::tt, attr_xml_id, value_expressions, flags, VTFunctor{ std::move(fnc_create_attribute) }, VTFunctor{ std::move(fnc_create_content) } },
+        //     std::tuple{ std::move(doc_node_all), NS::tt, Tag::tt, attr_xml_id, value_expressions, flags, VTFunctor{ std::move(fnc_create_attribute) }, VTFunctor{ std::move(fnc_create_content) } }
+        // };
 
-        return detail::CreateTTMLNodeList(std::move(nodes), detail::tuple_seq<decltype(nodes)>{});
+        // return detail::CreateTTMLNodeList(std::move(nodes), detail::tuple_seq<decltype(nodes)>{});
     }
 
     template<class Tdict = decltype(CreateTTMLDictionary())>

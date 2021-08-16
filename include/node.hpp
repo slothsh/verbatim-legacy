@@ -99,6 +99,7 @@ namespace constants
         is_default              = (1 << 1),
         negate                  = (1 << 2),
         not_empty               = (1 << 3),
+        not_used                = (1 << 4),
         none                    = VT_ENUM_NONE
     };
 
