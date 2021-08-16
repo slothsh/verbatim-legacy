@@ -48,14 +48,14 @@ namespace vt::dictionary
         // Default expressions
         constexpr size_t cnd_vexpr_isDefault        = enum_integer(cnd::is_default);
         constexpr size_t cnd_vexpr_none             = enum_integer(cnd::none);
-        constexpr size_t cnd_node_none              = enum_integer(cnd::none);
+        constexpr size_t cnd_attr_none              = enum_integer(cnd::none);
         constexpr size_t cnd_node_required          = enum_integer(cnd::required);
 
-        constexpr size_t qty_node_zeroOrOne         = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
+        constexpr size_t qty_attr_zeroOrOne         = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_node_zeroOrMore        = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_vexpr_zeroOrOne        = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
 
-        constexpr size_t doc_node_all               = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
+        constexpr size_t doc_attr_all               = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
         constexpr size_t doc_vexpr_all              = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
 
         // Value Expression Entries
@@ -482,23 +482,101 @@ namespace vt::dictionary
         constexpr std::tuple attrelem_tts_writingMode     { NS::tts,         Attribute::writingMode     };
         constexpr std::tuple attrelem_tts_zIndex          { NS::tts,         Attribute::zIndex          };
 
+        // Attribute Node Parameters
+        // ---------------------------------------------------------------------------------------------------|
+        constexpr std::tuple attrparams_xml {
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_xml_id
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_xml_lang
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_xml_space
+        };
+
+        constexpr std::tuple attrparams_tt {
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tt_style
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tt_begin
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tt_end
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tt_dur
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tt_region
+        };
+
+        constexpr std::tuple attrparams_ttm {
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_ttm_agent
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all }      // vexpr_ttm_actor
+        };
+
+        constexpr std::tuple attrparams_ttp {
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_cellResolution
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_clockMode
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_dropMode
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_frameRate
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_frameRateMultiplier
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_markerMode
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_pixelAspectRatio
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_profile
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_subFrameRate
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },      // vexpr_ttp_tickRate
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all }       // vexpr_ttp_timeBase
+        };
+
+        constexpr std::tuple attrparams_tts {
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_backgroundColor
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_color
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_direction
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_display
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_displayAlign
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_extent
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_fontFamily
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_fontSize
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_fontSyle
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_fontWeight
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_lineHeight
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_opacity
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_origin
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_overflow
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_padding
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_showBackground
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_textAlign
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_textDecoration
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_textOutline
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_unicodeBidi
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_visibility
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_wrapOption
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all },     // vexpr_tts_writingMode
+            std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all }      // vexpr_tts_zIndex
+        };
+
+        // ---------------------------------------------------------------------------------------------------|
+
         // Attribute Node Entries
         // ---------------------------------------------------------------------------------------------------|
 
-        // TTP group attribute factory
-        constexpr auto attr_join_parameters = []
+        // Helper functions for generating attribute nodes
+        constexpr auto CreateAttributeNode = []
         <class Tattr, class Tparam, class Telem, class S, S... Sseq>
         (const Tattr&& value_expressions, const Tparam&& parameters, const Telem&& element, std::integer_sequence<S, Sseq...> sequence) {
-            return std::tuple {
-                std::tuple{ 
-                    std::get<0>(parameters),
-                    std::get<1>(parameters),
-                    std::get<2>(parameters),
-                    element,
-                    std::get<Sseq>(value_expressions)
-                }
-                ...
-            };
+            using params_t = std::tuple<size_t, size_t, size_t>;
+            if constexpr (std::is_same_v<params_t, Tparam>) {
+                return std::tuple {
+                    std::tuple { 
+                        std::get<0>(parameters),
+                        std::get<1>(parameters),
+                        std::get<2>(parameters),
+                        element,
+                        std::get<Sseq>(value_expressions)
+                    }
+                    ...
+                };
+            } else if constexpr (!std::conjunction_v<std::is_same<params_t, decltype(std::get<Sseq>(parameters))> ... >) {
+                return std::tuple {
+                    std::tuple { 
+                        std::get<0>(std::get<Sseq>(parameters)),
+                        std::get<1>(std::get<Sseq>(parameters)),
+                        std::get<2>(std::get<Sseq>(parameters)),
+                        element,
+                        std::get<Sseq>(value_expressions)
+                    }
+                    ...
+                };
+            }
         };
 
         // TT Namespace -------------------------------------------------|
@@ -506,33 +584,33 @@ namespace vt::dictionary
         // <tt:tt/>
         constexpr std::tuple attrgrp_tt_tt_main {
             std::tuple {
-                cnd_node_none, qty_node_zeroOrOne, doc_node_all,
+                cnd_attr_none, qty_attr_zeroOrOne, doc_attr_all,
                 attrelem_tt_tt,
                 vexpr_xml_id
             },
 
             std::tuple {
-                cnd_node_required, qty_node_zeroOrOne, doc_node_all,
+                cnd_node_required, qty_attr_zeroOrOne, doc_attr_all,
                 attrelem_tt_tt,
                 vexpr_xml_lang
             },
 
             std::tuple {
-                cnd_node_none, qty_node_zeroOrOne, doc_node_all,
+                cnd_attr_none, qty_attr_zeroOrOne, doc_attr_all,
                 attrelem_tt_tt,
                 vexpr_xml_space
             },
 
             std::tuple {
-                cnd_node_none, qty_node_zeroOrOne, doc_node_all,
+                cnd_attr_none, qty_attr_zeroOrOne, doc_attr_all,
                 attrelem_tt_tt,
                 vexpr_tts_extent
             }
         };
 
-        constexpr std::tuple attrgrp_tt_tt_ttp = attr_join_parameters (
+        constexpr std::tuple attrgrp_tt_tt_ttp = CreateAttributeNode (
             std::move(vexpr_ttp),
-            std::tuple{ cnd_node_none, qty_node_zeroOrMore, doc_node_all },
+            std::move(attrparams_ttp),
             std::move(attrelem_tt_tt),
             std::make_index_sequence<std::tuple_size_v<decltype(vexpr_ttp)>>{}
         );
@@ -577,8 +655,8 @@ namespace vt::dictionary
         // constexpr auto fnc_create_content = []() { return 1; };
 
         // constexpr std::tuple nodes {
-        //     std::tuple{ std::move(doc_node_all), NS::tt, Tag::tt, attr_xml_id, value_expressions, flags, VTFunctor{ std::move(fnc_create_attribute) }, VTFunctor{ std::move(fnc_create_content) } },
-        //     std::tuple{ std::move(doc_node_all), NS::tt, Tag::tt, attr_xml_id, value_expressions, flags, VTFunctor{ std::move(fnc_create_attribute) }, VTFunctor{ std::move(fnc_create_content) } }
+        //     std::tuple{ std::move(doc_attr_all), NS::tt, Tag::tt, attr_xml_id, value_expressions, flags, VTFunctor{ std::move(fnc_create_attribute) }, VTFunctor{ std::move(fnc_create_content) } },
+        //     std::tuple{ std::move(doc_attr_all), NS::tt, Tag::tt, attr_xml_id, value_expressions, flags, VTFunctor{ std::move(fnc_create_attribute) }, VTFunctor{ std::move(fnc_create_content) } }
         // };
 
         // return detail::CreateTTMLNodeList(std::move(nodes), detail::tuple_seq<decltype(nodes)>{});
