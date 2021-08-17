@@ -226,6 +226,13 @@ namespace vt::dictionary
     {
         using init_t = ValueExpressionNode<Tns, Tvexpr>;
 
+        constexpr ValueExpressionNode(const Tns& n_ns, const Tvexpr& n_vexpr, const std::string_view& n_value, const size_t& n_conditions, const size_t& n_documents) noexcept
+            : expression({ n_ns, n_vexpr }),
+            value(n_value),
+            conditions(n_conditions),
+            documents(n_documents)
+        {}
+
         constexpr ValueExpressionNode(Tns&& n_ns, Tvexpr&& n_vexpr, std::string_view&& n_value, size_t&& n_conditions, size_t&& n_documents) noexcept
             : expression({ n_ns, n_vexpr }),
             value(n_value),
@@ -257,6 +264,24 @@ namespace vt::dictionary
                 class Nvexpr>
     struct AttributeNode
     {
+        constexpr AttributeNode(const size_t& n_condition, const size_t& n_quantifier, const size_t& n_documents,
+                                const Tns& n_ns,  const Tattr& n_attr, const Nvexpr& n_vexpr)
+            : attribute({ n_ns, n_attr }),
+            expressions(n_vexpr),
+            condition(n_condition),
+            quantifier(n_quantifier),
+            documents(n_documents)
+        {}
+
+        constexpr AttributeNode(const size_t& n_condition, const size_t& n_quantifier, const size_t& n_documents,
+                                const std::tuple<Tns, Tattr>& element, const Nvexpr& n_vexpr)
+            : attribute({ std::get<0>(element), std::get<1>(element) }),
+            expressions(n_vexpr),
+            condition(n_condition),
+            quantifier(n_quantifier),
+            documents(n_documents)
+        {}
+
         constexpr AttributeNode(size_t&& n_condition, size_t&& n_quantifier, size_t&& n_documents,
                                 Tns&& n_ns,  Tattr&& n_attr, Nvexpr&& n_vexpr)
             : attribute({ n_ns, n_attr }),
@@ -269,6 +294,15 @@ namespace vt::dictionary
         constexpr AttributeNode(const size_t&& n_condition, const size_t&& n_quantifier, const size_t&& n_documents,
                                 const Tns&& n_ns,  const Tattr&& n_attr, const Nvexpr&& n_vexpr)
             : attribute({ n_ns, n_attr }),
+            expressions(n_vexpr),
+            condition(n_condition),
+            quantifier(n_quantifier),
+            documents(n_documents)
+        {}
+
+        constexpr AttributeNode(const size_t&& n_condition, const size_t&& n_quantifier, const size_t&& n_documents,
+                                const std::tuple<Tns, Tattr>&& element, const Nvexpr&& n_vexpr)
+            : attribute({ std::get<0>(element), std::get<1>(element) }),
             expressions(n_vexpr),
             condition(n_condition),
             quantifier(n_quantifier),
