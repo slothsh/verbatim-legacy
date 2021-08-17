@@ -750,17 +750,28 @@ namespace vt::dictionary
 
 
         // TTM Namespace -------------------------------------------------|
+
+        // <tt:metadata/>
+        constexpr std::tuple attrgrp_tt_metadata {
+            CreateAttributeNode ( vexpr_xml,         attrparams_xml,      attrelem_xml,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_xml)>>{} )
+            // TODO: {any attribute not in default or any TT namespace}
+        };
+
         // TTP Namespace -------------------------------------------------|
         // TTS Namespace -------------------------------------------------|
-        
+
         return std::tuple {
+            // TT namespace
             attrgrp_tt_tt,
             attrgrp_tt_head,
             attrgrp_tt_body,
             attrgrp_tt_div,
             attrgrp_tt_p,
             attrgrp_tt_span,
-            attrgrp_tt_br
+            attrgrp_tt_br,
+            
+            // TTM namespace
+            attrgrp_tt_metadata
         };
 
         // Old Value Expressions
