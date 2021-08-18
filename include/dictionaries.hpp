@@ -51,15 +51,16 @@ namespace vt::dictionary
         constexpr size_t cnd_vexpr_none             = enum_integer(cnd::none);
         constexpr size_t cnd_attr_none              = enum_integer(cnd::none);
         constexpr size_t cnd_attr_required          = enum_integer(cnd::required);
-        constexpr size_t cnd_node_required          = enum_integer(cnd::required);
+        constexpr size_t cnd_element_required       = enum_integer(cnd::required);
 
+        constexpr size_t qty_vexpr_zeroOrOne        = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_attr_zeroOrOne         = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_attr_one               = enum_integer(qty::kleene_one) | (0 << grp::one) | (0 << grp::two);
-        constexpr size_t qty_node_zeroOrMore        = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two);
-        constexpr size_t qty_vexpr_zeroOrOne        = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
+        constexpr size_t qty_element_zeroOrMore     = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two);
 
         constexpr size_t doc_attr_all               = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
         constexpr size_t doc_vexpr_all              = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
+        constexpr size_t doc_element_all            = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
 
         constexpr std::tuple attrparams_default     { cnd_attr_none, qty_attr_zeroOrOne, doc_attr_all };
 
@@ -933,36 +934,73 @@ namespace vt::dictionary
             // TODO: {any attribute not in default or any TT namespace}
         );
 
+        // Content Node Entries
+        // ---------------------------------------------------------------------------------------------------|
+
+        // Element Node Entries
+        // ---------------------------------------------------------------------------------------------------|
+
+        // TT Namespace --------------------------------------------------|
+        constexpr XMLNode element_tt_tt       { doc_element_all,              NS::tt,             Tag::tt,                  attrgrp_tt_tt,                std::tuple{} };
+        constexpr XMLNode element_tt_head     { doc_element_all,              NS::tt,             Tag::head,                attrgrp_tt_head,              std::tuple{} };
+        constexpr XMLNode element_tt_body     { doc_element_all,              NS::tt,             Tag::body,                attrgrp_tt_body,              std::tuple{} };
+        constexpr XMLNode element_tt_div      { doc_element_all,              NS::tt,             Tag::div,                 attrgrp_tt_div,               std::tuple{} };
+        constexpr XMLNode element_tt_p        { doc_element_all,              NS::tt,             Tag::p,                   attrgrp_tt_p,                 std::tuple{} };
+        constexpr XMLNode element_tt_span     { doc_element_all,              NS::tt,             Tag::span,                attrgrp_tt_span,              std::tuple{} };
+        constexpr XMLNode element_tt_br       { doc_element_all,              NS::tt,             Tag::br,                  attrgrp_tt_br,                std::tuple{} };
+        constexpr XMLNode element_tt_styling  { doc_element_all,              NS::tt,             Tag::styling,             attrgrp_tt_styling,           std::tuple{} };
+        constexpr XMLNode element_tt_style    { doc_element_all,              NS::tt,             Tag::style,               attrgrp_tt_style,             std::tuple{} };
+        constexpr XMLNode element_tt_layout   { doc_element_all,              NS::tt,             Tag::layout,              attrgrp_tt_layout,            std::tuple{} };
+        constexpr XMLNode element_tt_region   { doc_element_all,              NS::tt,             Tag::region,              attrgrp_tt_region,            std::tuple{} };
+        constexpr XMLNode element_tt_set      { doc_element_all,              NS::tt,             Tag::set,                 attrgrp_tt_set,               std::tuple{} };
+        constexpr XMLNode element_tt_metadata { doc_element_all,              NS::tt,             Tag::metadata,            attrgrp_tt_metadata,          std::tuple{} };
+
+        // TTM Namespace -------------------------------------------------|
+        constexpr XMLNode element_ttm_title     { doc_element_all,          NS::ttm,              Tag::title,             attrgrp_ttm_title,                    std::tuple{} };
+        constexpr XMLNode element_ttm_desc      { doc_element_all,          NS::ttm,              Tag::desc,              attrgrp_ttm_desc,                     std::tuple{} };
+        constexpr XMLNode element_ttm_copyright { doc_element_all,          NS::ttm,              Tag::copyright,         attrgrp_ttm_copyright,                std::tuple{} };
+        constexpr XMLNode element_ttm_agent     { doc_element_all,          NS::ttm,              Tag::agent,             attrgrp_ttm_agent,                    std::tuple{} };
+        constexpr XMLNode element_ttm_name      { doc_element_all,          NS::ttm,              Tag::name,              attrgrp_ttm_name,                     std::tuple{} };
+        constexpr XMLNode element_ttm_actor     { doc_element_all,          NS::ttm,              Tag::actor,             attrgrp_ttm_actor,                    std::tuple{} };
+
+        // TTP Namespace -------------------------------------------------|
+        constexpr XMLNode element_ttp_profile       { doc_element_all,          NS::ttp,              Tag::profile,                attrgrp_ttp_profile,             std::tuple{} };
+        constexpr XMLNode element_ttp_features      { doc_element_all,          NS::ttp,              Tag::features,               attrgrp_ttp_features,            std::tuple{} };
+        constexpr XMLNode element_ttp_feature       { doc_element_all,          NS::ttp,              Tag::feature,                attrgrp_ttp_feature,             std::tuple{} };
+        constexpr XMLNode element_ttp_extensions    { doc_element_all,          NS::ttp,              Tag::extensions,             attrgrp_ttp_extensions,          std::tuple{} };
+        constexpr XMLNode element_ttp_extension     { doc_element_all,          NS::ttp,              Tag::extension,              attrgrp_ttp_extension,           std::tuple{} };
+
+        // The TTML table is complete
         return std::tuple {
             // TT namespace
-            attrgrp_tt_tt,
-            attrgrp_tt_head,
-            attrgrp_tt_body,
-            attrgrp_tt_div,
-            attrgrp_tt_p,
-            attrgrp_tt_span,
-            attrgrp_tt_br,
-            attrgrp_tt_metadata,
-            attrgrp_tt_layout,
-            attrgrp_tt_region,
-            attrgrp_tt_set,
-            attrgrp_tt_styling,
-            attrgrp_tt_style,
+            element_tt_tt,
+            element_tt_head,
+            element_tt_body,
+            element_tt_div,
+            element_tt_p,
+            element_tt_span,
+            element_tt_br,
+            element_tt_styling,
+            element_tt_style,
+            element_tt_layout,
+            element_tt_region,
+            element_tt_set,
+            element_tt_metadata,
 
             // TTM namespace
-            attrgrp_ttm_title,
-            attrgrp_ttm_desc,
-            attrgrp_ttm_copyright,
-            attrgrp_ttm_agent,
-            attrgrp_ttm_name,
-            attrgrp_ttm_actor,
+            element_ttm_title,
+            element_ttm_desc,
+            element_ttm_copyright,
+            element_ttm_agent,
+            element_ttm_name,
+            element_ttm_actor,
 
             // TTP namespace
-            attrgrp_ttp_profile,
-            attrgrp_ttp_features,
-            attrgrp_ttp_feature,
-            attrgrp_ttp_extensions,
-            attrgrp_ttp_feature
+            element_ttp_profile,
+            element_ttp_features,
+            element_ttp_feature,
+            element_ttp_extensions,
+            element_ttp_extension
         };
     }
 

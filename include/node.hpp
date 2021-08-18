@@ -341,8 +341,8 @@ namespace vt::dictionary
         using attribute_t = Tattr;
         using content_t = Tdata;
 
-        constexpr XMLNode(size_t&& n_documents,
-                            Tns&& n_ns, Ttag&& n_tag,
+        constexpr XMLNode(const size_t& n_documents,
+                            const Tns& n_ns, const Ttag& n_tag,
                             const Tattr& n_attr, const Tdata& n_data)
             : element({ n_ns , n_tag }),
             attributes(n_attr),
@@ -352,7 +352,7 @@ namespace vt::dictionary
 
         constexpr XMLNode(const size_t&& n_documents,
                             const Tns&& n_ns, const Ttag&& n_tag,
-                            const Tattr& n_attr, const Tdata& n_data)
+                            const Tattr&& n_attr, const Tdata&& n_data)
             : element({ n_ns , n_tag }),
             attributes(n_attr),
             content(n_data),
