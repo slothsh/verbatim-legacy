@@ -319,10 +319,31 @@ namespace vt::dictionary
 
     template<enumerable_ns Tns, enumerable_content Tdata>
     struct ContentNode
-    {
-        constexpr ContentNode(Tns&& n_ns, Tdata&& n_data,
-                                size_t&& n_quantifier, size_t&& n_documents) noexcept
+    {   
+        constexpr ContentNode(const size_t& n_quantifier, const size_t& n_documents,
+                                const Tns& n_ns, const Tdata& n_data) noexcept
             : type({ n_ns, n_data }),
+            documents(n_documents),
+            quantifier(n_quantifier)
+        {}
+
+        constexpr ContentNode(const size_t& n_quantifier, const size_t& n_documents,
+                                const std::tuple<Tns, Tdata>& n_element) noexcept
+            : type({ std::get<0>(n_element), std::get<1>(n_element) }),
+            documents(n_documents),
+            quantifier(n_quantifier)
+        {}
+
+        constexpr ContentNode(const size_t&& n_quantifier, const size_t&& n_documents,
+                                const Tns&& n_ns, const Tdata&& n_data) noexcept
+            : type({ n_ns, n_data }),
+            documents(n_documents),
+            quantifier(n_quantifier)
+        {}
+
+        constexpr ContentNode(const size_t&& n_quantifier, const size_t&& n_documents,
+                                const std::tuple<Tns, Tdata>&& n_element) noexcept
+            : type({ std::get<0>(n_element), std::get<1>(n_element) }),
             documents(n_documents),
             quantifier(n_quantifier)
         {}
@@ -393,7 +414,7 @@ namespace vt::dictionary::detail
         );
 
         // const auto content = fn_data(std::move(ns), std::move(tag));
-        constexpr ContentNode content{ NS::none, Tag::none, 0, 0 };
+        constexpr ContentNode content{ 0, 0, NS::none, Tag::none };
 
         using node_t = XMLNode<NS, Tag, decltype(attributes), decltype(content)>;
 

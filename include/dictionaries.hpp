@@ -56,10 +56,13 @@ namespace vt::dictionary
         constexpr size_t qty_vexpr_zeroOrOne        = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_attr_zeroOrOne         = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_attr_one               = enum_integer(qty::kleene_one) | (0 << grp::one) | (0 << grp::two);
+        constexpr size_t qty_content_zeroOrMore     = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two);
+        constexpr size_t qty_content_zeroOrOne      = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_element_zeroOrMore     = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two);
 
         constexpr size_t doc_attr_all               = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
         constexpr size_t doc_vexpr_all              = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
+        constexpr size_t doc_content_all            = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
         constexpr size_t doc_element_all            = enum_integer(doc::w3c_ttml1|doc::w3c_ttml2|doc::w3c_ttml3|doc::ebu_ttml1|doc::smpte_ttml1);
 
         constexpr std::tuple attrparams_default     { cnd_attr_none, qty_attr_zeroOrOne, doc_attr_all };
@@ -621,6 +624,31 @@ namespace vt::dictionary
             attrelem_tts_zIndex
         };
 
+        // Data type elements
+        constexpr std::tuple contentelem_pcdata { NS::none,         GenericData::PCDATA };
+
+        // Tag elements
+        constexpr std::tuple tagelem_tt_div           { NS::tt,           Tag::div           };
+        constexpr std::tuple tagelem_tt_p             { NS::tt,           Tag::p             };
+        constexpr std::tuple tagelem_tt_span          { NS::tt,           Tag::span          };
+        constexpr std::tuple tagelem_tt_br            { NS::tt,           Tag::br            };
+        constexpr std::tuple tagelem_tt_set           { NS::tt,           Tag::set           };
+        constexpr std::tuple tagelem_tt_metadata      { NS::tt,           Tag::metadata      };
+
+        constexpr std::tuple tagelem_ttm_agent        { NS::ttm,           Tag::agent        };
+        constexpr std::tuple tagelem_ttm_copyright    { NS::ttm,           Tag::copyright    };
+        constexpr std::tuple tagelem_ttm_desc         { NS::ttm,           Tag::desc         };
+        constexpr std::tuple tagelem_ttm_title        { NS::ttm,           Tag::title        };
+
+        constexpr std::tuple tagelem_ttp_profile      { NS::ttp,           Tag::profile      };
+
+        // Element Groups
+        constexpr std::tuple elemgrp_animation     { tagelem_tt_set                                                                                                         };
+        constexpr std::tuple elemgrp_block         { tagelem_tt_div,          tagelem_tt_p                                                                                  };
+        constexpr std::tuple elemgrp_inline        { tagelem_tt_span,         tagelem_tt_br,         contentelem_pcdata                                                     };
+        constexpr std::tuple elemgrp_metadata      { tagelem_tt_metadata,     tagelem_ttm_agent,     tagelem_ttm_copyright,       tagelem_ttm_desc,       tagelem_ttm_title };
+        constexpr std::tuple elemgrp_parameters    { tagelem_ttp_profile                                                                                                    };
+
         // Attribute Node Parameters
         // ---------------------------------------------------------------------------------------------------|
         constexpr std::tuple attrparams_xml {
@@ -683,6 +711,36 @@ namespace vt::dictionary
             std::tuple { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all }      // tts_zIndex
         };
 
+        // Content Node Parameters
+        // ---------------------------------------------------------------------------------------------------|
+
+        constexpr std::tuple contentparams_animation {
+            std::tuple { qty_content_zeroOrMore,        doc_content_all }
+        };
+
+        constexpr std::tuple contentparams_block {
+            std::tuple { qty_content_zeroOrMore,        doc_content_all },
+            std::tuple { qty_content_zeroOrMore,        doc_content_all }
+        };
+
+        constexpr std::tuple contentparams_inline {
+            std::tuple { qty_content_zeroOrMore,        doc_content_all },
+            std::tuple { qty_content_zeroOrMore,        doc_content_all },
+            std::tuple { qty_content_zeroOrMore,        doc_content_all }
+        };
+
+        constexpr std::tuple contentparams_metadata {
+            std::tuple { qty_content_zeroOrMore,        doc_content_all },
+            std::tuple { qty_content_zeroOrMore,        doc_content_all },
+            std::tuple { qty_content_zeroOrMore,        doc_content_all },
+            std::tuple { qty_content_zeroOrMore,        doc_content_all },
+            std::tuple { qty_content_zeroOrMore,        doc_content_all }
+        };
+
+        constexpr std::tuple contentparams_parameters {
+            std::tuple { qty_content_zeroOrMore,        doc_content_all }
+        };
+
         // ---------------------------------------------------------------------------------------------------|
 
         // Attribute Node Entries
@@ -691,7 +749,8 @@ namespace vt::dictionary
         // Helper functions for generating attribute nodes
         constexpr auto CreateAttributeNode = []
         <class Tattr, class Tparam, class Telem, class S, S... Sseq>
-        (const Tattr& value_expressions, const Tparam& parameters, const Telem& element, std::integer_sequence<S, Sseq...> sequence) {
+        (const Tattr& value_expressions, const Tparam& parameters, const Telem& element, std::integer_sequence<S, Sseq...> sequence)
+        {
             using params_t = std::tuple<size_t, size_t, size_t>;
             if constexpr (std::is_same_v<params_t, Tparam>) {
                 return std::tuple {
@@ -712,6 +771,32 @@ namespace vt::dictionary
                         std::move(std::get<2>(std::get<Sseq>(parameters))),
                         std::move(std::get<Sseq>(element)),
                         std::move(std::get<Sseq>(value_expressions))
+                    }
+                    ...
+                };
+            }
+        };
+
+        constexpr auto CreateContentNode = []
+        <class Tparam, class Telem, class S, S... Sseq>
+        (const Tparam& parameters, const Telem& element, std::integer_sequence<S, Sseq...> sequence)
+        {
+            using params_t = std::tuple<size_t, size_t>;
+            if constexpr (std::is_same_v<params_t, Tparam>) {
+                return std::tuple {
+                    ContentNode { 
+                        std::move(std::get<0>(parameters)),
+                        std::move(std::get<1>(parameters)),
+                        std::move(std::get<Sseq>(element))
+                    }
+                    ...
+                };
+            } else if constexpr (!std::conjunction_v<std::is_same<params_t, decltype(std::get<Sseq>(parameters))> ... >) {
+                return std::tuple {
+                    ContentNode { 
+                        std::move(std::get<0>(std::get<Sseq>(parameters))),
+                        std::move(std::get<1>(std::get<Sseq>(parameters))),
+                        std::move(std::get<Sseq>(element))
                     }
                     ...
                 };
@@ -937,12 +1022,28 @@ namespace vt::dictionary
         // Content Node Entries
         // ---------------------------------------------------------------------------------------------------|
 
+        // TT Namespace --------------------------------------------------|
+        constexpr std::tuple content_tt_tt = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::head                                             },
+                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::body                                             }
+            }
+        );
+
+        constexpr std::tuple content_tt_head = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::styling                                          },
+                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::layout                                           }
+            },
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{} )
+        );
+
         // Element Node Entries
         // ---------------------------------------------------------------------------------------------------|
 
         // TT Namespace --------------------------------------------------|
-        constexpr XMLNode element_tt_tt       { doc_element_all,              NS::tt,             Tag::tt,                  attrgrp_tt_tt,                std::tuple{} };
-        constexpr XMLNode element_tt_head     { doc_element_all,              NS::tt,             Tag::head,                attrgrp_tt_head,              std::tuple{} };
+        constexpr XMLNode element_tt_tt       { doc_element_all,              NS::tt,             Tag::tt,                  attrgrp_tt_tt,                content_tt_tt   };
+        constexpr XMLNode element_tt_head     { doc_element_all,              NS::tt,             Tag::head,                attrgrp_tt_head,              content_tt_head };
         constexpr XMLNode element_tt_body     { doc_element_all,              NS::tt,             Tag::body,                attrgrp_tt_body,              std::tuple{} };
         constexpr XMLNode element_tt_div      { doc_element_all,              NS::tt,             Tag::div,                 attrgrp_tt_div,               std::tuple{} };
         constexpr XMLNode element_tt_p        { doc_element_all,              NS::tt,             Tag::p,                   attrgrp_tt_p,                 std::tuple{} };
