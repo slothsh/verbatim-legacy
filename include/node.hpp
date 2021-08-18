@@ -54,7 +54,7 @@ namespace vt::dictionary
     {
         IS_VALUE_EXPRESSION = VT_ENUM_ID,
         undefined, alpha, color, compound, digit, duration, font, familyName, genericFamilyName, hexDigit, integer, length, namedColor, quotedString, string,
-        timeExpression, id, idref, idrefs, literal, language, regex, any_uri, token_char,
+        timeExpression, id, idref, idrefs, literal, language, regex, any_uri, token_char, conditional,
         none = VT_ENUM_NONE
     };
 
@@ -100,6 +100,7 @@ namespace constants
         negate                  = (1 << 2),
         not_empty               = (1 << 3),
         not_used                = (1 << 4),
+        element_dependent       = (1 << 5),
         none                    = VT_ENUM_NONE
     };
 

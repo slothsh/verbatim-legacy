@@ -47,11 +47,14 @@ namespace vt::dictionary
 
         // Default expressions
         constexpr size_t cnd_vexpr_isDefault        = enum_integer(cnd::is_default);
+        constexpr size_t cnd_vexpr_dependent        = enum_integer(cnd::element_dependent);
         constexpr size_t cnd_vexpr_none             = enum_integer(cnd::none);
         constexpr size_t cnd_attr_none              = enum_integer(cnd::none);
+        constexpr size_t cnd_attr_required          = enum_integer(cnd::required);
         constexpr size_t cnd_node_required          = enum_integer(cnd::required);
 
         constexpr size_t qty_attr_zeroOrOne         = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
+        constexpr size_t qty_attr_one               = enum_integer(qty::kleene_one) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_node_zeroOrMore        = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_vexpr_zeroOrOne        = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
 
@@ -116,8 +119,22 @@ namespace vt::dictionary
 
         // [tt:timeContainer]
         constexpr std::tuple vexpr_tt_timeContainer {
-            ValueExpressionNode { NS::none,       ValueExpression::literal,            "par",                        cnd_vexpr_isDefault,                    doc_vexpr_all },
-            ValueExpressionNode { NS::none,       ValueExpression::literal,            "seq",                        cnd_vexpr_isDefault,                    doc_vexpr_all }
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "par",                          cnd_vexpr_isDefault,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "seq",                          cnd_vexpr_none,                         doc_vexpr_all }
+        };
+
+        // [tt:type]
+        constexpr std::tuple vexpr_tt_type {
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:agent]{person}",          cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:agent]{character}",       cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:agent]{group}",           cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:agent]{organization}",    cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:agent]{other}",           cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:name]{full}",             cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:name]{family}",           cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:name]{given}",            cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:name]{alias}",            cnd_vexpr_dependent,                    doc_vexpr_all },
+            ValueExpressionNode { NS::none,       ValueExpression::literal,          "[ttm:name]{other}",            cnd_vexpr_dependent,                    doc_vexpr_all }
         };
 
         constexpr std::tuple vexpr_tt {
@@ -460,6 +477,7 @@ namespace vt::dictionary
         constexpr std::tuple attrelem_tt_ttp           { NS::tt,           Attribute::ttp           };
         constexpr std::tuple attrelem_tt_tts           { NS::tt,           Attribute::tts           };
         constexpr std::tuple attrelem_tt_style         { NS::tt,           Attribute::style         };
+        constexpr std::tuple attrelem_tt_type          { NS::tt,           Attribute::type          };
         constexpr std::tuple attrelem_tt_region        { NS::tt,           Attribute::region        };
         constexpr std::tuple attrelem_tt_begin         { NS::tt,           Attribute::begin         };
         constexpr std::tuple attrelem_tt_dur           { NS::tt,           Attribute::dur           };
@@ -684,7 +702,7 @@ namespace vt::dictionary
             std::tuple {
                 AttributeNode { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all,           attrelem_xml_id,            vexpr_xml_id     },
                 AttributeNode { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all,           attrelem_xml_space,         vexpr_xml_space  },
-                AttributeNode { cnd_node_required,     qty_attr_zeroOrOne,         doc_attr_all,           attrelem_xml_lang,          vexpr_xml_lang   },
+                AttributeNode { cnd_attr_required,     qty_attr_one,               doc_attr_all,           attrelem_xml_lang,          vexpr_xml_lang   },
                 AttributeNode { cnd_attr_none,         qty_attr_zeroOrOne,         doc_attr_all,           attrelem_tts_extent,        vexpr_tts_extent },
             },
             CreateAttributeNode ( vexpr_ttp,         attrparams_ttp,      attrelem_ttp,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_ttp)>>{} )
@@ -748,11 +766,55 @@ namespace vt::dictionary
              // TODO: {any attribute not in default or any TT namespace}
         );
 
+        // <tt:metadata/>
+        constexpr std::tuple attrgrp_tt_metadata {
+            CreateAttributeNode ( vexpr_xml,         attrparams_xml,      attrelem_xml,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_xml)>>{} )
+            // TODO: {any attribute not in default or any TT namespace}
+        };
 
         // TTM Namespace -------------------------------------------------|
 
-        // <tt:metadata/>
-        constexpr std::tuple attrgrp_tt_metadata {
+        // <ttm:title/>
+        constexpr std::tuple attrgrp_ttm_title {
+            CreateAttributeNode ( vexpr_xml,         attrparams_xml,      attrelem_xml,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_xml)>>{} )
+            // TODO: {any attribute not in default or any TT namespace}
+        };
+
+        // <ttm:desc/>
+        constexpr std::tuple attrgrp_ttm_desc {
+            CreateAttributeNode ( vexpr_xml,         attrparams_xml,      attrelem_xml,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_xml)>>{} )
+            // TODO: {any attribute not in default or any TT namespace}
+        };
+
+        // <ttm:copyright/>
+        constexpr std::tuple attrgrp_ttm_copyright {
+            CreateAttributeNode ( vexpr_xml,         attrparams_xml,      attrelem_xml,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_xml)>>{} )
+            // TODO: {any attribute not in default or any TT namespace}
+        };
+
+        // <ttm:agent/>
+        constexpr std::tuple attrgrp_ttm_agent {
+            std::tuple {
+                AttributeNode { cnd_attr_required,      qty_attr_one,         doc_attr_all,           attrelem_tt_type,           vexpr_tt_type }
+            },
+            CreateAttributeNode ( vexpr_xml,         attrparams_xml,      attrelem_xml,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_xml)>>{} )
+            // TODO: {any attribute not in default or any TT namespace}
+        };
+
+        // <ttm:name/>
+        constexpr std::tuple attrgrp_ttm_name {
+            std::tuple {
+                AttributeNode { cnd_attr_required,      qty_attr_one,         doc_attr_all,           attrelem_tt_type,           vexpr_tt_type }
+            },
+            CreateAttributeNode ( vexpr_xml,         attrparams_xml,      attrelem_xml,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_xml)>>{} )
+            // TODO: {any attribute not in default or any TT namespace}
+        };
+
+        // <ttm:actor/>
+        constexpr std::tuple attrgrp_ttm_actor {
+            std::tuple {
+                AttributeNode { cnd_attr_required,      qty_attr_one,         doc_attr_all,           attrelem_ttm_agent,         vexpr_ttm_agent }
+            },
             CreateAttributeNode ( vexpr_xml,         attrparams_xml,      attrelem_xml,        std::make_index_sequence<std::tuple_size_v<decltype(vexpr_xml)>>{} )
             // TODO: {any attribute not in default or any TT namespace}
         };
@@ -769,9 +831,15 @@ namespace vt::dictionary
             attrgrp_tt_p,
             attrgrp_tt_span,
             attrgrp_tt_br,
-            
+            attrgrp_tt_metadata,
+
             // TTM namespace
-            attrgrp_tt_metadata
+            attrgrp_ttm_title,
+            attrgrp_ttm_desc,
+            attrgrp_ttm_copyright,
+            attrgrp_ttm_agent,
+            attrgrp_ttm_name,
+            attrgrp_ttm_actor
         };
 
         // Old Value Expressions
