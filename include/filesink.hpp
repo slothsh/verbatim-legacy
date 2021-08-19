@@ -14,15 +14,17 @@
 // FileSink object declaration ------------------------------------------------------------------------------------------------|
 // ============================================================================================================================|
 
-typedef
 struct FileSink
 {
 public:
+	using ptr_t = std::unique_ptr<char>;
+	using path_t = std::string_view;
+
     FileSink() noexcept;
-	FileSink(const std::string& path);
+	FileSink(const path_t& path);
     ~FileSink();
 
-    void LoadFile(const std::string& path);
+    void LoadFile(const path_t& path);
 	bool isValidFile() noexcept;
 
 protected:
@@ -30,11 +32,11 @@ protected:
 	void ValidateFile() noexcept;
 	virtual void Parse() = 0;
 
-    uint8_t* filesink_raw;
-	uint64_t filesink_length;
-    std::string filesink_path;
+    ptr_t filesink_raw;
+	size_t filesink_length;
+    path_t filesink_path;
 	bool filesink_isvalid;
-} FILESINK;
+};
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
 

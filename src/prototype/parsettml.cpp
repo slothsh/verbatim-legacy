@@ -12,7 +12,7 @@
 // Project headers
 #include "../../include/xmlfile.hpp"
 #include "../../include/edlfile.hpp"
-#include "../../include/dictionaries.hpp"
+#include "../../include/ttml1dictionary.hpp"
 
 #ifdef EDL_DEBUG_MEMORY
 static size_t allocations = 0;
@@ -55,18 +55,18 @@ int main(int argc, char** argv)
 	try {
 		EDLFILEPTX edlfile((std::string(argv[1])));
 		
-		std::string name(argv[2]);
+		// std::string name(argv[2]);
 
-		edlfile.FilterTracks([&name](PTXTrack track, size_t tIndex) {
-			return regex::FirstMatch(track.track_name, std::regex(name)) == name;
-		});
+		// edlfile.FilterTracks([&name](PTXTrack track, size_t tIndex) {
+		// 	return regex::FirstMatch(track.track_name, std::regex(name)) == name;
+		// });
 
-		edlfile.PrintOutput(format::File::table_all);
+		// edlfile.PrintOutput(format::File::table_all);
 		// RemoveBoundaryEvents(edlfile, "(cross fade)");
 		// MergeBoundaryEvents(edlfile, "(cross fade)");
 		// edlfile.WriteOutput((std::string(argv[2])), vt::format::File::edl_ptx_minimal);
-		// TTML1p0_Netflix ttml;
-		// ttml << edlfile;
+		TTML1p0_Netflix ttml;
+		ttml << edlfile;
 		// ttml.PrintNodes();
 		// ttml.WriteFile((std::string(argv[2])));
 		// MergeBoundaryEvents(edlfile, "(cross fade)");

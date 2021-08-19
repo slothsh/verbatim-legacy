@@ -624,7 +624,7 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 EDLFilePTX& EDLFilePTX::operator=(const EDLFilePTX& edl_file) noexcept
 {
 	if (this->filesink_raw) {
-		std::free(this->filesink_raw);
+		// std::free(this->filesink_raw);
 	}
 
 	this->filesink_raw = (uint8_t*)std::malloc(edl_file.filesink_length * sizeof(uint8_t));
