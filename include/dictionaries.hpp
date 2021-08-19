@@ -56,6 +56,7 @@ namespace vt::dictionary
         constexpr size_t qty_vexpr_zeroOrOne        = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_attr_zeroOrOne         = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_attr_one               = enum_integer(qty::kleene_one) | (0 << grp::one) | (0 << grp::two);
+        constexpr size_t qty_content_none           = enum_integer(qty::none) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_content_zeroOrMore     = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_content_zeroOrOne      = enum_integer(qty::kleene_question) | (0 << grp::one) | (0 << grp::two);
         constexpr size_t qty_element_zeroOrMore     = enum_integer(qty::kleene_asterisk) | (0 << grp::one) | (0 << grp::two);
@@ -643,11 +644,13 @@ namespace vt::dictionary
         constexpr std::tuple tagelem_ttp_profile      { NS::ttp,           Tag::profile      };
 
         // Element Groups
-        constexpr std::tuple elemgrp_animation     { tagelem_tt_set                                                                                                         };
-        constexpr std::tuple elemgrp_block         { tagelem_tt_div,          tagelem_tt_p                                                                                  };
-        constexpr std::tuple elemgrp_inline        { tagelem_tt_span,         tagelem_tt_br,         contentelem_pcdata                                                     };
-        constexpr std::tuple elemgrp_metadata      { tagelem_tt_metadata,     tagelem_ttm_agent,     tagelem_ttm_copyright,       tagelem_ttm_desc,       tagelem_ttm_title };
-        constexpr std::tuple elemgrp_parameters    { tagelem_ttp_profile                                                                                                    };
+        using singlegrp_entry_t = std::tuple<std::tuple<NS, Tag>>;
+
+        constexpr singlegrp_entry_t elemgrp_animation     { tagelem_tt_set                                                                                                         };
+        constexpr std::tuple elemgrp_block                { tagelem_tt_div,          tagelem_tt_p                                                                                  };
+        constexpr std::tuple elemgrp_inline               { tagelem_tt_span,         tagelem_tt_br,         contentelem_pcdata                                                     };
+        constexpr std::tuple elemgrp_metadata             { tagelem_tt_metadata,     tagelem_ttm_agent,     tagelem_ttm_copyright,       tagelem_ttm_desc,       tagelem_ttm_title };
+        constexpr singlegrp_entry_t elemgrp_parameters    { tagelem_ttp_profile                                                                                                    };
 
         // Attribute Node Parameters
         // ---------------------------------------------------------------------------------------------------|
@@ -713,8 +716,10 @@ namespace vt::dictionary
 
         // Content Node Parameters
         // ---------------------------------------------------------------------------------------------------|
+        
+        using single_entry_t = std::tuple<std::tuple<size_t, size_t>>;
 
-        constexpr std::tuple contentparams_animation {
+        constexpr single_entry_t contentparams_animation {
             std::tuple { qty_content_zeroOrMore,        doc_content_all }
         };
 
@@ -737,7 +742,7 @@ namespace vt::dictionary
             std::tuple { qty_content_zeroOrMore,        doc_content_all }
         };
 
-        constexpr std::tuple contentparams_parameters {
+        constexpr single_entry_t contentparams_parameters {
             std::tuple { qty_content_zeroOrMore,        doc_content_all }
         };
 
@@ -1023,6 +1028,8 @@ namespace vt::dictionary
         // ---------------------------------------------------------------------------------------------------|
 
         // TT Namespace --------------------------------------------------|
+
+        // <tt:tt/>
         constexpr std::tuple content_tt_tt = std::tuple_cat (
             std::tuple {
                 ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::head                                             },
@@ -1030,46 +1037,213 @@ namespace vt::dictionary
             }
         );
 
+        // <tt:head/>
         constexpr std::tuple content_tt_head = std::tuple_cat (
             std::tuple {
-                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::styling                                          },
-                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::layout                                           }
+                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::styling                                            },
+                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                NS::tt,             Tag::layout                                             }
             },
-            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{} )
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}   ),
+            CreateContentNode ( contentparams_parameters,            elemgrp_parameters,             std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_parameters)>>{} )
+        );
+
+        // <tt:body/>
+        constexpr std::tuple content_tt_body = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,               doc_content_all,               NS::tt,             Tag::div                                               }
+            },
+            CreateContentNode ( contentparams_animation,             elemgrp_animation,              std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_animation)>>{} ),
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <tt:div/>
+        constexpr std::tuple content_tt_div = std::tuple_cat (
+            CreateContentNode ( contentparams_animation,             elemgrp_animation,              std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_animation)>>{} ),
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  ),
+            CreateContentNode ( contentparams_block,                 elemgrp_block,                  std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_block)>>{}     )
+        );
+
+        // <tt:p/>
+        constexpr std::tuple content_tt_p = std::tuple_cat (
+            CreateContentNode ( contentparams_animation,             elemgrp_animation,              std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_animation)>>{} ),
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  ),
+            CreateContentNode ( contentparams_inline,                 elemgrp_inline,                std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_inline)>>{}    )
+        );
+
+        // <tt:span/>
+        constexpr std::tuple content_tt_span = std::tuple_cat (
+            CreateContentNode ( contentparams_animation,             elemgrp_animation,              std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_animation)>>{} ),
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  ),
+            CreateContentNode ( contentparams_inline,                 elemgrp_inline,                std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_inline)>>{}    )
+        );
+
+        // <tt:br/>
+        constexpr std::tuple content_tt_br = std::tuple_cat (
+            CreateContentNode ( contentparams_animation,             elemgrp_animation,              std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_animation)>>{} ),
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <tt:styling/>
+        constexpr std::tuple content_tt_styling = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::tt,             Tag::style                                             }
+            },
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <tt:style/>
+        constexpr std::tuple content_tt_style = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_none,                    doc_content_all,                NS::none,           Tag::none                                              }
+            }
+        );
+
+        // <tt:layout/>
+        constexpr std::tuple content_tt_layout = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::tt,             Tag::region                                            }
+            },
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <tt:region/>
+        constexpr std::tuple content_tt_region = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::tt,             Tag::style                                             }
+            },
+            CreateContentNode ( contentparams_animation,             elemgrp_animation,              std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_animation)>>{} ),
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <tt:set/>
+        constexpr std::tuple content_tt_set = std::tuple_cat (
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <tt:metadata/>
+        constexpr std::tuple content_tt_metadata = std::tuple_cat (
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+            // TODO: Content: ({any element in TT Metadata namespace}|{any element not in any TT namespace})*
+        );
+
+        // TTM Namespace -------------------------------------------------|
+
+        // <ttm:title/>
+        constexpr std::tuple content_ttm_title = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                 NS::none,             GenericData::PCDATA                                 }
+            }
+        );
+
+        // <ttm:desc/>
+        constexpr std::tuple content_ttm_desc = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                 NS::none,             GenericData::PCDATA                                 }
+            }
+        );
+
+        // <ttm:copyright/>
+        constexpr std::tuple content_ttm_copyright = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                 NS::none,             GenericData::PCDATA                                 }
+            }
+        );
+
+        // <ttm:agent/>
+        constexpr std::tuple content_ttm_agent = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                 NS::ttm,            Tag::name                                             },
+                ContentNode   { qty_content_zeroOrOne,               doc_content_all,                 NS::ttm,            Tag::actor                                            }
+            }
+        );
+
+        // <ttm:name/>
+        constexpr std::tuple content_ttm_name = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::none,             GenericData::PCDATA                                  }
+            }
+        );
+
+        // <ttm:actor/>
+        constexpr std::tuple content_ttm_actor = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_none,                    doc_content_all,                NS::none,           Tag::none                                              }
+            }
+        );
+
+        // TTP Namespace -------------------------------------------------|
+
+        // <ttp:profile/>
+        constexpr std::tuple content_ttp_profile = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::ttp,            Tag::features                                          },
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::ttp,            Tag::extensions                                        }
+            },
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <ttp:features/>
+        constexpr std::tuple content_ttp_features = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::ttp,            Tag::feature                                           }
+            },
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <ttp:feature/>
+        constexpr std::tuple content_ttp_feature = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::none,             GenericData::PCDATA                                  }
+            }
+        );
+
+        // <ttp:extensions/>
+        constexpr std::tuple content_ttp_extensions = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::ttp,            Tag::extension                                         }
+            },
+            CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  )
+        );
+
+        // <ttp:extension/>
+        constexpr std::tuple content_ttp_extension = std::tuple_cat (
+            std::tuple {
+                ContentNode   { qty_content_zeroOrMore,              doc_content_all,                NS::none,             GenericData::PCDATA                                  }
+            }
         );
 
         // Element Node Entries
         // ---------------------------------------------------------------------------------------------------|
 
         // TT Namespace --------------------------------------------------|
-        constexpr XMLNode element_tt_tt       { doc_element_all,              NS::tt,             Tag::tt,                  attrgrp_tt_tt,                content_tt_tt   };
-        constexpr XMLNode element_tt_head     { doc_element_all,              NS::tt,             Tag::head,                attrgrp_tt_head,              content_tt_head };
-        constexpr XMLNode element_tt_body     { doc_element_all,              NS::tt,             Tag::body,                attrgrp_tt_body,              std::tuple{} };
-        constexpr XMLNode element_tt_div      { doc_element_all,              NS::tt,             Tag::div,                 attrgrp_tt_div,               std::tuple{} };
-        constexpr XMLNode element_tt_p        { doc_element_all,              NS::tt,             Tag::p,                   attrgrp_tt_p,                 std::tuple{} };
-        constexpr XMLNode element_tt_span     { doc_element_all,              NS::tt,             Tag::span,                attrgrp_tt_span,              std::tuple{} };
-        constexpr XMLNode element_tt_br       { doc_element_all,              NS::tt,             Tag::br,                  attrgrp_tt_br,                std::tuple{} };
-        constexpr XMLNode element_tt_styling  { doc_element_all,              NS::tt,             Tag::styling,             attrgrp_tt_styling,           std::tuple{} };
-        constexpr XMLNode element_tt_style    { doc_element_all,              NS::tt,             Tag::style,               attrgrp_tt_style,             std::tuple{} };
-        constexpr XMLNode element_tt_layout   { doc_element_all,              NS::tt,             Tag::layout,              attrgrp_tt_layout,            std::tuple{} };
-        constexpr XMLNode element_tt_region   { doc_element_all,              NS::tt,             Tag::region,              attrgrp_tt_region,            std::tuple{} };
-        constexpr XMLNode element_tt_set      { doc_element_all,              NS::tt,             Tag::set,                 attrgrp_tt_set,               std::tuple{} };
-        constexpr XMLNode element_tt_metadata { doc_element_all,              NS::tt,             Tag::metadata,            attrgrp_tt_metadata,          std::tuple{} };
+        constexpr XMLNode element_tt_tt       { doc_element_all,              NS::tt,             Tag::tt,                  attrgrp_tt_tt,                content_tt_tt       };
+        constexpr XMLNode element_tt_head     { doc_element_all,              NS::tt,             Tag::head,                attrgrp_tt_head,              content_tt_head     };
+        constexpr XMLNode element_tt_body     { doc_element_all,              NS::tt,             Tag::body,                attrgrp_tt_body,              content_tt_body     };
+        constexpr XMLNode element_tt_div      { doc_element_all,              NS::tt,             Tag::div,                 attrgrp_tt_div,               content_tt_div      };
+        constexpr XMLNode element_tt_p        { doc_element_all,              NS::tt,             Tag::p,                   attrgrp_tt_p,                 content_tt_p        };
+        constexpr XMLNode element_tt_span     { doc_element_all,              NS::tt,             Tag::span,                attrgrp_tt_span,              content_tt_span     };
+        constexpr XMLNode element_tt_br       { doc_element_all,              NS::tt,             Tag::br,                  attrgrp_tt_br,                content_tt_br       };
+        constexpr XMLNode element_tt_styling  { doc_element_all,              NS::tt,             Tag::styling,             attrgrp_tt_styling,           content_tt_styling  };
+        constexpr XMLNode element_tt_style    { doc_element_all,              NS::tt,             Tag::style,               attrgrp_tt_style,             content_tt_style    };
+        constexpr XMLNode element_tt_layout   { doc_element_all,              NS::tt,             Tag::layout,              attrgrp_tt_layout,            content_tt_layout   };
+        constexpr XMLNode element_tt_region   { doc_element_all,              NS::tt,             Tag::region,              attrgrp_tt_region,            content_tt_region   };
+        constexpr XMLNode element_tt_set      { doc_element_all,              NS::tt,             Tag::set,                 attrgrp_tt_set,               content_tt_set      };
+        constexpr XMLNode element_tt_metadata { doc_element_all,              NS::tt,             Tag::metadata,            attrgrp_tt_metadata,          content_tt_metadata };
 
         // TTM Namespace -------------------------------------------------|
-        constexpr XMLNode element_ttm_title     { doc_element_all,          NS::ttm,              Tag::title,             attrgrp_ttm_title,                    std::tuple{} };
-        constexpr XMLNode element_ttm_desc      { doc_element_all,          NS::ttm,              Tag::desc,              attrgrp_ttm_desc,                     std::tuple{} };
-        constexpr XMLNode element_ttm_copyright { doc_element_all,          NS::ttm,              Tag::copyright,         attrgrp_ttm_copyright,                std::tuple{} };
-        constexpr XMLNode element_ttm_agent     { doc_element_all,          NS::ttm,              Tag::agent,             attrgrp_ttm_agent,                    std::tuple{} };
-        constexpr XMLNode element_ttm_name      { doc_element_all,          NS::ttm,              Tag::name,              attrgrp_ttm_name,                     std::tuple{} };
-        constexpr XMLNode element_ttm_actor     { doc_element_all,          NS::ttm,              Tag::actor,             attrgrp_ttm_actor,                    std::tuple{} };
+        constexpr XMLNode element_ttm_title     { doc_element_all,          NS::ttm,              Tag::title,             attrgrp_ttm_title,                    content_ttm_title     };
+        constexpr XMLNode element_ttm_desc      { doc_element_all,          NS::ttm,              Tag::desc,              attrgrp_ttm_desc,                     content_ttm_desc      };
+        constexpr XMLNode element_ttm_copyright { doc_element_all,          NS::ttm,              Tag::copyright,         attrgrp_ttm_copyright,                content_ttm_copyright };
+        constexpr XMLNode element_ttm_agent     { doc_element_all,          NS::ttm,              Tag::agent,             attrgrp_ttm_agent,                    content_ttm_agent     };
+        constexpr XMLNode element_ttm_name      { doc_element_all,          NS::ttm,              Tag::name,              attrgrp_ttm_name,                     content_ttm_name      };
+        constexpr XMLNode element_ttm_actor     { doc_element_all,          NS::ttm,              Tag::actor,             attrgrp_ttm_actor,                    content_ttm_actor     };
 
         // TTP Namespace -------------------------------------------------|
-        constexpr XMLNode element_ttp_profile       { doc_element_all,          NS::ttp,              Tag::profile,                attrgrp_ttp_profile,             std::tuple{} };
-        constexpr XMLNode element_ttp_features      { doc_element_all,          NS::ttp,              Tag::features,               attrgrp_ttp_features,            std::tuple{} };
-        constexpr XMLNode element_ttp_feature       { doc_element_all,          NS::ttp,              Tag::feature,                attrgrp_ttp_feature,             std::tuple{} };
-        constexpr XMLNode element_ttp_extensions    { doc_element_all,          NS::ttp,              Tag::extensions,             attrgrp_ttp_extensions,          std::tuple{} };
-        constexpr XMLNode element_ttp_extension     { doc_element_all,          NS::ttp,              Tag::extension,              attrgrp_ttp_extension,           std::tuple{} };
+        constexpr XMLNode element_ttp_profile       { doc_element_all,          NS::ttp,              Tag::profile,                attrgrp_ttp_profile,             content_ttp_profile    };
+        constexpr XMLNode element_ttp_features      { doc_element_all,          NS::ttp,              Tag::features,               attrgrp_ttp_features,            content_ttp_features   };
+        constexpr XMLNode element_ttp_feature       { doc_element_all,          NS::ttp,              Tag::feature,                attrgrp_ttp_feature,             content_ttp_feature    };
+        constexpr XMLNode element_ttp_extensions    { doc_element_all,          NS::ttp,              Tag::extensions,             attrgrp_ttp_extensions,          content_ttp_extensions };
+        constexpr XMLNode element_ttp_extension     { doc_element_all,          NS::ttp,              Tag::extension,              attrgrp_ttp_extension,           content_ttp_extension  };
 
         // The TTML table is complete
         return std::tuple {
