@@ -387,62 +387,6 @@ namespace vt::dictionary
     };
 }
 
-// XML node dictionary template ----------------------------------------------------------------------------------------4 of 5-|
-// ============================================================================================================================|
-
-namespace vt::dictionary::detail
-{
-    template<class Tns = NS, class Ttag = Tag,
-                class Tattr_elem, class Tattr_vexpr, class Tattr_flags,
-                class Tfnattr, class Tfndata> // TODO: invocable concept for Tfn
-    constexpr inline auto CreateTTMLNode(const size_t&& docs, const Tns&& ns, const Ttag&& tag,
-                                            const Tattr_elem&& init_attr_element, const Tattr_vexpr&& init_attr_vexpr, const Tattr_flags&& init_attr_flags,
-                                            const Tfnattr&& fn_attr, const Tfndata&& fn_data)
-    {
-        // static_assert(Tns != NS::none && Ttag != Tag::none, "Invalid TTMLNode type\n");
-
-        using ns_t = decltype(ns);
-        using tag_t = decltype(tag);
-        using attr_element_t = decltype(init_attr_element);
-        using attr_vexpr_t = decltype(init_attr_vexpr);
-        using attr_flags_t = decltype(init_attr_flags);
-
-        const auto attributes = fn_attr (
-            std::forward<attr_element_t>(init_attr_element),
-            std::forward<attr_vexpr_t>(init_attr_vexpr),
-            std::forward<attr_flags_t>(init_attr_flags)
-        );
-
-        // const auto content = fn_data(std::move(ns), std::move(tag));
-        constexpr ContentNode content{ 0, 0, NS::none, Tag::none };
-
-        using node_t = DictionaryNode<NS, Tag, decltype(attributes), decltype(content)>;
-
-        return node_t {
-            std::move(docs),
-            std::forward<ns_t>(ns), std::forward<tag_t>(tag),
-            std::move(attributes), std::move(content)
-        };
-    }
-
-    template<class Ttup, class S, S... Sseq>
-    constexpr inline auto CreateTTMLNodeList(const Ttup&& tup, std::integer_sequence<S, Sseq...> sequence)
-    {
-        return std::tuple {
-            CreateTTMLNode(
-                std::move(std::get<0>(std::get<Sseq>(tup))),
-                std::move(std::get<1>(std::get<Sseq>(tup))),
-                std::move(std::get<2>(std::get<Sseq>(tup))),
-                std::move(std::get<3>(std::get<Sseq>(tup))),
-                std::move(std::get<4>(std::get<Sseq>(tup))),
-                std::move(std::get<5>(std::get<Sseq>(tup))),
-                std::move(std::get<6>(std::get<Sseq>(tup))),
-                std::move(std::get<7>(std::get<Sseq>(tup)))
-            )...
-        };
-    }
-}
-
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
 
 #endif // VTNODE_HEADER
