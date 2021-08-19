@@ -356,13 +356,13 @@ namespace vt::dictionary
     // General XML node type for XML dictionary entries
     template<enumerable_ns Tns, enumerable_tag Ttag,
                 class Tattr, class Tdata>
-    struct XMLNode
+    struct DictionaryNode
     {
         using element_t = Node<Tns, Ttag>;
         using attribute_t = Tattr;
         using content_t = Tdata;
 
-        constexpr XMLNode(const size_t& n_documents,
+        constexpr DictionaryNode(const size_t& n_documents,
                             const Tns& n_ns, const Ttag& n_tag,
                             const Tattr& n_attr, const Tdata& n_data)
             : element({ n_ns , n_tag }),
@@ -371,7 +371,7 @@ namespace vt::dictionary
             documents(n_documents)
         {}
 
-        constexpr XMLNode(const size_t&& n_documents,
+        constexpr DictionaryNode(const size_t&& n_documents,
                             const Tns&& n_ns, const Ttag&& n_tag,
                             const Tattr&& n_attr, const Tdata&& n_data)
             : element({ n_ns , n_tag }),
@@ -416,7 +416,7 @@ namespace vt::dictionary::detail
         // const auto content = fn_data(std::move(ns), std::move(tag));
         constexpr ContentNode content{ 0, 0, NS::none, Tag::none };
 
-        using node_t = XMLNode<NS, Tag, decltype(attributes), decltype(content)>;
+        using node_t = DictionaryNode<NS, Tag, decltype(attributes), decltype(content)>;
 
         return node_t {
             std::move(docs),

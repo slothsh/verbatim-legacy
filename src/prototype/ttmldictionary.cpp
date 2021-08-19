@@ -12,8 +12,8 @@
 
 // Project headers
 #include "../../include/xmlfile.hpp"
-#include "../../include/node.hpp"
-#include "../../include/dictionaries.hpp"
+#include "../../include/dictionarynodes.hpp"
+#include "../../include/ttml1dictionary.hpp"
 
 int main()
 {

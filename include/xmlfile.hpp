@@ -22,10 +22,10 @@
 
 // Project headers
 #include "filesink.hpp"
-#include "dictionaries.hpp"
+#include "ttml1dictionary.hpp"
 #include "helpers.hpp"
 #include "edlfile.hpp"
-#include "node.hpp"
+#include "dictionarynodes.hpp"
 
 // Aliases
 using namespace vt::xml;

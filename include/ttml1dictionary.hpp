@@ -2,8 +2,8 @@
 // File: dictionaries.hpp
 // Description: Definitions for various tables and dictionaries
 
-#ifndef VTDICTIONARIES_HEADER
-#define VTDICTIONARIES_HEADER
+#ifndef VTTTML1DICTIONARY_HEADER
+#define VTTTML1DICTIONARY_HEADER
 
 // Configuration headers
 #ifndef VTCONFIG_HEADER
@@ -17,10 +17,7 @@
 #include <concepts>
 
 // Project headers
-#include "node.hpp"
-#include "functor.hpp"
-#include "./dictionaries/nodes.hpp"
-#include "./dictionaries/attributes.hpp"
+#include "dictionarynodes.hpp"
 
 // Master TTML definition function ----------------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
@@ -36,7 +33,6 @@ namespace vt::dictionary
     static constexpr auto CreateTTMLDictionary()
     {
         using namespace magic_enum::bitwise_operators;
-        using namespace vt::functional;
         using magic_enum::enum_integer;
 
         // Aliases for readability
@@ -1216,34 +1212,34 @@ namespace vt::dictionary
         // ---------------------------------------------------------------------------------------------------|
 
         // TT Namespace --------------------------------------------------|
-        constexpr XMLNode element_tt_tt       { doc_element_all,              NS::tt,             Tag::tt,                  attrgrp_tt_tt,                content_tt_tt       };
-        constexpr XMLNode element_tt_head     { doc_element_all,              NS::tt,             Tag::head,                attrgrp_tt_head,              content_tt_head     };
-        constexpr XMLNode element_tt_body     { doc_element_all,              NS::tt,             Tag::body,                attrgrp_tt_body,              content_tt_body     };
-        constexpr XMLNode element_tt_div      { doc_element_all,              NS::tt,             Tag::div,                 attrgrp_tt_div,               content_tt_div      };
-        constexpr XMLNode element_tt_p        { doc_element_all,              NS::tt,             Tag::p,                   attrgrp_tt_p,                 content_tt_p        };
-        constexpr XMLNode element_tt_span     { doc_element_all,              NS::tt,             Tag::span,                attrgrp_tt_span,              content_tt_span     };
-        constexpr XMLNode element_tt_br       { doc_element_all,              NS::tt,             Tag::br,                  attrgrp_tt_br,                content_tt_br       };
-        constexpr XMLNode element_tt_styling  { doc_element_all,              NS::tt,             Tag::styling,             attrgrp_tt_styling,           content_tt_styling  };
-        constexpr XMLNode element_tt_style    { doc_element_all,              NS::tt,             Tag::style,               attrgrp_tt_style,             content_tt_style    };
-        constexpr XMLNode element_tt_layout   { doc_element_all,              NS::tt,             Tag::layout,              attrgrp_tt_layout,            content_tt_layout   };
-        constexpr XMLNode element_tt_region   { doc_element_all,              NS::tt,             Tag::region,              attrgrp_tt_region,            content_tt_region   };
-        constexpr XMLNode element_tt_set      { doc_element_all,              NS::tt,             Tag::set,                 attrgrp_tt_set,               content_tt_set      };
-        constexpr XMLNode element_tt_metadata { doc_element_all,              NS::tt,             Tag::metadata,            attrgrp_tt_metadata,          content_tt_metadata };
+        constexpr DictionaryNode element_tt_tt       { doc_element_all,              NS::tt,             Tag::tt,                  attrgrp_tt_tt,                content_tt_tt       };
+        constexpr DictionaryNode element_tt_head     { doc_element_all,              NS::tt,             Tag::head,                attrgrp_tt_head,              content_tt_head     };
+        constexpr DictionaryNode element_tt_body     { doc_element_all,              NS::tt,             Tag::body,                attrgrp_tt_body,              content_tt_body     };
+        constexpr DictionaryNode element_tt_div      { doc_element_all,              NS::tt,             Tag::div,                 attrgrp_tt_div,               content_tt_div      };
+        constexpr DictionaryNode element_tt_p        { doc_element_all,              NS::tt,             Tag::p,                   attrgrp_tt_p,                 content_tt_p        };
+        constexpr DictionaryNode element_tt_span     { doc_element_all,              NS::tt,             Tag::span,                attrgrp_tt_span,              content_tt_span     };
+        constexpr DictionaryNode element_tt_br       { doc_element_all,              NS::tt,             Tag::br,                  attrgrp_tt_br,                content_tt_br       };
+        constexpr DictionaryNode element_tt_styling  { doc_element_all,              NS::tt,             Tag::styling,             attrgrp_tt_styling,           content_tt_styling  };
+        constexpr DictionaryNode element_tt_style    { doc_element_all,              NS::tt,             Tag::style,               attrgrp_tt_style,             content_tt_style    };
+        constexpr DictionaryNode element_tt_layout   { doc_element_all,              NS::tt,             Tag::layout,              attrgrp_tt_layout,            content_tt_layout   };
+        constexpr DictionaryNode element_tt_region   { doc_element_all,              NS::tt,             Tag::region,              attrgrp_tt_region,            content_tt_region   };
+        constexpr DictionaryNode element_tt_set      { doc_element_all,              NS::tt,             Tag::set,                 attrgrp_tt_set,               content_tt_set      };
+        constexpr DictionaryNode element_tt_metadata { doc_element_all,              NS::tt,             Tag::metadata,            attrgrp_tt_metadata,          content_tt_metadata };
 
         // TTM Namespace -------------------------------------------------|
-        constexpr XMLNode element_ttm_title     { doc_element_all,          NS::ttm,              Tag::title,             attrgrp_ttm_title,                    content_ttm_title     };
-        constexpr XMLNode element_ttm_desc      { doc_element_all,          NS::ttm,              Tag::desc,              attrgrp_ttm_desc,                     content_ttm_desc      };
-        constexpr XMLNode element_ttm_copyright { doc_element_all,          NS::ttm,              Tag::copyright,         attrgrp_ttm_copyright,                content_ttm_copyright };
-        constexpr XMLNode element_ttm_agent     { doc_element_all,          NS::ttm,              Tag::agent,             attrgrp_ttm_agent,                    content_ttm_agent     };
-        constexpr XMLNode element_ttm_name      { doc_element_all,          NS::ttm,              Tag::name,              attrgrp_ttm_name,                     content_ttm_name      };
-        constexpr XMLNode element_ttm_actor     { doc_element_all,          NS::ttm,              Tag::actor,             attrgrp_ttm_actor,                    content_ttm_actor     };
+        constexpr DictionaryNode element_ttm_title     { doc_element_all,          NS::ttm,              Tag::title,             attrgrp_ttm_title,                    content_ttm_title     };
+        constexpr DictionaryNode element_ttm_desc      { doc_element_all,          NS::ttm,              Tag::desc,              attrgrp_ttm_desc,                     content_ttm_desc      };
+        constexpr DictionaryNode element_ttm_copyright { doc_element_all,          NS::ttm,              Tag::copyright,         attrgrp_ttm_copyright,                content_ttm_copyright };
+        constexpr DictionaryNode element_ttm_agent     { doc_element_all,          NS::ttm,              Tag::agent,             attrgrp_ttm_agent,                    content_ttm_agent     };
+        constexpr DictionaryNode element_ttm_name      { doc_element_all,          NS::ttm,              Tag::name,              attrgrp_ttm_name,                     content_ttm_name      };
+        constexpr DictionaryNode element_ttm_actor     { doc_element_all,          NS::ttm,              Tag::actor,             attrgrp_ttm_actor,                    content_ttm_actor     };
 
         // TTP Namespace -------------------------------------------------|
-        constexpr XMLNode element_ttp_profile       { doc_element_all,          NS::ttp,              Tag::profile,                attrgrp_ttp_profile,             content_ttp_profile    };
-        constexpr XMLNode element_ttp_features      { doc_element_all,          NS::ttp,              Tag::features,               attrgrp_ttp_features,            content_ttp_features   };
-        constexpr XMLNode element_ttp_feature       { doc_element_all,          NS::ttp,              Tag::feature,                attrgrp_ttp_feature,             content_ttp_feature    };
-        constexpr XMLNode element_ttp_extensions    { doc_element_all,          NS::ttp,              Tag::extensions,             attrgrp_ttp_extensions,          content_ttp_extensions };
-        constexpr XMLNode element_ttp_extension     { doc_element_all,          NS::ttp,              Tag::extension,              attrgrp_ttp_extension,           content_ttp_extension  };
+        constexpr DictionaryNode element_ttp_profile       { doc_element_all,          NS::ttp,              Tag::profile,                attrgrp_ttp_profile,             content_ttp_profile    };
+        constexpr DictionaryNode element_ttp_features      { doc_element_all,          NS::ttp,              Tag::features,               attrgrp_ttp_features,            content_ttp_features   };
+        constexpr DictionaryNode element_ttp_feature       { doc_element_all,          NS::ttp,              Tag::feature,                attrgrp_ttp_feature,             content_ttp_feature    };
+        constexpr DictionaryNode element_ttp_extensions    { doc_element_all,          NS::ttp,              Tag::extensions,             attrgrp_ttp_extensions,          content_ttp_extensions };
+        constexpr DictionaryNode element_ttp_extension     { doc_element_all,          NS::ttp,              Tag::extension,              attrgrp_ttp_extension,           content_ttp_extension  };
 
         // The TTML table is complete
         return std::tuple {
@@ -1294,4 +1290,4 @@ namespace vt::dictionary
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
 
-#endif // VTDICTIONARIES_HEADER
+#endif // VTTTML1DICTIONARY_HEADER

@@ -64,15 +64,12 @@ add_executable(parsettml
 	./src/edlfile.cpp
 	./src/ptxedlstructure.cpp
 	./src/helpers.cpp
-	./src/versions.cpp
-	./src/node.cpp
 )
 set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 
 # ttmldictionary
 add_executable(ttmldictionary
 	./src/prototype/ttmldictionary.cpp
-	./src/dictionaries.cpp
 )
 set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
 # if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
