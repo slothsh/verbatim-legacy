@@ -2,9 +2,6 @@
 // File: edltool.cpp
 // Description: Small tool to parse various edit decision list files
 
-// Global flags
-#define EDL_DEBUG_MEMORY
-
 // Standard headers
 #include <iostream>
 #include <stdexcept>
@@ -14,9 +11,8 @@
 #include "../../include/edlfile.hpp"
 #include "../../include/ttml1dictionary.hpp"
 
-#ifdef EDL_DEBUG_MEMORY
-static size_t allocations = 0;
-static size_t deallocations = 0;
+static size_t allocations 	 = 0;
+static size_t deallocations  = 0;
 
 void diagnostics_exit() {
 	if (allocations - deallocations > 0) {
@@ -35,16 +31,15 @@ void operator delete(void* ptr, size_t size) noexcept {
 	deallocations += size;
 	std::free(ptr);
 }
-#endif
 
 using namespace vt;
 using namespace EDL;
 
 int main(int argc, char** argv)
 {
-	#ifdef EDL_DEBUG_MEMORY
-	std::atexit(diagnostics_exit);
-	#endif
+	if constexpr (VTDEBUG_MEMORY) {
+		std::atexit(diagnostics_exit);
+	}
 
     if (argc < 2) {
         std::cerr << "Please pass a valid input argument\n";
@@ -54,7 +49,6 @@ int main(int argc, char** argv)
 	using namespace vt::xml;
 	try {
 		EDLFilePTX edlfile((std::string(argv[1])));
-		edlfile.PrintOutput(vt::format::File::table_all);
 		
 		// std::string name(argv[2]);
 
@@ -64,9 +58,10 @@ int main(int argc, char** argv)
 
 		// edlfile.PrintOutput(format::File::table_all);
 		// RemoveBoundaryEvents(edlfile, "(cross fade)");
-		// MergeBoundaryEvents(edlfile, "(cross fade)");
+		MergeBoundaryEvents(edlfile, "(cross fade)");
+		edlfile.PrintOutput(vt::format::File::table_all);
 		// edlfile.WriteOutput((std::string(argv[2])), vt::format::File::edl_ptx_minimal);
-		TTML1p0_Netflix ttml;
+		// TTML1p0_Netflix ttml;
 		// ttml << edlfile;
 		// ttml.PrintNodes();
 		// ttml.WriteFile((std::string(argv[2])));

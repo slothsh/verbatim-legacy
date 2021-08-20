@@ -5,6 +5,11 @@
 #ifndef EDLFILE_HEADER
 #define EDLFILE_HEADER
 
+// Configuration headers
+#ifndef VTCONFIG_HEADER
+#include "config.hpp"
+#endif
+
 // Standard headers
 #include <iostream>
 #include <cstdint>

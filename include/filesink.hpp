@@ -5,6 +5,11 @@
 #ifndef FILESINK_HEADER
 #define FILESINK_HEADER
 
+// Configuration headers
+#ifndef VTCONFIG_HEADER
+#include "config.hpp"
+#endif
+
 // Standard headers
 #include <iostream>
 #include <fstream>
@@ -32,9 +37,9 @@ protected:
 	void ValidateFile() noexcept;
 	virtual void Parse() = 0;
 
+    path_t filesink_path;
 	file_t filesink_file;
 	size_t filesink_length;
-    path_t filesink_path;
 	bool filesink_isvalid;
 };
 

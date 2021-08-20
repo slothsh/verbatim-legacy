@@ -10,8 +10,20 @@
 #define MAGIC_ENUM_RANGE_MAX 256
 #include <magic_enum.hpp>
 
+// Debug configuration
+// Global flags
+#define EDL_DEBUG_MEMORY
+
+#ifdef NDEBUG
+static constexpr bool VTDEBUG        = false;
+static constexpr bool VTDEBUG_MEMORY = false;
+#else
+static constexpr bool VTDEBUG        = true;
+static constexpr bool VTDEBUG_MEMORY = true;
+#endif
+
 // Enum control values
-#define VT_ENUM_NONE MAGIC_ENUM_RANGE_MAX
-#define VT_ENUM_ID MAGIC_ENUM_RANGE_MIN
+static constexpr size_t VT_ENUM_NONE = MAGIC_ENUM_RANGE_MAX;
+static constexpr size_t VT_ENUM_ID   = MAGIC_ENUM_RANGE_MIN;
 
 #endif // VTCONFIG_HEADER

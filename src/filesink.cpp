@@ -14,17 +14,17 @@
 #include "../include/filesink.hpp"
 
 FileSink::FileSink() noexcept
-	: filesink_file({}),
+    : filesink_path(""),
+	filesink_file({}),
 	filesink_length(0),
-    filesink_path(""),
 	filesink_isvalid(false)
 {
 }
 
 FileSink::FileSink(const path_t& path)
-	: filesink_file(path, std::ios::binary | std::ios::in | std::ios::ate),
+    : filesink_path(path),
+	filesink_file(path, std::ios::binary | std::ios::in | std::ios::ate),
 	filesink_length(this->filesink_file.tellg()),
-    filesink_path(path),
 	filesink_isvalid(false)
 {
 	if (!this->filesink_file) throw std::invalid_argument("Could not open file with specified path\n");
@@ -37,13 +37,7 @@ FileSink::~FileSink()
 
 void FileSink::LoadFile(const std::string_view& path)
 {
-	// Open new file
-	// std::ifstream file(path, std::ios::binary | std::ios::in | std::ios::ate);
-	// if (!file) throw std::invalid_argument("Could not open specified path\n");
-	// this->filesink_file.seekg(std::ios::eofbit);
 	if (this->filesink_file.tellg() <= 0) throw std::invalid_argument("File is empty\n");
-
-	// Allocate memory for file
 	this->filesink_path = path;
 	this->filesink_file.seekg(std::ios::beg);
 }
@@ -59,9 +53,9 @@ void FileSink::Purge()
 	this->filesink_length = 0;
 	this->filesink_isvalid = false;
 
-	#ifndef NDEBUG
-	std::clog << "File successfully purged\n\n";
-	#endif
+	if constexpr (VTDEBUG) {
+		std::clog << "File successfully purged\n\n";
+	}
 }
 
 void FileSink::ValidateFile() noexcept
@@ -70,15 +64,15 @@ void FileSink::ValidateFile() noexcept
 		this->Parse();
 		this->filesink_isvalid = true;
 
-		#ifndef NDEBUG
-		std::clog
-			<< "File successfully loaded"
-			<< "\nFile path: " << this->filesink_path
-			<< "\nFile length: " << this->filesink_length
-			<< "\n\n";
-		#else
-		std::clog << "File successfully loaded\n\n";
-		#endif
+		if constexpr (VTDEBUG) {
+			std::clog
+				<< "File successfully loaded"
+				<< "\nFile path: " << this->filesink_path
+				<< "\nFile length: " << this->filesink_length
+				<< "\n\n";
+		} else {
+			std::clog << "File successfully loaded\n\n";
+		}
 	}
 	catch (const std::exception& e) {
 		std::cerr << e.what();
