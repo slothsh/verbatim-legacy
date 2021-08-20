@@ -85,7 +85,7 @@ void EDLFilePTX::Parse()
 	-> PTXHEADER
 	{
 		PTXHEADER new_header;
-		uint32_t bit_mask =string::WhiteSpace::tab |string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
+		size_t bit_mask =string::WhiteSpace::tab |string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
 		new_header.session_name =string::Trim(regex::FirstMatch(chunk, std::regex("(SESSION NAME:)(.*?)\n")), bit_mask).substr(14);
 		new_header.session_start =string::Trim(regex::FirstMatch(chunk, std::regex("(SESSION START TIMECODE:)(.*?)\n")), bit_mask).substr(24);
 		new_header.sample_rate =format::GetSampleRate(string::Trim(regex::FirstMatch(chunk, std::regex("(SAMPLE RATE:)(.*?)\n")), bit_mask).substr(12));
@@ -105,7 +105,7 @@ void EDLFilePTX::Parse()
 	-> PTXTRACK
 	{
 		PTXTRACK new_track;
-		uint32_t bit_mask =string::WhiteSpace::tab |string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
+		size_t bit_mask =string::WhiteSpace::tab |string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
 		new_track.track_name =string::Trim(regex::FirstMatch(chunk, std::regex("(TRACK NAME:)(.*?)\n")), bit_mask).substr(12);
 		new_track.comments =string::Trim(regex::FirstMatch(chunk, std::regex("(COMMENTS:)(.*?)\n")), bit_mask).substr(9);
 		new_track.user_delay =string::Trim(regex::FirstMatch(chunk, std::regex("(USER DELAY:)(.*?)\n")), bit_mask).substr(12);
@@ -140,13 +140,13 @@ void EDLFilePTX::Parse()
 		data_entries.erase(data_entries.begin(), data_entries.begin() + 2);
 
 		std::vector<std::string> entry_data;
-		uint32_t total_clips = 0;
+		size_t total_clips = 0;
 		for (auto& rows : data_entries) {
 			PTXTRACKDATA track_data;
 			regex::AllMatches(entry_data, rows, std::regex("((.+?)\\t|(.+?)\\n)"));
 
-			uint64_t i = 0;
-			uint32_t bit_mask =string::WhiteSpace::tab | string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
+			size_t i = 0;
+			size_t bit_mask =string::WhiteSpace::tab | string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
 			for (auto& column : entry_data) {
 				if (i >= 7) i = 0;
 				switch (i++) {
@@ -244,12 +244,12 @@ void EDLFilePTX::Flush() noexcept
 	this->marked_tracks.clear();
 }
 
-void EDLFilePTX::RemoveTrack(const uint32_t& track_index) noexcept
+void EDLFilePTX::RemoveTrack(const size_t& track_index) noexcept
 {
 	if (this->marked_tracks.find(track_index) == this->marked_tracks.end()
 		&& track_index < this->session_info.audio_tracks)
 	{
-		uint32_t i = 0;
+		size_t i = 0;
 		this->marked_tracks.insert(track_index);
 		for (auto& data : this->ptx_tracks[track_index].track_data) {
 			this->marked_data.insert(
@@ -259,7 +259,7 @@ void EDLFilePTX::RemoveTrack(const uint32_t& track_index) noexcept
 	}
 }
 
-void EDLFilePTX::RemoveTrackEvent(const uint32_t& track_index, const uint32_t& entry_index) noexcept
+void EDLFilePTX::RemoveTrackEvent(const size_t& track_index, const size_t& entry_index) noexcept
 {
 	// TODO: Remove track entirely if there aren't clips?
 	if (this->marked_data.find({track_index, entry_index}) == this->marked_data.end()
@@ -326,28 +326,28 @@ void EDLFilePTX::EnumerateEvents(const size_t& track_index, size_t start) noexce
 	
 }
 
-uint32_t EDLFilePTX::TotalAudioTracks() noexcept
+size_t EDLFilePTX::TotalAudioTracks() noexcept
 {
 	return this->session_info.audio_tracks_edl;
 	// return this->session_info.audio_tracks; // For when the actual track count of the ptx session is needed.
 }
 
-uint32_t EDLFilePTX::TotalAudioTracks() const noexcept
+size_t EDLFilePTX::TotalAudioTracks() const noexcept
 {
 	return this->session_info.audio_tracks_edl;
 }
 
-uint32_t EDLFilePTX::TotalAudioClips() noexcept
+size_t EDLFilePTX::TotalAudioClips() noexcept
 {
 	return this->session_info.audio_clips;
 }
 
-uint32_t EDLFilePTX::TotalAudioFiles() noexcept
+size_t EDLFilePTX::TotalAudioFiles() noexcept
 {
 	return this->session_info.audio_files;
 }
 
-uint32_t EDLFilePTX::TrackClips(const uint32_t& index) noexcept
+size_t EDLFilePTX::TrackClips(const size_t& index) noexcept
 {
 	return this->ptx_tracks[index].total_clips;
 }
@@ -382,17 +382,17 @@ std::string EDLFilePTX::FrameRate() noexcept
 	return vt::format::GetFrameRate(this->session_info.frame_rate);
 }
 
-void EDLFilePTX::SetAudioTracks(const uint32_t audio_tracks) noexcept
+void EDLFilePTX::SetAudioTracks(const size_t audio_tracks) noexcept
 {
 	this->session_info.audio_tracks = audio_tracks;
 }
 
-void EDLFilePTX::SetAudioClips(const uint32_t audio_clips) noexcept
+void EDLFilePTX::SetAudioClips(const size_t audio_clips) noexcept
 {
 	this->session_info.audio_clips = audio_clips;
 }
 
-void EDLFilePTX::SetAudioFiles(const uint32_t audio_files) noexcept
+void EDLFilePTX::SetAudioFiles(const size_t audio_files) noexcept
 {
 	this->session_info.audio_files = audio_files;
 }
@@ -434,12 +434,12 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 	// Timecode parsing
 	const auto ParseTimecode = [](
 		const std::string& timecode)	
-	-> uint32_t // TODO: Make double
+	-> size_t // TODO: Make double
 	{
 		std::vector<std::string> timecode_chunks;
 		regex::AllMatches(timecode_chunks, timecode, std::regex("\\d\\d"));
-		uint32_t ms = 0;
-		uint64_t i = 0;
+		size_t ms = 0;
+		size_t i = 0;
 		for (auto& n : timecode_chunks) {
 			if (n[0] == '0') n.erase(n.begin());
 			switch (i++) {
@@ -472,12 +472,12 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 	// Move this function into a namespace for general purpose use
 	const auto& PadColumn = [](
 		const char& pad,
-		const int32_t& total,
-		const uint32_t& item_length)
+		const size_t& total,
+		const size_t& item_length)
 	-> std::string
 	{
 		std::string padding = "";
-		for (int32_t i = total - item_length; i > 0; i--) {
+		for (size_t i = total - item_length; i > 0; i--) {
 			padding += pad;
 		}
 		return padding;
@@ -492,7 +492,7 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 		{
 			size_t tracks_written = 0;
 			size_t clips_written = 0;
-			std::vector<std::tuple<uint32_t, uint32_t, std::unique_ptr<PTXTRACKDATA>>> timecode_map;
+			std::vector<std::tuple<size_t, size_t, std::unique_ptr<PTXTRACKDATA>>> timecode_map;
 			for (auto& track : this->ptx_tracks) {
 				if (true/* track.second.HasState(TrackState::muted) */) tracks_written++;
 				for (auto& data : track.second.track_data) {
@@ -662,12 +662,12 @@ namespace EDL
 		data_1.timecode["duration"] = numbers::ParseTimecode(duration,format::GetFrameRate(edl_file.FrameRate()));
 	}
 
-	std::string DuplicateTextFromDuration(const std::pair<double, double>& time_us, const std::string_view& character, const double& divisor, const uint32_t max_delimiter = 3)
+	std::string DuplicateTextFromDuration(const std::pair<double, double>& time_us, const std::string_view& character, const double& divisor, const size_t max_delimiter = 3)
 	{
 		if (time_us.second > time_us.first) {
 			double quotient = std::ceil((time_us.second - time_us.first) / divisor);
 			std::string delimiter = "";
-			for (uint32_t i = 0; i < (uint32_t)quotient && i < max_delimiter; i++) {
+			for (size_t i = 0; i < (size_t)quotient && i < max_delimiter; i++) {
 				delimiter += " ";
 				delimiter += character;
 			}

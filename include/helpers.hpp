@@ -131,15 +131,15 @@ namespace vt
 
 		SampleRate GetSampleRate(const std::string text);
 		std::string GetSampleRate(const SampleRate& sample_rate);
-		uint32_t ParseSampleRate(const SampleRate& sample_rate);
+		size_t ParseSampleRate(const SampleRate& sample_rate);
 		BitDepth GetBitDepth(const std::string text);
 		std::string GetBitDepth(const BitDepth& bit_depth);
-		uint32_t ParseBitDepth(const BitDepth& bit_depth);
+		size_t ParseBitDepth(const BitDepth& bit_depth);
 		TimeFormat ParseTimeFormat(const std::string text);
 		std::string GetTimeFormat(const TimeFormat& time_format);
 		FrameRate GetFrameRate(const std::string text);
 		std::string GetFrameRate(const FrameRate& frame_rate);
-		uint32_t ParseFrameRate(const FrameRate& frame_rate);
+		size_t ParseFrameRate(const FrameRate& frame_rate);
 
 		using attribute_t = std::tuple<std::string, std::string, std::string>;
 		XMLNode XMLNodeFactory(const std::string& ns,
@@ -160,16 +160,16 @@ namespace vt
 
 namespace numbers
 	{
-		uint32_t CountDigits(const uint32_t n);
+		size_t CountDigits(const size_t n);
 		double ParseTimecode(const std::string text, const format::FrameRate& format);
 		std::string ParseTimecode(double n, const format::FrameRate& format);
-		uint64_t ParseTime(const std::string text, const format::TimeFormat& format);
+		size_t ParseTime(const std::string text, const format::TimeFormat& format);
 	}
 
 	namespace string
 	{
 		typedef
-		enum WhiteSpace : uint32_t
+		enum WhiteSpace : size_t
 		{
 			space		= 0xffffffe1,
 			tab			= 0xffffffe2,
@@ -184,8 +184,8 @@ namespace numbers
 			no_vertical	= 0x00000030
 		} WHITESPACE;
 
-		std::string WhiteSpaceMask(const uint32_t& type);
-		std::string Trim(std::string text, const uint32_t& type);
+		std::string WhiteSpaceMask(const size_t& type);
+		std::string Trim(std::string text, const size_t& type);
 	}
 
 	namespace PTX
@@ -262,7 +262,7 @@ namespace numbers
 		} XMLURL;
 
 		typedef
-		enum TTML1p0_Head_Flags : uint16_t
+		enum TTML1p0_Head_Flags : size_t
 		{
 			root			= 0x0001,
 			head			= 0x0002,

@@ -20,7 +20,7 @@
 // ============================================================================================================================|
 
 typedef
-enum TrackState : uint32_t
+enum TrackState : size_t
 {
 	muted		= 0x00000001,
 	solo		= 0x00000002,
@@ -36,8 +36,8 @@ public:
 	PTXTrackData();
 	~PTXTrackData();
 
-	uint32_t channel;
-	uint32_t event;
+	size_t channel;
+	size_t event;
 	std::string clip_name;
 	std::map<std::string, std::string> timecode; // TODO: Refactor with better name
 	std::map<std::string, vt::format::Time> time;
@@ -52,10 +52,10 @@ public:
 	PTXTrack();
 	~PTXTrack();
 
-	bool HasState(const uint32_t& type);
+	bool HasState(const size_t& type);
 	void ForEach(size_t index = 0, const std::function<void(PTXTrackData& data, size_t index)>& function = {});
 
-	uint32_t total_clips;
+	size_t total_clips;
 	std::string track_name;
 	std::string comments;
 	std::string user_delay;
@@ -71,10 +71,10 @@ public:
 	PTXHeader();
 	~PTXHeader();
 
-	uint32_t audio_tracks_edl;
-	uint32_t audio_tracks;
-	uint32_t audio_clips;
-	uint32_t audio_files;
+	size_t audio_tracks_edl;
+	size_t audio_tracks;
+	size_t audio_clips;
+	size_t audio_files;
 	std::string session_name;
 	std::string session_start;
 	vt::format::SampleRate sample_rate;

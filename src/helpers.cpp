@@ -69,7 +69,7 @@ namespace vt
 			return "";
         }
 
-		uint32_t ParseSampleRate(const SampleRate& sample_rate)
+		size_t ParseSampleRate(const SampleRate& sample_rate)
 		{
 			if (sample_rate == format::SampleRate::_44kHz) return 44100;
 			if (sample_rate == format::SampleRate::_48kHz) return 48000;
@@ -102,7 +102,7 @@ namespace vt
 			return "";
         }
 
-		uint32_t ParseBitDepth(const BitDepth& bit_depth)
+		size_t ParseBitDepth(const BitDepth& bit_depth)
 		{
 			if (bit_depth == format::BitDepth::int8) return 8;
 			if (bit_depth == format::BitDepth::int16) return 16;
@@ -159,7 +159,7 @@ namespace vt
 			return "";
         }
 
-		uint32_t ParseFrameRate(const FrameRate& frame_rate)
+		size_t ParseFrameRate(const FrameRate& frame_rate)
 		{
 			if (frame_rate == format::FrameRate::_24Fps) return 24;
 			if (frame_rate == format::FrameRate::_25Fps) return 25;
@@ -289,9 +289,9 @@ namespace vt
 
 	namespace numbers
 	{
-		uint32_t CountDigits(uint32_t n)
+		size_t CountDigits(size_t n)
 		{
-			uint32_t digits = 0;
+			size_t digits = 0;
 			while (n > 0) {
 				n /= 10;
 				digits++;
@@ -305,7 +305,7 @@ namespace vt
 			std::vector<std::string> chunks;
 			regex::AllMatches(chunks, text, std::regex("\\d+"));
 			if (chunks.size() != 4) throw std::invalid_argument("Not enough chunks to parse timecode\n");
-			uint32_t frame_rate = ParseFrameRate(format);
+			size_t frame_rate = ParseFrameRate(format);
 			double h = std::stod(chunks[0]) * 60.0 * 60.0;
 			double m = std::stod(chunks[1]) * 60.0;
 			double s = std::stod(chunks[2]);
@@ -316,7 +316,7 @@ namespace vt
 
 		std::string ParseTimecode(double n, const format::FrameRate& format)
 		{
-			uint32_t frame_rate = ParseFrameRate(format);
+			size_t frame_rate = ParseFrameRate(format);
 			std::string h = "00", m = "00", s = "00", f = "00";
 			if (n >= 60.0 * 60.0 * 10000000.0) {
 				h = std::to_string(n / 60.0 * 60.0 / 10000000.0);
@@ -344,10 +344,10 @@ namespace vt
 					+ ((f.length() == 1) ? ("0" + f) : f);
 		}
 
-		uint64_t ParseTime(const std::string text, const format::TimeFormat& format)
+		size_t ParseTime(const std::string text, const format::TimeFormat& format)
 		{
 			std::string expr;
-			uint32_t total_chunks;
+			size_t total_chunks;
 			std::vector<std::string> chunks;
 			switch (format) {
 				case format::TimeFormat::timecode: 
@@ -390,7 +390,7 @@ namespace vt
 	namespace string
 	{
 
-		std::string WhiteSpaceMask(const uint32_t& type)
+		std::string WhiteSpaceMask(const size_t& type)
 		{
 			std::string white_space;
 			switch (type) {
@@ -432,7 +432,7 @@ namespace vt
 
 		std::string Trim(
 			std::string text,
-			const uint32_t& type)
+			const size_t& type)
 		{
 			std::string white_space =string::WhiteSpaceMask(type);
 			text.erase(text.find_last_not_of(white_space) + 1);

@@ -42,7 +42,7 @@ PTXTrack::~PTXTrack()
 {
 }
 
-bool PTXTrack::HasState(const uint32_t& type)
+bool PTXTrack::HasState(const size_t& type)
 {
 	// TODO: Create enumerations for these string names
 	std::vector<std::string> check_states;

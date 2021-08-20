@@ -53,8 +53,8 @@ int main(int argc, char** argv)
 
 	using namespace vt::xml;
 	try {
-		EDLFILEPTX edlfile((std::string(argv[1])));
-		// edlfile.PrintOutput(vt::format::File::table_all);
+		EDLFilePTX edlfile((std::string(argv[1])));
+		edlfile.PrintOutput(vt::format::File::table_all);
 		
 		// std::string name(argv[2]);
 
@@ -67,8 +67,8 @@ int main(int argc, char** argv)
 		// MergeBoundaryEvents(edlfile, "(cross fade)");
 		// edlfile.WriteOutput((std::string(argv[2])), vt::format::File::edl_ptx_minimal);
 		TTML1p0_Netflix ttml;
-		ttml << edlfile;
-		ttml.PrintNodes();
+		// ttml << edlfile;
+		// ttml.PrintNodes();
 		// ttml.WriteFile((std::string(argv[2])));
 		// MergeBoundaryEvents(edlfile, "(cross fade)");
 		// edlfile.EnumerateEvents();

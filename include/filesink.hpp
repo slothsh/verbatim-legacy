@@ -17,7 +17,6 @@
 struct FileSink
 {
 public:
-	using ptr_t = std::unique_ptr<char>;
 	using file_t = std::ifstream;
 	using path_t = std::string_view;
 

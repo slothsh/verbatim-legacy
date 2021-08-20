@@ -97,12 +97,12 @@ private:
     xmlpp::Element* GetHeadData(const XMLHeadFlags& flag, const std::string& id);
     xmlpp::Element* AddNode(xmlpp::Element* parent, const XMLNode& node);
     void SetNode(xmlpp::Element* parent, const XMLNode& node);
-    void VerifyNodes(const uint16_t flags) noexcept;
-    bool IsValidNodes(const uint16_t flags) noexcept;
+    void VerifyNodes(const size_t flags) noexcept;
+    bool IsValidNodes(const size_t flags) noexcept;
     void ConfigureDocument();
 
     // TODO: size_t ttml_flags;
-    uint32_t ttml_framerate;
+    size_t ttml_framerate;
     xmlpp::Element* ttml_head;
     xmlpp::Element* ttml_body;
     std::vector<std::shared_ptr<xmlpp::ContentNode>> ttml_subtitles;
@@ -128,7 +128,7 @@ private:
     inline xmlpp::Element* GetHeadNode(const XMLTag& tag, const XMLTag ns = XMLTag::none) noexcept
     {
         using namespace vt::xml;
-        uint16_t flags = 0x0000;
+        size_t flags = 0x0000;
         switch (tag) {
             case XMLTag::tt:        flags = 0x0001;      break;
             case XMLTag::head:      flags = 0x0002;      break;

@@ -257,7 +257,7 @@ void TTML1p0_Netflix::AddStyling(const XMLNode& node) noexcept
           auto& n = const_cast<XMLNode&>(node);
           std::string new_style_id = "style";
           if (!node.GetNodeId()) {
-            uint32_t new_id_num = 0;
+            size_t new_id_num = 0;
             while (!this->IsUniqueId(new_style_id + std::to_string(++new_id_num)));
             new_style_id += std::to_string(new_id_num);
             n.attributes.emplace_back(std::make_tuple(tag_xml, tag_id, new_style_id));
@@ -329,7 +329,7 @@ void TTML1p0_Netflix::AddLayout(const XMLNode& node) noexcept
           auto& n = const_cast<XMLNode&>(node);
           std::string new_region_id = "region";
           if (!node.GetNodeId()) {
-            uint32_t new_id_num = 0;
+            size_t new_id_num = 0;
             while (!this->IsUniqueId(new_region_id + std::to_string(++new_id_num)));
             new_region_id += std::to_string(new_id_num);
             n.attributes.emplace_back(std::make_tuple(tag_xml, tag_id, new_region_id));
@@ -386,11 +386,11 @@ xmlpp::Element* TTML1p0_Netflix::GetHeadData(const XMLHeadFlags& flag, const std
   }
 }
 
-void TTML1p0_Netflix::VerifyNodes(const uint16_t flags) noexcept
+void TTML1p0_Netflix::VerifyNodes(const size_t flags) noexcept
 {
   // TODO: Better verification of nodes
   using namespace vt::xml;
-  for (uint16_t bit = 0x0001; bit != 0x0000; bit <<= 0x0001) {
+  for (size_t bit = 0x0001; bit != 0x0000; bit <<= 0x0001) {
     switch (flags & bit) {
       case 0x0001: {
         this->ttml_verified_nodes.has_root = 
@@ -451,12 +451,12 @@ void TTML1p0_Netflix::VerifyNodes(const uint16_t flags) noexcept
   }
 }
 
-bool TTML1p0_Netflix::IsValidNodes(const uint16_t flags) noexcept
+bool TTML1p0_Netflix::IsValidNodes(const size_t flags) noexcept
 {
   // TODO: Better verification of nodes
   bool nodes_are_valid = true;
   using namespace vt::xml;
-  for (uint16_t bit = 0x0001; bit != 0x0000; bit <<= 0x0001) {
+  for (size_t bit = 0x0001; bit != 0x0000; bit <<= 0x0001) {
     switch (flags & bit) {
       case 0x0001: {
           nodes_are_valid = nodes_are_valid && this->ttml_verified_nodes.has_root;
