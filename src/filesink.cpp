@@ -13,8 +13,8 @@
 // Project headers
 #include "../include/filesink.hpp"
 
-FileSink::FileSink() noexcept:
-    filesink_raw(nullptr),
+FileSink::FileSink() noexcept
+	: filesink_file({}),
 	filesink_length(0),
     filesink_path(""),
 	filesink_isvalid(false)
@@ -22,45 +22,30 @@ FileSink::FileSink() noexcept:
 }
 
 FileSink::FileSink(const path_t& path)
-	: filesink_raw(nullptr),
-	filesink_length(0),
-    filesink_path(""),
+	: filesink_file(path, std::ios::binary | std::ios::in | std::ios::ate),
+	filesink_length(this->filesink_file.tellg()),
+    filesink_path(path),
 	filesink_isvalid(false)
 {
-	if (path == "") throw std::invalid_argument("Invalid file path\n");
+	if (!this->filesink_file) throw std::invalid_argument("Could not open file with specified path\n");
 	this->LoadFile(path);
 }
 
 FileSink::~FileSink()
 {
-	if (this->filesink_raw) {
-		#ifndef NDEBUG
-		std::clog << "Destroying FileSink!" << "\n\n";
-		#endif
-		// std::free(this->filesink_raw);
-		// delete[] this->filesink_raw;
-	}
 }
 
 void FileSink::LoadFile(const std::string_view& path)
 {
-	// Clean up first
-	if (this->filesink_raw) this->Purge();
-
 	// Open new file
-	std::ifstream file(path, std::ios::binary | std::ios::in | std::ios::ate);
-	if (!file) throw std::invalid_argument("Could not open specified path\n");
-	if (file.tellg() <= 0) throw std::invalid_argument("File is empty\n");
+	// std::ifstream file(path, std::ios::binary | std::ios::in | std::ios::ate);
+	// if (!file) throw std::invalid_argument("Could not open specified path\n");
+	// this->filesink_file.seekg(std::ios::eofbit);
+	if (this->filesink_file.tellg() <= 0) throw std::invalid_argument("File is empty\n");
 
 	// Allocate memory for file
 	this->filesink_path = path;
-	this->filesink_length = file.tellg();
-	this->filesink_raw = std::make_unique(new char[file.tellg() * sizeof(char) + 1]);
-    // this->filesink_raw = (uint8_t*)std::malloc(
-    //     file.tellg() * sizeof(uint8_t) + 1 // Null byte
-	// );
-	file.seekg(std::ios::beg);
-	file.read((char*)this->filesink_raw, this->filesink_length);
+	this->filesink_file.seekg(std::ios::beg);
 }
 
 bool FileSink::isValidFile() noexcept
@@ -70,9 +55,6 @@ bool FileSink::isValidFile() noexcept
 
 void FileSink::Purge()
 {
-	this->filesink_raw = nullptr;
-	// std::free(this->filesink_raw);
-	// delete[] this->filesink_raw;
 	this->filesink_path = "";
 	this->filesink_length = 0;
 	this->filesink_isvalid = false;

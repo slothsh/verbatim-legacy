@@ -42,7 +42,7 @@ XMLFile::XMLFile()
 XMLFile::XMLFile(const std::string& path)
   : FileSink(path)
 {
-  if (this->filesink_raw) this->ValidateFile();
+  if (this->filesink_file) this->ValidateFile();
 }
 
 XMLFile::~XMLFile()
@@ -51,7 +51,8 @@ XMLFile::~XMLFile()
 
 void XMLFile::Parse()
 {
-  this->xmlfile_dom.parse_memory_raw(this->filesink_raw, this->filesink_length);
+  std::unique_ptr<unsigned char*> file_data{ std::make_unique<unsigned char*>( new unsigned char[this->filesink_length + 1] ) };
+  this->xmlfile_dom.parse_memory_raw(*file_data, this->filesink_length);
   if (this->xmlfile_dom.get_document()->get_root_node()) {
     xmlfile_isvalid = true;
     this->xmlfile_root = this->xmlfile_dom.get_document()->get_root_node();
@@ -654,7 +655,7 @@ void TTML1p0_Netflix::SetNode(xmlpp::Element* parent, const XMLNode& node)
 void TTML1p0_Netflix::ConfigureDocument()
 {
   // Clean up first
-  if (this->filesink_raw) this->Purge();
+  if (this->filesink_file) this->Purge();
 
   using namespace vt::xml;
   this->xmlfile_profile = XMLProfile::ttml_1p0_netflix;

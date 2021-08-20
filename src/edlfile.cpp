@@ -50,8 +50,6 @@ inline void EDLFilePTX::ConstructorAssignment(const EDLFilePTX& edl_file) noexce
 
 EDLFilePTX::EDLFilePTX(const EDLFilePTX& edl_file) noexcept
 {
-	this->filesink_raw = (uint8_t*)std::malloc(edl_file.filesink_length * sizeof(uint8_t));
-	this->filesink_raw = (uint8_t*)std::memcpy(this->filesink_raw, edl_file.filesink_raw, edl_file.filesink_length * sizeof(uint8_t));
 	this->ConstructorAssignment(edl_file);
 }
 
@@ -63,7 +61,7 @@ EDLFilePTX::EDLFilePTX(EDLFilePTX&& edl_file) noexcept
 EDLFilePTX::EDLFilePTX(const std::string& path)
 	: FileSink(path)
 {
-	if (this->filesink_raw) this->ValidateFile();
+	if (this->filesink_file) this->ValidateFile();
 }
 
 EDLFilePTX::~EDLFilePTX()
@@ -148,7 +146,7 @@ void EDLFilePTX::Parse()
 			regex::AllMatches(entry_data, rows, std::regex("((.+?)\\t|(.+?)\\n)"));
 
 			uint64_t i = 0;
-			uint32_t bit_mask =string::WhiteSpace::tab |string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
+			uint32_t bit_mask =string::WhiteSpace::tab | string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
 			for (auto& column : entry_data) {
 				if (i >= 7) i = 0;
 				switch (i++) {
@@ -174,7 +172,12 @@ void EDLFilePTX::Parse()
 	};
 
 	// Extract track chunks from raw file
- 	std::string text((char*)this->filesink_raw);
+	std::unique_ptr<char*> data_ptr{ std::make_unique<char*>(new char[this->filesink_length + 1]) };
+	// char* data_ptr = new char[this->filesink_length + 1]; 
+	this->filesink_file.read(*data_ptr, this->filesink_length);
+ 	// std::string text((char*)this->filesink_raw);
+ 	std::string text(*data_ptr);
+	// delete[] data_ptr;
 	std::vector<std::string> chunks;
 	regex::AllMatches(
 		chunks,
@@ -623,12 +626,6 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 
 EDLFilePTX& EDLFilePTX::operator=(const EDLFilePTX& edl_file) noexcept
 {
-	if (this->filesink_raw) {
-		// std::free(this->filesink_raw);
-	}
-
-	this->filesink_raw = (uint8_t*)std::malloc(edl_file.filesink_length * sizeof(uint8_t));
-	this->filesink_raw = (uint8_t*)std::memcpy(this->filesink_raw, edl_file.filesink_raw, edl_file.filesink_length * sizeof(uint8_t));
 	this->ConstructorAssignment(edl_file);
 
 	return *this;
@@ -636,11 +633,9 @@ EDLFilePTX& EDLFilePTX::operator=(const EDLFilePTX& edl_file) noexcept
 
 EDLFilePTX& EDLFilePTX::operator=(EDLFilePTX&& edl_file) noexcept
 {
-	this->filesink_raw = edl_file.filesink_raw;
 	this->ConstructorAssignment(edl_file);
 
 	if (this != &edl_file) {
-		edl_file.filesink_raw = nullptr;
 		edl_file.filesink_length = 0;
 		edl_file.filesink_path = "";
 		edl_file.filesink_isvalid = false;

@@ -18,6 +18,7 @@ struct FileSink
 {
 public:
 	using ptr_t = std::unique_ptr<char>;
+	using file_t = std::ifstream;
 	using path_t = std::string_view;
 
     FileSink() noexcept;
@@ -32,7 +33,7 @@ protected:
 	void ValidateFile() noexcept;
 	virtual void Parse() = 0;
 
-    ptr_t filesink_raw;
+	file_t filesink_file;
 	size_t filesink_length;
     path_t filesink_path;
 	bool filesink_isvalid;
