@@ -71,7 +71,8 @@ struct TTML1p0_Netflix : public XMLFile
 public:
     using XMLNode = vt::format::XMLNode;
     using XMLHeadFlags = vt::xml::TTML1p0_Head_Flags;
-    using dictionary_t = decltype(vt::dictionary::CreateTTMLDictionary());
+    using dictionary_t = typename vt::dictionary::TTMLDictionary::dictionary_t;
+    
     TTML1p0_Netflix();
     explicit TTML1p0_Netflix(const std::string& path);
     ~TTML1p0_Netflix();
@@ -83,7 +84,7 @@ public:
     void operator<<(EDLFilePTX& edl_file) noexcept; // TODO: Make this more generic
 
 private:
-    static constexpr vt::dictionary::TTMLDictionary<dictionary_t> dictionary = {};
+    static constexpr vt::dictionary::TTMLDictionary dictionary;
 
     enum class StyleNodePresets
     {

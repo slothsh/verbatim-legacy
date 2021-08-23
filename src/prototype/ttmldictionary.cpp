@@ -34,9 +34,14 @@ int main()
     static_assert(mge::enum_integer(ValueExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
     static_assert(mge::enum_integer(GenericData::IS_DATA) == MAGIC_ENUM_RANGE_MIN);
 
-    constexpr auto node = CreateTTMLDictionary();
+    TTMLDictionary ttml_dictionary;
+    std::cout << "Total bytes: " << sizeof(ttml_dictionary.entries) << " bytes" << '\n';
+    std::cout << "Total entries: " << ttml_dictionary.size << '\n';
 
-    std::cout << "Total size: " << sizeof(node) << " bytes" << '\n';
+    const auto find = vt::dictionary::FindTTMLDictionaryNode(std::pair{ NS::tt, Tag::div });
+    if (find) std::cout << "div found!";
+    else std::cout << "div NOT found!";
+    
 
     std::cout << "\nend\n";
     return 0;

@@ -70,6 +70,11 @@ set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 # ttmldictionary
 add_executable(ttmldictionary
 	./src/prototype/ttmldictionary.cpp
+	./src/filesink.cpp
+	./src/xmlfile.cpp
+	./src/helpers.cpp
+	./src/edlfile.cpp
+	./src/ptxedlstructure.cpp
 )
 set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
 # if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
@@ -80,9 +85,11 @@ set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 	target_link_libraries(parsettml ${libfmt} ${libxmlpp})
-
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+	target_link_libraries(ttmldictionary ${libxmlpp})
+	
+	elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	target_link_libraries(parsettml ${libfmt} ${libxmlpp})
+	target_link_libraries(ttmldictionary ${libxmlpp})
 
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
