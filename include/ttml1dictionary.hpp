@@ -1283,9 +1283,10 @@ namespace vt::dictionary
         struct TraverseTTMLDictionary<0, Tdictionary, Fnc>
         {
             using entry_t = std::tuple_element_t<0, Tdictionary>;
-            static constexpr bool TraverseWithPredicate(const Tdictionary& dictionary, const Fnc& fnc)
+            static constexpr std::optional<size_t> TraverseWithPredicate(const Tdictionary& dictionary, const Fnc& fnc)
             {
-                return fnc(std::get<0>(dictionary));
+                if (fnc(std::get<0>(dictionary))) return std::optional { size_t{0} };
+                return std::nullopt;
             }
         };
 
@@ -1293,38 +1294,78 @@ namespace vt::dictionary
         struct TraverseTTMLDictionary
         {
             using entry_t = std::tuple_element_t<I, Tdictionary>;
-            static constexpr bool TraverseWithPredicate(const Tdictionary& dictionary, const Fnc& fnc)
+            static constexpr std::optional<size_t> TraverseWithPredicate(const Tdictionary& dictionary, const Fnc& fnc)
             {
                 auto reference = std::ref(std::get<I>(dictionary));
                 using ref_t = decltype(reference);
-                if (fnc(std::get<I>(dictionary))) return fnc(std::get<I>(dictionary));
+                if (fnc(std::get<I>(dictionary))) return std::optional { size_t {I} };
                 return TraverseTTMLDictionary<I - 1, Tdictionary, Fnc>::TraverseWithPredicate(dictionary, fnc);
             }
         };
 
         template<class Ttup, class S, S... Sseq>
+        constexpr inline auto VariantFromTuple(const Ttup& tup, std::integer_sequence<S, Sseq...> sequence)
+        {
+            return std::variant<std::tuple_element_t<Sseq, Ttup>...> {};
+        }
+
+        template<class Ttup, class S = std::make_index_sequence<std::tuple_size_v<Ttup>>>
         struct SequencePack
         {
-            using sequence_t = std::variant<std::tuple_element_t<Sseq, Ttup>...>;
-            constexpr SequencePack(const Ttup& tup, std::integer_sequence<S, Sseq...> sequence)
-            {}
+            using sequence_t = decltype(VariantFromTuple(std::declval<Ttup>(), S{}));
         };
+
+        // Runtime tuple access
+        template<class Ttup, class Seq = std::make_index_sequence<std::tuple_size_v<Ttup>>>
+        struct runtime_tuple_table;
+
+        template<class Ttup, size_t... Seq>
+        struct runtime_tuple_table<Ttup, std::index_sequence<Seq...>>{
+            using return_t = typename std::tuple_element_t<0, Ttup>&;
+            using fncptr_t = return_t (*)(Ttup&) noexcept;
+            static constexpr fncptr_t table[std::tuple_size_v<Ttup>] = { &std::get<Seq> ... };
+        };
+
+        template<class Ttup, size_t... Seq>
+        constexpr typename runtime_tuple_table<Ttup, std::index_sequence<Seq...>>::fncptr_t
+                           runtime_tuple_table<Ttup, std::index_sequence<Seq...>>::table[std::tuple_size_v<Ttup>];
+
+        template<class Ttup>
+        constexpr typename std::tuple_element_t<0, typename std::remove_reference_t<Ttup>>&
+        runtime_get(const Ttup& tup, size_t index)
+        {
+            using tuple_t = typename std::remove_reference_t<Ttup>;
+            if (index >= std::tuple_size_v<tuple_t>) throw std::runtime_error("Tuple table index is out of range\n");
+            return runtime_tuple_table<tuple_t>::table[index](tup);
+        }
     }
 
     struct TTMLDictionary
     {
         using dictionary_t = decltype(detail::CreateTTMLDictionary());
-        // using variant_t = decltype(std::declval<detail::SequencePack>());
+        using variant_t = typename detail::SequencePack<dictionary_t>::sequence_t;
 
         constexpr TTMLDictionary()
         {}
 
+        constexpr auto GetIndex(size_t index)
+        {
+            return detail::runtime_get(TTMLDictionary::entries, index);
+        }
+
         template<class Fnc>
         static constexpr bool TraverseWithPredicate(const Fnc& fnc)
         {
-            return detail::TraverseTTMLDictionary<TTMLDictionary::size - 1, dictionary_t, Fnc>::TraverseWithPredicate(TTMLDictionary::entries, fnc);
+            const auto index = detail::TraverseTTMLDictionary<TTMLDictionary::size - 1, dictionary_t, Fnc>::TraverseWithPredicate(TTMLDictionary::entries, fnc);
+            if (index) {
+                return true;
+            }
+            
+            return false;
         }
 
+        static variant_t last_entry;
+        static size_t last_index;
         static constexpr dictionary_t entries = detail::CreateTTMLDictionary();
         static constexpr size_t size = std::tuple_size_v<dictionary_t>;
     };

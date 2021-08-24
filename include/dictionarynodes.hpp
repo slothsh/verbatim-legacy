@@ -195,6 +195,14 @@ namespace vt::dictionary
     template<enumerable_node E>
     struct NodeID
     {
+        constexpr NodeID() = default;
+        constexpr ~NodeID() = default;
+
+        constexpr NodeID(const NodeID& node_id)
+            : id(node_id.id),
+            value(node_id.value)
+        {}
+
         constexpr NodeID(const E& n_id) noexcept
             : id(n_id),
             value(magic_enum::enum_name<E>(n_id))
@@ -207,6 +215,14 @@ namespace vt::dictionary
     template<enumerable_node Tns, enumerable_node Telem>
     struct Node
     {
+        constexpr Node() = default;
+        constexpr ~Node() = default;
+
+        constexpr Node(const Node& node)
+            : ns(node.ns),
+            element(node.element)
+        {}
+
         constexpr Node(const Tns& n_ns, const Telem& n_element) noexcept
             : ns(n_ns),
             element(n_element)
@@ -226,6 +242,16 @@ namespace vt::dictionary
     struct ValueExpressionNode
     {
         using init_t = ValueExpressionNode<Tns, Tvexpr>;
+
+        constexpr ValueExpressionNode() = default;
+        constexpr ~ValueExpressionNode() = default;
+
+        constexpr ValueExpressionNode(const ValueExpressionNode& vexpr)
+            : expression(vexpr.expression),
+            value(vexpr.value),
+            conditions(vexpr.conditions),
+            documents(vexpr.documents)
+        {}
 
         constexpr ValueExpressionNode(const Tns& n_ns, const Tvexpr& n_vexpr, const std::string_view& n_value, const size_t& n_conditions, const size_t& n_documents) noexcept
             : expression({ n_ns, n_vexpr }),
@@ -265,6 +291,17 @@ namespace vt::dictionary
                 class Nvexpr>
     struct AttributeNode
     {
+        constexpr AttributeNode() = default;
+        constexpr ~AttributeNode() = default;
+
+        constexpr AttributeNode(const AttributeNode& attribute)
+            : attribute(attribute.attribute),
+            expressions(attribute.expressions),
+            condition(attribute.condition),
+            quantifier(attribute.quantifier),
+            documents(attribute.documents)
+        {}
+
         constexpr AttributeNode(const size_t& n_condition, const size_t& n_quantifier, const size_t& n_documents,
                                 const Tns& n_ns,  const Tattr& n_attr, const Nvexpr& n_vexpr)
             : attribute({ n_ns, n_attr }),
@@ -320,6 +357,15 @@ namespace vt::dictionary
     template<enumerable_ns Tns, enumerable_content Tdata>
     struct ContentNode
     {   
+        constexpr ContentNode() = default;
+        constexpr ~ContentNode() = default;
+
+        constexpr ContentNode(const ContentNode& content)
+            : type(content.type),
+            quantifier(content.quantifier),
+            documents(content.documents)
+        {}
+
         constexpr ContentNode(const size_t& n_quantifier, const size_t& n_documents,
                                 const Tns& n_ns, const Tdata& n_data) noexcept
             : type({ n_ns, n_data }),
@@ -364,6 +410,13 @@ namespace vt::dictionary
 
         constexpr DictionaryNode() = default;
         constexpr ~DictionaryNode() = default;
+
+        constexpr DictionaryNode(const DictionaryNode& dictionary)
+            : element(dictionary.element),
+            attributes(dictionary.attributes),
+            content(dictionary.content),
+            documents(dictionary.documents)
+        {}
 
         constexpr DictionaryNode(const size_t& n_documents,
                             const Tns& n_ns, const Ttag& n_tag,
