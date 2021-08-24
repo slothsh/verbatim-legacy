@@ -16,6 +16,7 @@
 #include <utility>
 #include <concepts>
 #include <optional>
+#include <variant>
 
 // Project headers
 #include "dictionarynodes.hpp"
@@ -1273,46 +1274,59 @@ namespace vt::dictionary
         }
     }
 
-    template<size_t I, class Tdictionary, class Fnc>
-    struct TraverseTTMLDictionary
+    namespace detail
     {
-        using entry_t = typename std::tuple_element_t<I, Tdictionary>;
-        static constexpr std::optional<std::reference_wrapper<entry_t>> TraverseWithPredicate(const Tdictionary& dictionary, const Fnc& fnc)
-        {
-            if (fnc()) return std::optional<std::reference_wrapper<entry_t>> { std::get<I>(dictionary) };
-            return TraverseTTMLDictionary<I - 1, Tdictionary, Fnc>::TraverseWithPredicate(dictionary, fnc);
-        }
-    };
+        template<size_t I, class Tdictionary, class Fnc>
+        struct TraverseTTMLDictionary;
 
-    template<class Tdictionary, class Fnc>
-    struct TraverseTTMLDictionary<0, Tdictionary, Fnc>
-    {
-        using entry_t = typename std::tuple_element_t<0, Tdictionary>;
-        static constexpr std::optional<std::reference_wrapper<entry_t>> TraverseWithPredicate(const Tdictionary& dictionary, const Fnc& fnc)
+        template<class Tdictionary, class Fnc>
+        struct TraverseTTMLDictionary<0, Tdictionary, Fnc>
         {
-            if (fnc()) return std::optional<std::reference_wrapper<entry_t>> { std::get<0>(dictionary) };
-            return std::nullopt;
-        }
-    };
+            using entry_t = std::tuple_element_t<0, Tdictionary>;
+            static constexpr bool TraverseWithPredicate(const Tdictionary& dictionary, const Fnc& fnc)
+            {
+                return fnc(std::get<0>(dictionary));
+            }
+        };
+
+        template<size_t I, class Tdictionary, class Fnc>
+        struct TraverseTTMLDictionary
+        {
+            using entry_t = std::tuple_element_t<I, Tdictionary>;
+            static constexpr bool TraverseWithPredicate(const Tdictionary& dictionary, const Fnc& fnc)
+            {
+                auto reference = std::ref(std::get<I>(dictionary));
+                using ref_t = decltype(reference);
+                if (fnc(std::get<I>(dictionary))) return fnc(std::get<I>(dictionary));
+                return TraverseTTMLDictionary<I - 1, Tdictionary, Fnc>::TraverseWithPredicate(dictionary, fnc);
+            }
+        };
+
+        template<class Ttup, class S, S... Sseq>
+        struct SequencePack
+        {
+            using sequence_t = std::variant<std::tuple_element_t<Sseq, Ttup>...>;
+            constexpr SequencePack(std::integer_sequence<S, Sseq...> sequence)
+            {}
+        };
+    }
 
     struct TTMLDictionary
     {
         using dictionary_t = decltype(detail::CreateTTMLDictionary());
-        // using dictionary_t = std::tuple<Tag, Tag, Tag, Tag>;
+        using variant_t = typename detail::SequencePack<dictionary_t, size_t, std::make_index_sequence<std::tuple_size_v<dictionary_t>>{}>::sequence_t;
 
         constexpr TTMLDictionary()
         {}
 
         template<class Fnc>
-        static constexpr auto TraverseWithPredicate(const Fnc& fnc)
+        static constexpr bool TraverseWithPredicate(const Fnc& fnc)
         {
-            return TraverseTTMLDictionary<TTMLDictionary::size - 1, dictionary_t, Fnc>::TraverseWithPredicate(TTMLDictionary::entries, fnc);
+            return detail::TraverseTTMLDictionary<TTMLDictionary::size - 1, dictionary_t, Fnc>::TraverseWithPredicate(TTMLDictionary::entries, fnc);
         }
 
         static constexpr dictionary_t entries = detail::CreateTTMLDictionary();
         static constexpr size_t size = std::tuple_size_v<dictionary_t>;
-        // static constexpr size_t size = 4;
-        // static constexpr dictionary_t entries = std::make_tuple( Tag::div, Tag::span, Tag::br, Tag::p );
     };
 }
 
@@ -1332,10 +1346,9 @@ namespace vt::dictionary
     constexpr inline auto FindTTMLDictionaryNode(const std::pair<NS, Tag>& type)
     {
         // Return type for matched entry
-        const auto get_entry = [](/* const auto& entry */) {
-            // const auto& [ ns, tag ] = type;
-            // return (ns == entry.element.ns.id && tag == entry.element.element.id);
-            return true;
+        const auto get_entry = [](const auto& entry) {
+            // const auto& [ ns, tag ] = entry;
+            return (entry.element.ns.id == NS::tt && entry.element.element.id == Tag::div);
         };
 
         return TTMLDictionary::TraverseWithPredicate(get_entry);

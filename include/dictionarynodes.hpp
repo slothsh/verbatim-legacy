@@ -362,6 +362,9 @@ namespace vt::dictionary
         using attribute_t = Tattr;
         using content_t = Tdata;
 
+        constexpr DictionaryNode() = default;
+        constexpr ~DictionaryNode() = default;
+
         constexpr DictionaryNode(const size_t& n_documents,
                             const Tns& n_ns, const Ttag& n_tag,
                             const Tattr& n_attr, const Tdata& n_data)

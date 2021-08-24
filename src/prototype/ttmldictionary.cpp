@@ -15,7 +15,7 @@
 #include "../../include/dictionarynodes.hpp"
 #include "../../include/ttml1dictionary.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
 	using namespace vt::dictionary;
 
@@ -41,7 +41,6 @@ int main()
     const auto find = vt::dictionary::FindTTMLDictionaryNode(std::pair{ NS::tt, Tag::div });
     if (find) std::cout << "div found!";
     else std::cout << "div NOT found!";
-    
 
     std::cout << "\nend\n";
     return 0;
