@@ -1306,7 +1306,7 @@ namespace vt::dictionary
         struct SequencePack
         {
             using sequence_t = std::variant<std::tuple_element_t<Sseq, Ttup>...>;
-            constexpr SequencePack(std::integer_sequence<S, Sseq...> sequence)
+            constexpr SequencePack(const Ttup& tup, std::integer_sequence<S, Sseq...> sequence)
             {}
         };
     }
@@ -1314,7 +1314,7 @@ namespace vt::dictionary
     struct TTMLDictionary
     {
         using dictionary_t = decltype(detail::CreateTTMLDictionary());
-        using variant_t = typename detail::SequencePack<dictionary_t, size_t, std::make_index_sequence<std::tuple_size_v<dictionary_t>>{}>::sequence_t;
+        // using variant_t = decltype(std::declval<detail::SequencePack>());
 
         constexpr TTMLDictionary()
         {}
