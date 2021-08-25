@@ -1061,14 +1061,14 @@ namespace vt::dictionary
             constexpr std::tuple content_tt_p = std::tuple_cat (
                 CreateContentNode ( contentparams_animation,             elemgrp_animation,              std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_animation)>>{} ),
                 CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  ),
-                CreateContentNode ( contentparams_inline,                 elemgrp_inline,                std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_inline)>>{}    )
+                CreateContentNode ( contentparams_inline,                elemgrp_inline,                std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_inline)>>{}     )
             );
 
             // <tt:span/>
             constexpr std::tuple content_tt_span = std::tuple_cat (
                 CreateContentNode ( contentparams_animation,             elemgrp_animation,              std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_animation)>>{} ),
                 CreateContentNode ( contentparams_metadata,              elemgrp_metadata,               std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_metadata)>>{}  ),
-                CreateContentNode ( contentparams_inline,                 elemgrp_inline,                std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_inline)>>{}    )
+                CreateContentNode ( contentparams_inline,                elemgrp_inline,                std::make_index_sequence<std::tuple_size_v<decltype(elemgrp_inline)>>{}     )
             );
 
             // <tt:br/>
@@ -1314,30 +1314,6 @@ namespace vt::dictionary
         {
             using sequence_t = decltype(VariantFromTuple(std::declval<Ttup>(), S{}));
         };
-
-        // Runtime tuple access
-        template<class Ttup, class Seq = std::make_index_sequence<std::tuple_size_v<Ttup>>>
-        struct runtime_tuple_table;
-
-        template<class Ttup, size_t... Seq>
-        struct runtime_tuple_table<Ttup, std::index_sequence<Seq...>>{
-            using return_t = typename std::tuple_element_t<0, Ttup>&;
-            using fncptr_t = return_t (*)(Ttup&) noexcept;
-            static constexpr fncptr_t table[std::tuple_size_v<Ttup>] = { &std::get<Seq> ... };
-        };
-
-        template<class Ttup, size_t... Seq>
-        constexpr typename runtime_tuple_table<Ttup, std::index_sequence<Seq...>>::fncptr_t
-                           runtime_tuple_table<Ttup, std::index_sequence<Seq...>>::table[std::tuple_size_v<Ttup>];
-
-        template<class Ttup>
-        constexpr typename std::tuple_element_t<0, typename std::remove_reference_t<Ttup>>&
-        runtime_get(const Ttup& tup, size_t index)
-        {
-            using tuple_t = typename std::remove_reference_t<Ttup>;
-            if (index >= std::tuple_size_v<tuple_t>) throw std::runtime_error("Tuple table index is out of range\n");
-            return runtime_tuple_table<tuple_t>::table[index](tup);
-        }
     }
 
     struct TTMLDictionary
@@ -1347,11 +1323,6 @@ namespace vt::dictionary
 
         constexpr TTMLDictionary()
         {}
-
-        constexpr auto GetIndex(size_t index)
-        {
-            return detail::runtime_get(TTMLDictionary::entries, index);
-        }
 
         template<class Fnc>
         static constexpr bool TraverseWithPredicate(const Fnc& fnc)

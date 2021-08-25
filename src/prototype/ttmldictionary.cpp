@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     // if (find) std::cout << "div found!";
     // else std::cout << "div NOT found!";
 
-    const auto index = ttml_dictionary.GetIndex(1);
+    // const auto index = ttml_dictionary.GetIndex(1);
 
     std::cout << "\nend\n";
     return 0;

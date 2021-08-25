@@ -2,7 +2,6 @@
 // File: node.hpp
 // Description: header file for static TTML dictionary templates
 
-
 #ifndef VTNODE_HEADER
 #define VTNODE_HEADER
 
@@ -135,7 +134,7 @@ namespace vt::dictionary
 
     // Concept for generic enumeration types
     template<class E>
-    concept enumerable_node =
+    concept enumerable_node_c =
         std::is_enum_v<E>
         && mge::is_scoped_enum_v<E>
         && mge::enum_contains<E>(E::none)
@@ -143,56 +142,56 @@ namespace vt::dictionary
 
     // Concept for enumeration types to be used for namespaces
     template<class Tns>
-    concept enumerable_ns =
-        enumerable_node<Tns>
+    concept enumerable_ns_c =
+        enumerable_node_c<Tns>
         && mge::enum_contains<Tns>(Tns::IS_NS)
         && mge::enum_integer(Tns::IS_NS) == VT_ENUM_ID;
 
     // Concept for enumeration types to be used for xml tags
     template<class Ttag>
-    concept enumerable_tag =
-        enumerable_node<Ttag>
+    concept enumerable_tag_c =
+        enumerable_node_c<Ttag>
         && mge::enum_contains<Ttag>(Ttag::IS_TAG)
         && mge::enum_integer(Ttag::IS_TAG) == VT_ENUM_ID;
 
     // Concept for enumeration types to be used for attributes
     template<class Tattr>
-    concept enumerable_attr =
-        enumerable_node<Tattr>
+    concept enumerable_attr_c =
+        enumerable_node_c<Tattr>
         && mge::enum_contains<Tattr>(Tattr::IS_ATTRIBUTE)
         && mge::enum_integer(Tattr::IS_ATTRIBUTE) == VT_ENUM_ID;
 
     // Concept for enumeration types to be used for value expressions
     template<class Tvexpr>
-    concept enumerable_vexpr =
-        enumerable_node<Tvexpr>
+    concept enumerable_vexpr_c =
+        enumerable_node_c<Tvexpr>
         && mge::enum_contains<Tvexpr>(Tvexpr::IS_VALUE_EXPRESSION)
         && mge::enum_integer(Tvexpr::IS_VALUE_EXPRESSION) == VT_ENUM_ID;
 
     // Concept for enumeration types to be used for data tag data types
     template<class Tdata>
-    concept enumerable_data =
-        enumerable_node<Tdata>
+    concept enumerable_data_c =
+        enumerable_node_c<Tdata>
         && mge::enum_contains<Tdata>(Tdata::IS_DATA)
         && mge::enum_integer(Tdata::IS_DATA) == VT_ENUM_ID;
 
     // Concept for enumeration types to be used for content types
     template<class Tcont>
-    concept enumerable_content =
-        enumerable_node<Tcont>
-        && (enumerable_tag<Tcont>
-        || enumerable_data<Tcont>);
+    concept enumerable_content_c =
+        enumerable_node_c<Tcont>
+        && (enumerable_tag_c<Tcont>
+        || enumerable_data_c<Tcont>);
 
     template<class Telement>
-    concept enumerable_element =
-        enumerable_node<Telement>
-        && (enumerable_tag<Telement>
-        || enumerable_attr<Telement>
-        || enumerable_vexpr<Telement>
-        || enumerable_data<Telement>);
+    concept enumerable_element_c =
+        enumerable_node_c<Telement>
+        && (enumerable_tag_c<Telement>
+        || enumerable_attr_c<Telement>
+        || enumerable_vexpr_c<Telement>
+        || enumerable_data_c<Telement>);
 
     // Generic types
-    template<enumerable_node E>
+    template<enumerable_node_c E>
     struct NodeID
     {
         constexpr NodeID() = default;
@@ -212,7 +211,7 @@ namespace vt::dictionary
         std::string_view      value;
     };
 
-    template<enumerable_node Tns, enumerable_node Telem>
+    template<enumerable_node_c Tns, enumerable_node_c Telem>
     struct Node
     {
         constexpr Node() = default;
@@ -238,7 +237,7 @@ namespace vt::dictionary
 
 namespace vt::dictionary
 {
-    template<enumerable_ns Tns, enumerable_vexpr Tvexpr>
+    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr>
     struct ValueExpressionNode
     {
         using init_t = ValueExpressionNode<Tns, Tvexpr>;
@@ -287,10 +286,14 @@ namespace vt::dictionary
         size_t                      documents;
     };
 
-    template<enumerable_ns Tns, enumerable_attr Tattr,
+    template<enumerable_ns_c Tns, enumerable_attr_c Tattr,
                 class Nvexpr>
     struct AttributeNode
     {
+        using ns_t = Tns;
+        using tag_t = Tattr;
+        using vexpr_t = Nvexpr;
+
         constexpr AttributeNode() = default;
         constexpr ~AttributeNode() = default;
 
@@ -299,7 +302,8 @@ namespace vt::dictionary
             expressions(attribute.expressions),
             condition(attribute.condition),
             quantifier(attribute.quantifier),
-            documents(attribute.documents)
+            documents(attribute.documents),
+            size_expressions(attribute.size_expressions)
         {}
 
         constexpr AttributeNode(const size_t& n_condition, const size_t& n_quantifier, const size_t& n_documents,
@@ -308,7 +312,8 @@ namespace vt::dictionary
             expressions(n_vexpr),
             condition(n_condition),
             quantifier(n_quantifier),
-            documents(n_documents)
+            documents(n_documents),
+            size_expressions(std::tuple_size_v<Nvexpr>)
         {}
 
         constexpr AttributeNode(const size_t& n_condition, const size_t& n_quantifier, const size_t& n_documents,
@@ -317,7 +322,8 @@ namespace vt::dictionary
             expressions(n_vexpr),
             condition(n_condition),
             quantifier(n_quantifier),
-            documents(n_documents)
+            documents(n_documents),
+            size_expressions(std::tuple_size_v<Nvexpr>)
         {}
 
         constexpr AttributeNode(size_t&& n_condition, size_t&& n_quantifier, size_t&& n_documents,
@@ -326,7 +332,8 @@ namespace vt::dictionary
             expressions(n_vexpr),
             condition(n_condition),
             quantifier(n_quantifier),
-            documents(n_documents)
+            documents(n_documents),
+            size_expressions(std::tuple_size_v<Nvexpr>)
         {}
 
         constexpr AttributeNode(const size_t&& n_condition, const size_t&& n_quantifier, const size_t&& n_documents,
@@ -335,7 +342,8 @@ namespace vt::dictionary
             expressions(n_vexpr),
             condition(n_condition),
             quantifier(n_quantifier),
-            documents(n_documents)
+            documents(n_documents),
+            size_expressions(std::tuple_size_v<Nvexpr>)
         {}
 
         constexpr AttributeNode(const size_t&& n_condition, const size_t&& n_quantifier, const size_t&& n_documents,
@@ -344,17 +352,19 @@ namespace vt::dictionary
             expressions(n_vexpr),
             condition(n_condition),
             quantifier(n_quantifier),
-            documents(n_documents)
+            documents(n_documents),
+            size_expressions(std::tuple_size_v<Nvexpr>)
         {}
 
-        Node<Tns, Tattr>            attribute;
+        Node<ns_t, tag_t>           attribute;
         Nvexpr                      expressions;
         size_t                      condition;
         size_t                      quantifier;
         size_t                      documents;
+        size_t                      size_expressions;
     };
 
-    template<enumerable_ns Tns, enumerable_content Tdata>
+    template<enumerable_ns_c Tns, enumerable_content_c Tdata>
     struct ContentNode
     {   
         constexpr ContentNode() = default;
@@ -400,7 +410,7 @@ namespace vt::dictionary
     };
 
     // General XML node type for XML dictionary entries
-    template<enumerable_ns Tns, enumerable_tag Ttag,
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag,
                 class Tattr, class Tdata>
     struct DictionaryNode
     {
@@ -415,7 +425,9 @@ namespace vt::dictionary
             : element(dictionary.element),
             attributes(dictionary.attributes),
             content(dictionary.content),
-            documents(dictionary.documents)
+            documents(dictionary.documents),
+            size_attributes(dictionary.size_attributes),
+            size_content(dictionary.size_content)
         {}
 
         constexpr DictionaryNode(const size_t& n_documents,
@@ -424,22 +436,17 @@ namespace vt::dictionary
             : element({ n_ns , n_tag }),
             attributes(n_attr),
             content(n_data),
-            documents(n_documents)
-        {}
-
-        constexpr DictionaryNode(const size_t&& n_documents,
-                            const Tns&& n_ns, const Ttag&& n_tag,
-                            const Tattr&& n_attr, const Tdata&& n_data)
-            : element({ n_ns , n_tag }),
-            attributes(n_attr),
-            content(n_data),
-            documents(n_documents)
+            documents(n_documents),
+            size_attributes(std::tuple_size_v<Tattr>),
+            size_content(std::tuple_size_v<Tdata>)
         {}
 
         element_t                           element;
         attribute_t                         attributes;
         content_t                           content;
         size_t                              documents;
+        size_t                              size_attributes;
+        size_t                              size_content;
     };
 }
 

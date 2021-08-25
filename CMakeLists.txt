@@ -81,6 +81,12 @@ set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
 # 	target_link_libraries(ttmldictionary ${libfmt} ${libxmlpp})
 # endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
+# tupleaccess
+add_executable(tupleaccess
+	./src/prototype/tupleaccess.cpp
+)
+set_target_properties(tupleaccess PROPERTIES LINKER_LANGUAGE CXX)
+
 # ----------------------------------------------------------------------------|
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
