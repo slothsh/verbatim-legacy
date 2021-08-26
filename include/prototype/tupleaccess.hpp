@@ -114,10 +114,20 @@ namespace vt::prototype
     };
 
     template <typename Tup>
-    class to_range {
-        Tup& t;
+    class to_range
+    {
+        using tuple_t = std::conditional_t<
+            std::disjunction_v<
+                std::is_const<Tup>,
+                std::is_volatile<Tup>
+            >,
+            Tup&,
+            Tup
+        >;
+
+        tuple_t t;
     public:    
-        to_range(Tup& tup)
+        to_range(const Tup& tup)
             : t{tup}
         {}
 
@@ -127,7 +137,7 @@ namespace vt::prototype
         }
         auto end()
         {
-            return tuple_iterator{t, std::tuple_size_v<Tup>};
+            return tuple_iterator{t, std::tuple_size_v<tuple_t>};
         }
                 
         auto operator[](std::size_t i)
@@ -138,7 +148,7 @@ namespace vt::prototype
 
     // ----
 
-    template <class ... Fs>
+    template <class... Fs>
     struct overload : Fs...
     {
         overload(Fs&&... fs) 
@@ -148,7 +158,7 @@ namespace vt::prototype
         using Fs::operator()...;
     };
 
-    template <class ... Fs>
+    template <class... Fs>
     struct overload_unref : overload<Fs...>
     {
         overload_unref(Fs&&... fs) 

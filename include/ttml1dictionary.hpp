@@ -1247,29 +1247,29 @@ namespace vt::dictionary
                 element_tt_body,
                 element_tt_div,
                 element_tt_p,
-                element_tt_span,
+                // element_tt_span, // TODO: Fix duplicate type
                 element_tt_br,
                 element_tt_styling,
                 element_tt_style,
-                element_tt_layout,
+                // element_tt_layout, // TODO: Fix duplicate type
                 element_tt_region,
                 element_tt_set,
                 element_tt_metadata,
 
-                // TTM namespace
+                // // TTM namespace
                 element_ttm_title,
-                element_ttm_desc,
-                element_ttm_copyright,
+                // element_ttm_desc, // TODO: Fix duplicate type
+                // element_ttm_copyright, // TODO: Fix duplicate type
                 element_ttm_agent,
                 element_ttm_name,
                 element_ttm_actor,
 
-                // TTP namespace
+                // // TTP namespace
                 element_ttp_profile,
                 element_ttp_features,
                 element_ttp_feature,
-                element_ttp_extensions,
-                element_ttp_extension
+                // element_ttp_extensions, // TODO: Fix duplicate type
+                // element_ttp_extension // TODO: Fix duplicate type
             };
         }
     }

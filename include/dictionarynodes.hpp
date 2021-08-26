@@ -356,6 +356,30 @@ namespace vt::dictionary
             size_expressions(std::tuple_size_v<Nvexpr>)
         {}
 
+        template<class Tattrnode>
+        Tattrnode& operator=(const Tattrnode& attribute_node)
+        {
+            this->attribute = attribute_node.attribute;
+            this->expressions = attribute_node.expressions;
+            this->condition = attribute_node.condition;
+            this->quantifier = attribute_node.quantifier;
+            this->documents = attribute_node.documents;
+            this->size_expressions = attribute_node.size_expressions;
+            return *this;
+        }
+
+        template<class Tattrnode>
+        Tattrnode& operator=(Tattrnode&& attribute_node)
+        {
+            this->attribute = std::move(attribute_node.attribute);
+            this->expressions = std::move(attribute_node.expressions);
+            this->condition = std::move(attribute_node.condition);
+            this->quantifier = std::move(attribute_node.quantifier);
+            this->documents = std::move(attribute_node.documents);
+            this->size_expressions = std::move(attribute_node.size_expressions);
+            return *this;
+        }
+
         Node<ns_t, tag_t>           attribute;
         Nvexpr                      expressions;
         size_t                      condition;
@@ -421,14 +445,60 @@ namespace vt::dictionary
         constexpr DictionaryNode() = default;
         constexpr ~DictionaryNode() = default;
 
-        constexpr DictionaryNode(const DictionaryNode& dictionary)
-            : element(dictionary.element),
-            attributes(dictionary.attributes),
-            content(dictionary.content),
-            documents(dictionary.documents),
-            size_attributes(dictionary.size_attributes),
-            size_content(dictionary.size_content)
-        {}
+        template<class Tdict>
+        constexpr DictionaryNode(const std::reference_wrapper<Tdict>& rw_dictionary)
+        {
+            this->element = rw_dictionary.get().element;
+            this->attributes = {}; // TODO: Check constructors & assignment/move operators
+            this->content = {}; // TODO: Check constructors & assignment/move operators
+            this->documents = rw_dictionary.get().documents;
+            this->size_attributes = rw_dictionary.get().size_attributes;
+            this->size_content = rw_dictionary.get().size_content;
+        }
+
+        template<class Tdict>
+        DictionaryNode(Tdict&& dictionary)
+        {
+            this->element = std::move(dictionary.element);
+            this->attributes = std::move(dictionary.attributes);
+            this->content = std::move(dictionary.content);
+            this->documents = std::move(dictionary.documents);
+            this->size_attributes = std::move(dictionary.size_attributes);
+            this->size_content = std::move(dictionary.size_content);
+        }
+
+        template<class Tdict>
+        Tdict& operator=(const Tdict& dictionary)
+        {
+            this->element = dictionary.element;
+            this->attributes = dictionary.attributes;
+            this->content = dictionary.content;
+            this->documents = dictionary.documents;
+            this->size_attributes = dictionary.size_attributes;
+            this->size_content = dictionary.size_content;
+            return *this;
+        }
+
+        template<class Tdict>
+        Tdict& operator=(Tdict&& dictionary)
+        {
+            this->element = std::move(dictionary.element);
+            this->attributes = std::move(dictionary.attributes);
+            this->content = std::move(dictionary.content);
+            this->documents = std::move(dictionary.documents);
+            this->size_attributes = std::move(dictionary.size_attributes);
+            this->size_content = std::move(dictionary.size_content);
+            return *this;
+        }
+
+        // constexpr DictionaryNode(const DictionaryNode& dictionary)
+        //     : element(dictionary.element),
+        //     attributes(dictionary.attributes),
+        //     content(dictionary.content),
+        //     documents(dictionary.documents),
+        //     size_attributes(dictionary.size_attributes),
+        //     size_content(dictionary.size_content)
+        // {}
 
         constexpr DictionaryNode(const size_t& n_documents,
                             const Tns& n_ns, const Ttag& n_tag,
