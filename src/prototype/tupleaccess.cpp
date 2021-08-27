@@ -80,8 +80,14 @@ int main()
     using type16_t = std::tuple_element_t<16, decltype(ttml_dictionary.entries)>;
     using type17_t = std::tuple_element_t<17, decltype(ttml_dictionary.entries)>;
 
+    // using type1_t = std::tuple_element_t<0, decltype(std::get<0>(ttml_dictionary.entries).attributes)>;
+    // const auto print_attributes = overload_unref { 
+    //     [](const type1_t& node) { std::cout << "Value Expressions: " << node.condition << '\n'; }
+    // };
+
     const auto print_dictionary = overload_unref {
-        [](const type0_t& node) { std::cout << "Documents 1: " << node.documents << '\n'; }
+        [](const type0_t& node) { std::cout << "Entry 1\n";  },
+        [](const type1_t& node) { std::cout << "Entry 2\n";  }
         // [](const type1_t& node) { std::cout << "Documents 2: " << node.documents << '\n'; }
         // [](const type2_t& node) { std::cout << "Documents: " << node.documents << '\n'; },
         // [](const type3_t& node) { std::cout << "Documents: " << node.documents << '\n'; },
@@ -107,18 +113,16 @@ int main()
         // [](const type23_t& node) { std::cout << "Conditions: " << node.documents << '\n'; }
     };
 
-    const auto fnc = [&]() {return std::ref(std::get<0>(ttml_dictionary.entries));};
-    std::visit(print_dictionary, fnc);
-
     // const auto print_dictionary = overload_unref (
     //     [](const type0_t& node) { std::cout << "Documents 1: " << node.documents << '\n'; },
-    //     [](const type1_t& node) { std::cout << "Documents 2: " << node.documents << '\n'; }
+    //     [](const type0_t& node) { std::cout << "Documents 2: " << node.documents << '\n'; }
     // );
 
-    for (const auto& e : to_range(ttml_dictionary.entries)) {
-        // std::visit(print_dictionary, e);
-        // std::cout << "Hello World\n";
-    }
+    // for (const auto& e : to_range(ttml_dictionary.entries)) {
+    //     // std::visit(print_dictionary, e);
+    //     // std::cout << "Documents: " << std::get<0>(std::get<0>(e).get() << '\n'; 
+    //     // std::cout << "Hello World\n";
+    // }
     
     // TTMLDictionary ttml_dictionary;
 
@@ -179,16 +183,20 @@ int main()
     //     // std::cout << "Hello World!\n";
     // }
 
-    // std::tuple tup{ 42, std::string_view{"foo"}, 3.14 };
-    // auto print_elem = overload_unref (
-    //     [](int i) { std::cout << "int: " << i << '\n'; },
-    //     [](std::string_view& s) { std::cout << "string_view: " << s << '\n'; },
-    //     [](double d) { std::cout << "double: " << d << '\n'; }
-    // );
+    std::tuple tup{ 42, std::tuple{ 1, 2, 3 }, 3.14 };
+    auto print_elem = overload_unref (
+        [](const int& i) { std::cout << "int: " << i << '\n'; },
+        [](const std::tuple<int, int, int>& s) { 
+            std::cout << "\tValue: " << std::get<0>(s) << '\n';
+            std::cout << "\tValue: " << std::get<1>(s) << '\n';
+            std::cout << "\tValue: " << std::get<2>(s) << '\n';
+         },
+        [](const double& d) { std::cout << "double: " << d << '\n'; }
+    );
 
-    // for (auto const& elem : to_range(tup)) { 
-    //     std::visit(print_elem, elem);
-    // }
+    for (auto const& elem : to_range(tup)) { 
+        std::visit(print_elem, elem);
+    }
 
     return 0;
 }

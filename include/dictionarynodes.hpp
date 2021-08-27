@@ -297,6 +297,17 @@ namespace vt::dictionary
         constexpr AttributeNode() = default;
         constexpr ~AttributeNode() = default;
 
+        template<class Trwattr>
+        constexpr AttributeNode(const std::reference_wrapper<Trwattr>& rw_dictionary)
+        {
+            this->attribute = rw_dictionary.get().attribute;
+            this->expressions = {}; // TODO: Check constructors & assignment/move operators
+            this->documents = rw_dictionary.get().documents;
+            this->size_expressions = rw_dictionary.get().size_expressions;
+            this->quantifier = rw_dictionary.get().quantifier;
+            this->condition = rw_dictionary.get().condition;
+        }
+
         constexpr AttributeNode(const AttributeNode& attribute)
             : attribute(attribute.attribute),
             expressions(attribute.expressions),
