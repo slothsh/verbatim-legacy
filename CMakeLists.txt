@@ -8,8 +8,10 @@ include_directories(
     include
 )
 
-# Platform dependencies for MacOS
+# Platform message
 message(STATUS "Building for platform: ${CMAKE_SYSTEM_NAME}")
+
+# Mac OS configuration
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     include_directories(
         /usr/local/include/libxmlpp
@@ -27,6 +29,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
 	set(libtimecode_src /usr/local/include/libtimecode/src/timecode.c)
 
+# Windows configuration
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	# Fetch dependency paths and store in variables
 	file(TO_CMAKE_PATH $ENV{LIBXMLPP_PATH} libxmlpp_path)
@@ -50,6 +53,13 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	set(libxmlpp ${LIBXMLPP})
 	
 	set(libtimecode_src ${libtimecode_path}/src/timecode.c)
+
+
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+	# libxmlpp
+	# libfmt
+	# libmagicenum
+	# libtimecode
 	
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
@@ -89,16 +99,11 @@ set_target_properties(tupleaccess PROPERTIES LINKER_LANGUAGE CXX)
 
 # ----------------------------------------------------------------------------|
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-	target_link_libraries(parsettml ${libfmt} ${libxmlpp})
-	target_link_libraries(ttmldictionary ${libxmlpp})
-	
-	elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-	target_link_libraries(parsettml ${libfmt} ${libxmlpp})
-	target_link_libraries(ttmldictionary ${libxmlpp})
+# Linking configuration for executables
+target_link_libraries(parsettml ${libfmt} ${libxmlpp})
+target_link_libraries(ttmldictionary ${libxmlpp})
 
-endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-
+# Move DLLs for Windows
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	add_custom_command(
 		TARGET parsettml POST_BUILD
