@@ -171,12 +171,31 @@ void EDLFilePTX::Parse()
 		track.total_clips = total_clips++;
 	};
 
+	const auto iso_8859_1_to_utf8 = [](const std::string &str) -> std::string {
+		std::string str_out;
+		for (const auto& c : str)
+		{
+			uint8_t ci = c;
+			if (ci < 0x80) {
+				str_out.push_back(c);
+			} else {
+				// str_out.push_back(0xc0 | ci >> 6);
+				// str_out.push_back(0x80 | (ci & 0x3f));
+				if (ci == 0xC9) str_out.append("...");
+				else str_out.push_back('.');
+			}
+		}
+		return str_out;
+	};
+
+
 	// Extract track chunks from raw file
 	std::unique_ptr<char*> data_ptr{ std::make_unique<char*>(new char[this->filesink_length + 1]) };
 	// char* data_ptr = new char[this->filesink_length + 1]; 
 	this->filesink_file.read(*data_ptr, this->filesink_length);
  	// std::string text((char*)this->filesink_raw);
- 	std::string text(*data_ptr);
+ 	// std::string text(*data_ptr);
+	std::string text = iso_8859_1_to_utf8(std::string{*data_ptr});
 	// delete[] data_ptr;
 	std::vector<std::string> chunks;
 	regex::AllMatches(
@@ -593,11 +612,11 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 				auto production_code = regex::FirstMatch(this->SessionName(), std::regex("\\[\\w{6}\\]"));
 				auto ep_number = regex::FirstMatch(this->SessionName(), std::regex("EP\\d{2,3}"));
 				track.ForEach(0, [&](PTXTrackData data, size_t i_data) {
-					if (production_code.length() + ep_number.length() + 2 > column_width_ep) column_width_ep = production_code.length() + ep_number.length() + 2;
-					if (track.track_name.length() > column_width_name) column_width_name = track.track_name.length();
+					if (production_code.length() + ep_number.length() + 2 > column_width_ep) column_width_ep = production_code.length() + ep_number.length() + 3;
+					if (track.track_name.length() > column_width_name) column_width_name = track.track_name.length() + 3;
+					if (data.timecode["start"].length() + 7 > column_width_tcin) column_width_tcin = data.timecode["start"].length() + 3;
+					if (data.timecode["end"].length() + 8 > column_width_tcout) column_width_tcout = data.timecode["end"].length() + 3;
 					if (data.clip_name.length() > column_width_line) column_width_line = data.clip_name.length();
-					if (data.timecode["start"].length() + 7 > column_width_tcin) column_width_tcin = data.timecode["start"].length() + 7;
-					if (data.timecode["end"].length() + 8 > column_width_tcout) column_width_tcout = data.timecode["end"].length() + 8;
 				});
 			});
 
@@ -607,11 +626,11 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 					auto ep_number = regex::FirstMatch(this->SessionName(), std::regex("EP\\d{2,3}"));
 					output 
 						<< production_code << " "
-						<< ep_number << ":" << PadColumn(' ', column_width_ep, ep_number.length()) << '\t'
+						<< ep_number << ":" << PadColumn(' ', column_width_ep, production_code.length() + ep_number.length()) << '\t'
 						<< track.track_name << PadColumn(' ', column_width_name, track.track_name.length()) << '\t'
-						<< data.clip_name << PadColumn(' ', column_width_line, data.clip_name.length()) << '\t'
 						<< "TC IN: " << data.timecode["start"] << PadColumn(' ', column_width_tcin, data.timecode["start"].length()) << '\t'
-						<< "TC OUT: " << data.timecode["end"] << PadColumn(' ', column_width_tcout, data.timecode["end"].length()) << '\n';
+						<< "TC OUT: " << data.timecode["end"] << PadColumn(' ', column_width_tcout, data.timecode["end"].length()) << '\t'
+						<< data.clip_name << '\n';
 				});
 			});
 

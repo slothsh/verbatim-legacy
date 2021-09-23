@@ -48,17 +48,28 @@ int main(int argc, char** argv)
 
 	using namespace vt::xml;
 	try {
+		std::clog << "Parsing file: " << argv[1] << '\n';
 		EDLFilePTX edlfile((std::string(argv[1])));
 		
-		// std::string name(argv[2]);
+		std::string name(argv[2]);
+		bool found = false;
 
-		// edlfile.FilterTracks([&name](PTXTrack track, size_t tIndex) {
-		// 	return regex::FirstMatch(track.track_name, std::regex(name)) == name;
-		// });
+		edlfile.FilterTracks([&name, &found](PTXTrack track, size_t tIndex) {
+			if (regex::FirstMatch(track.track_name, std::regex(name)) == name) {
+				found = true;
+				return true;
+			}
+			return false;
+		});
+
+		if (!found) {
+			std::clog << "Could not find character\n";
+			std::exit(0);
+		}
 
 		// edlfile.PrintOutput(format::File::table_all);
 		// RemoveBoundaryEvents(edlfile, "(cross fade)");
-		MergeBoundaryEvents(edlfile, "(cross fade)");
+		// MergeBoundaryEvents(edlfile, "(cross fade)");
 		edlfile.PrintOutput(vt::format::File::table_all);
 		// edlfile.WriteOutput((std::string(argv[2])), vt::format::File::edl_ptx_minimal);
 		// TTML1p0_Netflix ttml;
