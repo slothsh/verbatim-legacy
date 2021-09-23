@@ -86,12 +86,12 @@ void EDLFilePTX::Parse()
 	{
 		PTXHEADER new_header;
 		size_t bit_mask =string::WhiteSpace::tab |string::WhiteSpace::carriage |string::WhiteSpace::linefeed;
-		new_header.session_name =string::Trim(regex::FirstMatch(chunk, std::regex("(SESSION NAME:)(.*?)\n")), bit_mask).substr(14);
-		new_header.session_start =string::Trim(regex::FirstMatch(chunk, std::regex("(SESSION START TIMECODE:)(.*?)\n")), bit_mask).substr(24);
-		new_header.sample_rate =format::GetSampleRate(string::Trim(regex::FirstMatch(chunk, std::regex("(SAMPLE RATE:)(.*?)\n")), bit_mask).substr(12));
-		new_header.bit_depth =format::GetBitDepth(string::Trim(regex::FirstMatch(chunk, std::regex("(BIT DEPTH:)(.*?)\n")), bit_mask).substr(11));
-		new_header.timecode_format =format::ParseTimeFormat(string::Trim(regex::FirstMatch(chunk, std::regex("(SESSION START TIMECODE:)(.*?)\n")), bit_mask).substr(24));
-		new_header.frame_rate =format::GetFrameRate(string::Trim(regex::FirstMatch(chunk, std::regex("(TIMECODE FORMAT:)(.*?)\n")), bit_mask).substr(16));
+		new_header.session_name = string::Trim(regex::FirstMatch(chunk, std::regex("(SESSION NAME:)(.*?)\n")), bit_mask).substr(14);
+		new_header.session_start = string::Trim(regex::FirstMatch(chunk, std::regex("(SESSION START TIMECODE:)(.*?)\n")), bit_mask).substr(24);
+		new_header.sample_rate = format::GetSampleRate(string::Trim(regex::FirstMatch(chunk, std::regex("(SAMPLE RATE:)(.*?)\n")), bit_mask).substr(12));
+		new_header.bit_depth = format::GetBitDepth(string::Trim(regex::FirstMatch(chunk, std::regex("(BIT DEPTH:)(.*?)\n")), bit_mask).substr(11));
+		new_header.timecode_format = format::ParseTimeFormat(string::Trim(regex::FirstMatch(chunk, std::regex("(SESSION START TIMECODE:)(.*?)\n")), bit_mask).substr(24));
+		new_header.frame_rate = format::GetFrameRate(string::Trim(regex::FirstMatch(chunk, std::regex("(TIMECODE FORMAT:)(.*?)\n")), bit_mask).substr(16));
 		new_header.audio_tracks = std::stoi(string::Trim(regex::FirstMatch(chunk, std::regex("(# OF AUDIO TRACKS:)(.*?)\n")), bit_mask).substr(18));
 		new_header.audio_clips = std::stoi(string::Trim(regex::FirstMatch(chunk, std::regex("(# OF AUDIO CLIPS:)(.*?)\n")), bit_mask).substr(17));
 		new_header.audio_files = std::stoi(string::Trim(regex::FirstMatch(chunk, std::regex("(# OF AUDIO FILES:)(.*?)\n")), bit_mask).substr(17));
@@ -129,15 +129,17 @@ void EDLFilePTX::Parse()
 		PTXTRACK& track,
 		const std::string& chunk)
 	{
+		// Strip track header
 		std::vector<std::string> data_entries;
+		const std::string search_str = PTX::GetPTXString(PTX::PTXString::edl_clip_channel);
+		const auto start_track_data = std::search(chunk.begin(), chunk.end(), search_str.begin(), search_str.end());
+
 		regex::AllMatches(
 			data_entries,
-			chunk,
+			start_track_data,
+			chunk.end(),
 			std::regex("(?!\\n)\\d.*?\\n")
 		);
-
-		// TODO: Fix this issue with regex to avoid popping first two elements
-		data_entries.erase(data_entries.begin(), data_entries.begin() + 2);
 
 		std::vector<std::string> entry_data;
 		size_t total_clips = 0;
@@ -197,18 +199,26 @@ void EDLFilePTX::Parse()
  	// std::string text(*data_ptr);
 	std::string text = iso_8859_1_to_utf8(std::string{*data_ptr});
 	// delete[] data_ptr;
+
+	// TODO: Improve pre-parsing EDL format validation
+	const std::string edl_header = regex::FirstMatch (
+		text,
+		std::regex{"(^SESSION NAME:.+\\nSAMPLE RATE:.+\\nBIT DEPTH:.+\\nSESSION START TIMECODE:.+\\nTIMECODE FORMAT:.+\\n# OF AUDIO TRACKS:.+\\n# OF AUDIO CLIPS:.+\\n# OF AUDIO FILES:.+\\n\\n\\n)?"}
+	); // TODO: Enums for these regexes
+
 	std::vector<std::string> chunks;
 	regex::AllMatches(
 		chunks,
 		text,
-		std::regex("((^|\\w+?)([\\x00-\\xFF]+?))(\\x0a\\x0a\\x0a)+")
+		std::regex("TRACK NAME:[\\x00-\\xFF]+?(\\x0a\\x0a\\x0a(?=T))+|TRACK NAME:[\\x00-\\xFF]+?(\\x0a\\x0a\\x0a)+") // TODO: Enums for these regexes; TODO: Fix this regex chunking hack
 	);
 
-	// Parse EDL header
-	this->session_info = GetEDLHeaderData(chunks[0]);
+	if (edl_header == "") throw std::invalid_argument("Invalid EDL file. Invalid header\n");
+	if (chunks.size() == 0) throw std::invalid_argument("Invalid EDL file. No track data to parse\n");
 
-	// Parse the data chunks
-	chunks.erase(chunks.begin());
+	// Parse EDL header
+	this->session_info = GetEDLHeaderData(edl_header);
+
 	size_t i = 0;
 	for (auto chunk : chunks) {
 		PTXTRACK data = GetTrackHeaderData(chunk);

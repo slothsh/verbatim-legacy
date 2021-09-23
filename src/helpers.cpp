@@ -17,16 +17,17 @@ namespace vt
 {
 	namespace regex
 	{
-		bool HasMatch(const std::string& text, const std::string& expr)
+		bool HasMatch(const std::string& text, const std::string& expr, size_t start_offset)
 		{
-			return std::regex_search(text, std::regex(expr));
+			return std::regex_search(text.begin() + start_offset, text.end(), std::regex(expr));
 		}
 
 		std::string FirstMatch(
 			const std::string& text,
-			const std::regex& expr)
+			const std::regex& expr,
+			size_t start_offset)
 		{
-			std::sregex_iterator current(text.begin(), text.end(), expr);
+			std::sregex_iterator current(text.begin() + start_offset, text.end(), expr);
 			std::smatch match = *current;
 			return match.str();
 		}
@@ -34,9 +35,10 @@ namespace vt
 		void AllMatches(
 			std::vector<std::string>& text_list,
 			const std::string& text,
-			const std::regex& expr)
+			const std::regex& expr,
+			size_t start_offset)
 		{
-			std::sregex_iterator current(text.begin(), text.end(), expr);
+			std::sregex_iterator current(text.begin() + start_offset, text.end(), expr);
 			std::sregex_iterator last;
 			while (current != last) {
 				std::smatch match = *current++;
@@ -430,9 +432,7 @@ namespace vt
 			return white_space;
 		}
 
-		std::string Trim(
-			std::string text,
-			const size_t& type)
+		std::string Trim(std::string text, const size_t& type)
 		{
 			std::string white_space =string::WhiteSpaceMask(type);
 			text.erase(text.find_last_not_of(white_space) + 1);

@@ -16,7 +16,8 @@
 #include <string>
 #include <vector>
 #include <regex>
-
+#include <concepts>
+#include <type_traits>
 
 // Project headers
 
@@ -24,9 +25,20 @@ namespace vt
 {
 	namespace regex
 	{
-		bool HasMatch(const std::string& text, const std::string& expr);
-		std::string FirstMatch(const std::string& text, const std::regex& expr);
-		void AllMatches(std::vector<std::string>& text_list, const std::string& text, const std::regex& expr);
+		bool HasMatch(const std::string& text, const std::string& expr, size_t start_offset = 0);
+		std::string FirstMatch(const std::string& text, const std::regex& expr, size_t start_offset = 0);
+		void AllMatches(std::vector<std::string>& text_list, const std::string& text, const std::regex& expr, size_t start_offset = 0);
+
+		template<class Tstart, class Tend>
+		void AllMatches(std::vector<std::string>& text_list, const Tstart& start, const Tend& end, const std::regex& expr)
+		{
+			std::sregex_iterator current(start, end, expr);
+			std::sregex_iterator last;
+			while (current != last) {
+				std::smatch match = *current++;
+				text_list.push_back(match.str());
+			}
+		}
 	}
 
 	namespace format
