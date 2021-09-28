@@ -87,9 +87,12 @@ add_executable(ttmldictionary
 	./src/ptxedlstructure.cpp
 )
 set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
-# if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-# 	target_link_libraries(ttmldictionary ${libfmt} ${libxmlpp})
-# endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+
+# validatettml
+add_executable(validatettml
+	./src/prototype/validatettml.cpp
+)
+set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
 
 # tupleaccess
 add_executable(tupleaccess

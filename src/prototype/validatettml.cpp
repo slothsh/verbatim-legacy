@@ -1,6 +1,6 @@
 // Stefan "SoulXP" Olivier
-// File: ttmldictionary.cpp
-// Description: Prototype code for TTML dictionary templates
+// File: validatettml.cpp
+// Description: Prototype code for building a TTML tree for run time structure validation
 
 // Standard headers
 #include <iostream>
@@ -11,7 +11,6 @@
 #endif
 
 // Project headers
-#include "../../include/xmlfile.hpp"
 #include "../../include/dictionarynodes.hpp"
 #include "../../include/ttml1dictionary.hpp"
 
@@ -37,6 +36,12 @@ int main(int argc, char** argv)
     TTMLDictionary ttml_dictionary;
     std::cout << "Total bytes: " << sizeof(ttml_dictionary.entries) << " bytes" << '\n';
     std::cout << "Total entries: " << ttml_dictionary.size << '\n';
+
+    // const auto find = vt::dictionary::FindTTMLDictionaryNode(std::pair{ NS::tt, Tag::div });
+    // if (find) std::cout << "div found!";
+    // else std::cout << "div NOT found!";
+
+    // const auto index = ttml_dictionary.GetIndex(1);
 
     std::cout << "\nend\n";
     return 0;
