@@ -2,21 +2,42 @@
 // File: validatettml.cpp
 // Description: Prototype code for building a TTML tree for run time structure validation
 
-// Standard headers
-#include <iostream>
-
 // Configuration headers
 #ifndef VTCONFIG_HEADER
 #include "../../include/config.hpp"
 #endif
 
+// Standard headers
+#include <iostream>
+#include <concepts>
+#include <type_traits>
+
+// Third-party headers
+
 // Project headers
-#include "../../include/dictionarynodes.hpp"
-#include "../../include/ttml1dictionary.hpp"
+#include "../../include/prototype/validatettml.hpp"
+
+// TTML dictionary helpers ---------------------------------------------------------------------------------------------1 of 1-|
+// ============================================================================================================================|
+
+template<class>
+struct is_tuple : std::false_type
+{};
+
+template<class... Ts>
+struct is_tuple<std::tuple<Ts...>> : std::true_type
+{};
+
+template<class T>
+concept tuple_c = is_tuple<std::decay_t<T>>::value;
+
+
+
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
 
 int main(int argc, char** argv)
 {
-	using namespace vt::dictionary;
+	using namespace vt::prototype;
 
     static_assert(MAGIC_ENUM_RANGE_MIN == 0);
     static_assert(MAGIC_ENUM_RANGE_MAX == 256);
@@ -33,15 +54,9 @@ int main(int argc, char** argv)
     static_assert(mge::enum_integer(ValueExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
     static_assert(mge::enum_integer(GenericData::IS_DATA) == MAGIC_ENUM_RANGE_MIN);
 
-    TTMLDictionary ttml_dictionary;
-    std::cout << "Total bytes: " << sizeof(ttml_dictionary.entries) << " bytes" << '\n';
-    std::cout << "Total entries: " << ttml_dictionary.size << '\n';
-
-    // const auto find = vt::dictionary::FindTTMLDictionaryNode(std::pair{ NS::tt, Tag::div });
-    // if (find) std::cout << "div found!";
-    // else std::cout << "div NOT found!";
-
-    // const auto index = ttml_dictionary.GetIndex(1);
+    constexpr std::tuple a{ 1, 2, 3, 4 };
+    // constexpr ValueExpressionNode b{ NS::tt, ValueExpression::alpha, "hello", 0, 1, ValueExpressionNode{ NS::tt, ValueExpression::alpha, "bye", 0, 1 } };
+    ValueExpressionNode b{ NS::tt, ValueExpression::alpha, std::string_view{"hello"}, 0, 1, NS::tt, ValueExpression::alpha, std::string_view{"hello"}, 0, 1, NS::tt, ValueExpression::alpha, std::string_view{"hello"}, 0, 1 };
 
     std::cout << "\nend\n";
     return 0;
