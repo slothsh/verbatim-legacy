@@ -13,12 +13,13 @@
 // Standard headers
 #include <iostream>
 #include <type_traits>
+#include <string_view>
 #include <tuple>
 #include <memory>
 #include <utility>
 #include <concepts>
 
-// Enumerations for XML nodes ------------------------------------------------------------------------------------------1 of 5-|
+// Enumerations for TTML nodes --------------------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
 
 namespace vt::prototype
@@ -76,9 +77,9 @@ namespace vt::prototype
     };
 }
 
-namespace constants
+namespace vt::constants
 {
-    // Constants for dictionary entrt and document configurations
+    // Constants for dictionary entry and document configurations
     enum class TTMLDocument : size_t
     {
         IS_DOCUMENT_TYPE        = VT_ENUM_ID,
@@ -126,7 +127,7 @@ namespace constants
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
 
-// Generic types for XML nodes -----------------------------------------------------------------------------------------2 of 5-|
+// Concepts for TTML nodes ------------------------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
 
 namespace vt::prototype
@@ -190,7 +191,15 @@ namespace vt::prototype
         || enumerable_attr_c<Telement>
         || enumerable_vexpr_c<Telement>
         || enumerable_data_c<Telement>);
+}
 
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+// Fundamental node types for TTML elements -------------------------------------------------------------------------- 1 of 1 -|
+// ============================================================================================================================|
+
+namespace vt::prototype
+{
     // Generic types
     template<enumerable_node_c E>
     struct NodeID
@@ -205,6 +214,11 @@ namespace vt::prototype
             : id(_id),
             value(magic_enum::enum_name<E>(_id))
         {}
+
+        constexpr bool operator==(const NodeID& _nodeid) const noexcept
+        {
+            return (this->id == _nodeid.id && this->value == _nodeid.value);
+        }
 
         id_t                  id;
         std::string_view      value;
@@ -225,301 +239,376 @@ namespace vt::prototype
             element(std::move(_element))
         {}
 
+        constexpr bool operator==(const Node& _node) const noexcept
+        {
+            return (this->ns == _node.ns && this->element == _node.element);
+        }
+
         ns_t                 ns;
         element_t            element;
     };
 }
 
-// XML node component templates ----------------------------------------------------------------------------------------3 of 5-|
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+// ValidatingNode Generic Node and Concepts -------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
 
 namespace vt::prototype
 {
-    struct EmptyNode
+    // Concepts for ValidatingNode
+    template<class T>
+    concept string_view_c = std::same_as<T, std::string_view>;
+    
+    template <class T>
+    concept integral_c = std::is_integral_v<T>;
+
+    template <class T>
+    concept signed_integral_c = integral_c<T> && std::is_signed_v<T>;
+
+    template <class T>
+    concept unsigned_integral_c = integral_c<T> && !signed_integral_c<T>;
+
+    // Base class for ValidatingNode
+    template<class...>
+    struct ValidatingNode
     {};
 
-    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, class... Rest>
-    struct ValueExpressionNode
+    template<>
+    struct ValidatingNode<>
     {
     public:
-        using node_t = Node<NS, ValueExpression>;
-        using next_t = std::conditional_t<sizeof...(Rest) == 0, EmptyNode, ValueExpressionNode<Rest...>>;
-
-        ValueExpressionNode() = default;
-        ~ValueExpressionNode() = default;
-
-        constexpr ValueExpressionNode(Tns&& _ns, Tvexpr&& _vexpr, std::string_view&& _value, size_t&& _conditions, size_t&& _documents, Rest&&... _rest)
-            : expression(std::move(_ns), std::move(_vexpr)),
-            value(std::move(_value)),
-            conditions(std::move(_conditions)),
-            documents(std::move(_documents)),
-            next(std::move(_rest)...)
-        {}
-
-        template<std::enable_if_t<sizeof...(Rest) == 0, bool> = true>
-        constexpr ValueExpressionNode(Tns&& _ns, Tvexpr&& _vexpr, std::string_view&& _value, size_t&& _conditions, size_t&& _documents)
-            : expression(std::move(_ns), std::move(_vexpr)),
-            value(std::move(_value)),
-            conditions(std::move(_conditions)),
-            documents(std::move(_documents)),
-            next({})
-        {}
-
-        node_t                      expression;
-        std::string_view            value;
-        size_t                      conditions;
-        size_t                      documents;
-        next_t                      next;
-
-    private:
-        bool is_leaf = (sizeof...(Rest) == 0) ? true : false ;
-    };
-
-    template<enumerable_ns_c Tns, enumerable_attr_c Tattr,
-                class Nvexpr>
-    struct AttributeNode
-    {
-        using ns_t = Tns;
-        using tag_t = Tattr;
-        using vexpr_t = Nvexpr;
-
-        constexpr AttributeNode() = default;
-        constexpr ~AttributeNode() = default;
-
-        template<class Trwattr>
-        constexpr AttributeNode(const std::reference_wrapper<Trwattr>& rw_dictionary)
+        auto operator()() const
         {
-            this->attribute = rw_dictionary.get().attribute;
-            this->expressions = {}; // TODO: Check constructors & assignment/move operators
-            this->documents = rw_dictionary.get().documents;
-            this->size_expressions = rw_dictionary.get().size_expressions;
-            this->quantifier = rw_dictionary.get().quantifier;
-            this->condition = rw_dictionary.get().condition;
-        }
-
-        constexpr AttributeNode(const AttributeNode& attribute)
-            : attribute(attribute.attribute),
-            expressions(attribute.expressions),
-            condition(attribute.condition),
-            quantifier(attribute.quantifier),
-            documents(attribute.documents),
-            size_expressions(attribute.size_expressions)
-        {}
-
-        constexpr AttributeNode(const size_t& n_condition, const size_t& n_quantifier, const size_t& n_documents,
-                                const Tns& n_ns,  const Tattr& n_attr, const Nvexpr& n_vexpr)
-            : attribute({ n_ns, n_attr }),
-            expressions(n_vexpr),
-            condition(n_condition),
-            quantifier(n_quantifier),
-            documents(n_documents),
-            size_expressions(std::tuple_size_v<Nvexpr>)
-        {}
-
-        constexpr AttributeNode(const size_t& n_condition, const size_t& n_quantifier, const size_t& n_documents,
-                                const std::tuple<Tns, Tattr>& element, const Nvexpr& n_vexpr)
-            : attribute({ std::get<0>(element), std::get<1>(element) }),
-            expressions(n_vexpr),
-            condition(n_condition),
-            quantifier(n_quantifier),
-            documents(n_documents),
-            size_expressions(std::tuple_size_v<Nvexpr>)
-        {}
-
-        constexpr AttributeNode(size_t&& n_condition, size_t&& n_quantifier, size_t&& n_documents,
-                                Tns&& n_ns,  Tattr&& n_attr, Nvexpr&& n_vexpr)
-            : attribute({ n_ns, n_attr }),
-            expressions(n_vexpr),
-            condition(n_condition),
-            quantifier(n_quantifier),
-            documents(n_documents),
-            size_expressions(std::tuple_size_v<Nvexpr>)
-        {}
-
-        constexpr AttributeNode(const size_t&& n_condition, const size_t&& n_quantifier, const size_t&& n_documents,
-                                const Tns&& n_ns,  const Tattr&& n_attr, const Nvexpr&& n_vexpr)
-            : attribute({ n_ns, n_attr }),
-            expressions(n_vexpr),
-            condition(n_condition),
-            quantifier(n_quantifier),
-            documents(n_documents),
-            size_expressions(std::tuple_size_v<Nvexpr>)
-        {}
-
-        constexpr AttributeNode(const size_t&& n_condition, const size_t&& n_quantifier, const size_t&& n_documents,
-                                const std::tuple<Tns, Tattr>&& element, const Nvexpr&& n_vexpr)
-            : attribute({ std::get<0>(element), std::get<1>(element) }),
-            expressions(n_vexpr),
-            condition(n_condition),
-            quantifier(n_quantifier),
-            documents(n_documents),
-            size_expressions(std::tuple_size_v<Nvexpr>)
-        {}
-
-        template<class Tattrnode>
-        Tattrnode& operator=(const Tattrnode& attribute_node)
-        {
-            this->attribute = attribute_node.attribute;
-            this->expressions = attribute_node.expressions;
-            this->condition = attribute_node.condition;
-            this->quantifier = attribute_node.quantifier;
-            this->documents = attribute_node.documents;
-            this->size_expressions = attribute_node.size_expressions;
             return *this;
         }
-
-        template<class Tattrnode>
-        Tattrnode& operator=(Tattrnode&& attribute_node)
-        {
-            this->attribute = std::move(attribute_node.attribute);
-            this->expressions = std::move(attribute_node.expressions);
-            this->condition = std::move(attribute_node.condition);
-            this->quantifier = std::move(attribute_node.quantifier);
-            this->documents = std::move(attribute_node.documents);
-            this->size_expressions = std::move(attribute_node.size_expressions);
-            return *this;
-        }
-
-        Node<ns_t, tag_t>           attribute;
-        Nvexpr                      expressions;
-        size_t                      condition;
-        size_t                      quantifier;
-        size_t                      documents;
-        size_t                      size_expressions;
-    };
-
-    template<enumerable_ns_c Tns, enumerable_content_c Tdata>
-    struct ContentNode
-    {   
-        constexpr ContentNode() = default;
-        constexpr ~ContentNode() = default;
-
-        constexpr ContentNode(const ContentNode& content)
-            : type(content.type),
-            quantifier(content.quantifier),
-            documents(content.documents)
-        {}
-
-        constexpr ContentNode(const size_t& n_quantifier, const size_t& n_documents,
-                                const Tns& n_ns, const Tdata& n_data) noexcept
-            : type({ n_ns, n_data }),
-            documents(n_documents),
-            quantifier(n_quantifier)
-        {}
-
-        constexpr ContentNode(const size_t& n_quantifier, const size_t& n_documents,
-                                const std::tuple<Tns, Tdata>& n_element) noexcept
-            : type({ std::get<0>(n_element), std::get<1>(n_element) }),
-            documents(n_documents),
-            quantifier(n_quantifier)
-        {}
-
-        constexpr ContentNode(const size_t&& n_quantifier, const size_t&& n_documents,
-                                const Tns&& n_ns, const Tdata&& n_data) noexcept
-            : type({ n_ns, n_data }),
-            documents(n_documents),
-            quantifier(n_quantifier)
-        {}
-
-        constexpr ContentNode(const size_t&& n_quantifier, const size_t&& n_documents,
-                                const std::tuple<Tns, Tdata>&& n_element) noexcept
-            : type({ std::get<0>(n_element), std::get<1>(n_element) }),
-            documents(n_documents),
-            quantifier(n_quantifier)
-        {}
-
-        Node<Tns, Tdata>            type;
-        size_t                      quantifier;
-        size_t                      documents;
-    };
-
-    // General XML node type for XML dictionary entries
-    template<enumerable_ns_c Tns, enumerable_tag_c Ttag,
-                class Tattr, class Tdata>
-    struct DictionaryNode
-    {
-        using element_t = Node<Tns, Ttag>;
-        using attribute_t = Tattr;
-        using content_t = Tdata;
-
-        constexpr DictionaryNode() = default;
-        constexpr ~DictionaryNode() = default;
-
-        template<class Tdict>
-        constexpr DictionaryNode(const std::reference_wrapper<Tdict>& rw_dictionary)
-        {
-            this->element = rw_dictionary.get().element;
-            this->attributes = {}; // TODO: Check constructors & assignment/move operators
-            this->content = {}; // TODO: Check constructors & assignment/move operators
-            this->documents = rw_dictionary.get().documents;
-            this->size_attributes = rw_dictionary.get().size_attributes;
-            this->size_content = rw_dictionary.get().size_content;
-        }
-
-        template<class Tdict>
-        DictionaryNode(Tdict&& dictionary)
-        {
-            this->element = std::move(dictionary.element);
-            this->attributes = std::move(dictionary.attributes);
-            this->content = std::move(dictionary.content);
-            this->documents = std::move(dictionary.documents);
-            this->size_attributes = std::move(dictionary.size_attributes);
-            this->size_content = std::move(dictionary.size_content);
-        }
-
-        template<class Tdict>
-        Tdict& operator=(const Tdict& dictionary)
-        {
-            this->element = dictionary.element;
-            this->attributes = dictionary.attributes;
-            this->content = dictionary.content;
-            this->documents = dictionary.documents;
-            this->size_attributes = dictionary.size_attributes;
-            this->size_content = dictionary.size_content;
-            return *this;
-        }
-
-        template<class Tdict>
-        Tdict& operator=(Tdict&& dictionary)
-        {
-            this->element = std::move(dictionary.element);
-            this->attributes = std::move(dictionary.attributes);
-            this->content = std::move(dictionary.content);
-            this->documents = std::move(dictionary.documents);
-            this->size_attributes = std::move(dictionary.size_attributes);
-            this->size_content = std::move(dictionary.size_content);
-            return *this;
-        }
-
-        // constexpr DictionaryNode(const DictionaryNode& dictionary)
-        //     : element(dictionary.element),
-        //     attributes(dictionary.attributes),
-        //     content(dictionary.content),
-        //     documents(dictionary.documents),
-        //     size_attributes(dictionary.size_attributes),
-        //     size_content(dictionary.size_content)
-        // {}
-
-        constexpr DictionaryNode(const size_t& n_documents,
-                            const Tns& n_ns, const Ttag& n_tag,
-                            const Tattr& n_attr, const Tdata& n_data)
-            : element({ n_ns , n_tag }),
-            attributes(n_attr),
-            content(n_data),
-            documents(n_documents),
-            size_attributes(std::tuple_size_v<Tattr>),
-            size_content(std::tuple_size_v<Tdata>)
-        {}
-
-        element_t                           element;
-        attribute_t                         attributes;
-        content_t                           content;
-        size_t                              documents;
-        size_t                              size_attributes;
-        size_t                              size_content;
     };
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+// ValidatingNode Specializations for TTML Value Expressions --------------------------------------------------------- 1 of 1 -|
+// ============================================================================================================================|
+
+namespace vt::prototype
+{
+    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
+    struct ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tvexpr>>;
+        using value_t = std::decay_t<Tvalue>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
+            : node(std::move(_ns), std::move(_vexpr)),
+            value(std::move(_value)),
+            conditions(std::move(_conditions)),
+            documents(std::move(_documents))
+        {}
+
+        constexpr data_t& operator()(const auto&) const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        node_t       node;
+        value_t      value;
+        size_t       conditions;    
+        size_t       documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents, Rest&&... _rest)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
+            next(std::move(_rest)...)
+        {}
+
+        constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
+            next({})
+        {}
+
+        constexpr data_t& operator()(const auto& f) const noexcept
+        {
+            if (f(this->data())) return this->data();
+            else return this->next(f);
+        }
+
+        data_t              data;
+        next_t              next;    
+    };
+
+    // Deduction guides for TTML value expressions
+    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
+    ValidatingNode(Tns&&, Tvexpr&&, Tvalue&&, Tcnd&&, Tdoc&&) -> ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>;
+
+    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
+    ValidatingNode(Tns&&, Tvexpr&&, Tvalue&&, Tcnd&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>;
+}
+
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+// ValidatingNode Specializations for TTML Attributes ---------------------------------------------------------------- 1 of 1 -|
+// ============================================================================================================================|
+
+namespace vt::prototype
+{
+    template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc>
+    struct ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
+        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tattr>>;
+        using value_t = std::decay_t<Tvalue>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Tattr&& _attr, Tvalue&& _value, Tcnd&& _conditions, Tqty&& _quantifiers, Tdoc&& _documents)
+            : node(std::move(_ns), std::move(_attr)),
+            value(std::move(_value)),
+            conditions(std::move(_conditions)),
+            quantifiers(std::move(_quantifiers)),
+            documents(std::move(_documents))
+        {}
+
+        constexpr data_t& operator()(const auto&) const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        node_t       node;
+        value_t      value;
+        size_t       conditions;    
+        size_t       quantifiers;    
+        size_t       documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc, Rest...>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Tattr&& _attr, Tvalue&& _value, Tcnd&& _conditions, Tqty&& _quantifiers, Tdoc&& _documents, Rest&&... _rest)
+            : data(std::move(_ns), std::move(_attr), std::move(_value), std::move(_conditions), std::move(_quantifiers), std::move(_documents)),
+            next(std::move(_rest)...)
+        {}
+
+        constexpr ValidatingNode(Tns&& _ns, Tattr&& _attr, Tvalue&& _value, Tcnd&& _conditions, Tqty&& _quantifiers, Tdoc&& _documents)
+            : data(std::move(_ns), std::move(_attr), std::move(_value), std::move(_conditions), std::move(_quantifiers), std::move(_documents)),
+            next({})
+        {}
+
+        constexpr data_t& operator()(const auto& f) const noexcept
+        {
+            if (f(this->data())) return this->data();
+            else return this->next(f);
+        }
+
+        data_t              data;
+        next_t              next;    
+    };
+
+    // Deduction guides for TTML attributes
+    template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc>
+    ValidatingNode(Tns&&, Tattr&&, Tvalue&&, Tcnd&&, Tqty&&, Tdoc&&) -> ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>;
+
+    template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc, class... Rest>
+    ValidatingNode(Tns&&, Tattr&&, Tvalue&&, Tcnd&&, Tqty&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc, Rest...>;
+}
+
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+// ContentNode for various TTML content types ------------------------------------------------------------------------ 1 of 1 -|
+// ============================================================================================================================|
+
+namespace vt::prototype
+{
+    template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc>
+    struct ValidatingNode<Tns, Tcontent, Tqty, Tdoc>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tcontent, Tqty, Tdoc>>;
+        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tcontent>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Tcontent&& _content, Tqty&& _quantifiers, Tdoc&& _documents)
+            : node(std::move(_ns), std::move(_content)),
+            quantifiers(std::move(_quantifiers)),
+            documents(std::move(_documents))
+        {}
+
+        constexpr data_t& operator()(const auto&) const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        node_t       node;
+        size_t       quantifiers;    
+        size_t       documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<Tns, Tcontent, Tqty, Tdoc, Rest...>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tcontent, Tqty, Tdoc>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Tcontent&& _content, Tqty&& _quantifiers, Tdoc&& _documents, Rest&&... _rest)
+            : data(std::move(_ns), std::move(_content), std::move(_quantifiers), std::move(_documents)),
+            next(std::move(_rest)...)
+        {}
+
+        constexpr ValidatingNode(Tns&& _ns, Tcontent&& _content, Tqty&& _quantifiers, Tdoc&& _documents)
+            : data(std::move(_ns), std::move(_content), std::move(_quantifiers), std::move(_documents)),
+            next({})
+        {}
+
+        constexpr data_t& operator()(const auto& f) const noexcept
+        {
+            if (f(this->data())) return this->data();
+            else return this->next(f);
+        }
+
+        data_t              data;
+        next_t              next;    
+    };
+
+    // Deduction guides for TTML content types
+    template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc>
+    ValidatingNode(Tns&&, Tcontent&&, Tqty&&, Tdoc&&) -> ValidatingNode<Tns, Tcontent, Tqty, Tdoc>;
+
+    template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc, class... Rest>
+    ValidatingNode(Tns&&, Tcontent&&, Tqty&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Tcontent, Tqty, Tdoc, Rest...>;
+}
+
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+// ElementNode for various TTML elements  ---------------------------------------------------------------------------- 1 of 1 -|
+// ============================================================================================================================|
+
+namespace vt::prototype
+{
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, integral_c Tdoc>
+    struct ValidatingNode<Tns, Ttag, Tdoc>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tdoc>>;
+        using node_t = Node<std::decay_t<Tns>, std::decay_t<Ttag>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tdoc&& _documents)
+            : node(std::move(_ns), std::move(_tag)),
+            documents(std::move(_documents))
+        {}
+
+        constexpr data_t& operator()(const auto&) const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        node_t       node;
+        size_t       documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<Tns, Ttag, Tdoc, Rest...>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tdoc>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tdoc&& _documents, Rest&&... _rest)
+            : data(std::move(_ns), std::move(_tag), std::move(_documents)),
+            next(std::move(_rest)...)
+        {}
+
+        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tdoc&& _documents)
+            : data(std::move(_ns), std::move(_tag), std::move(_documents)),
+            next({})
+        {}
+
+        constexpr data_t& operator()(const auto& f) const noexcept
+        {
+            if (f(this->data())) return this->data();
+            else return this->next(f);
+        }
+
+        data_t              data;
+        next_t              next;    
+    };
+
+    // Deduction guides for TTML element nodes
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, integral_c Tdoc>
+    ValidatingNode(Tns&&, Ttag&&, Tdoc&&) -> ValidatingNode<Tns, Ttag, Tdoc>;
+
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, integral_c Tdoc, class... Rest>
+    ValidatingNode(Tns&&, Ttag&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Ttag, Tdoc, Rest...>;
+}
+
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
+// vt namespace global type aliases ------------------------------------------------------------------------------------1 of 1-|
+// ============================================================================================================================|
+
+namespace vt
+{
+    using ValueExpressionNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::ValueExpression, std::string_view, size_t, size_t>;
+    using AttributeNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::Attribute, std::string_view, size_t, size_t, size_t>;
+    using ContentNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::GenericData, size_t, size_t>;
+    using ElementNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::Tag, size_t, size_t>;
+}
+
+// ------------------------------------------------------------|END|-----------------------------------------------------------|
+
 
 #endif // VTNODE_HEADER
