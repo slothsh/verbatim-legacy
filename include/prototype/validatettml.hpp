@@ -257,12 +257,12 @@ namespace vt::prototype
         {}
 
         template<std::enable_if_t<sizeof...(Rest) == 0, bool> = true>
-        constexpr ValueExpressionNode(NS&& _ns, ValueExpression&& _vexpr, std::string_view&& _value, size_t&& _conditions, size_t&& _documents)
+        constexpr ValueExpressionNode(Tns&& _ns, Tvexpr&& _vexpr, std::string_view&& _value, size_t&& _conditions, size_t&& _documents)
             : expression(std::move(_ns), std::move(_vexpr)),
             value(std::move(_value)),
             conditions(std::move(_conditions)),
             documents(std::move(_documents)),
-            next(void)
+            next({})
         {}
 
         node_t                      expression;
