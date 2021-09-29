@@ -528,18 +528,25 @@ namespace vt::prototype
 
 namespace vt::prototype
 {
-    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, integral_c Tdoc>
-    struct ValidatingNode<Tns, Ttag, Tdoc>
+    template<class T, class... Rest>
+    concept attr_node_c = std::is_same_v<T, ValidatingNode<NS, Attribute, std::string_view, size_t, size_t, size_t, Rest...>>;
+
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc>
+    struct ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>
     {
     public:
-        using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tdoc>>;
+        using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
         using node_t = Node<std::decay_t<Tns>, std::decay_t<Ttag>>;
+        using attribute_t = std::decay_t<Tattr>;
+        using content_t = std::decay_t<Tcontent>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tdoc&& _documents)
+        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tattr&& _attributes, Tcontent&& _content, Tdoc&& _documents)
             : node(std::move(_ns), std::move(_tag)),
+            attributes(std::move(_attributes)),
+            content(std::move(_content)),
             documents(std::move(_documents))
         {}
 
@@ -553,27 +560,29 @@ namespace vt::prototype
             return *this;
         }
 
-        node_t       node;
-        size_t       documents;
+        node_t          node;
+        attribute_t     attributes;
+        content_t       content;
+        size_t          documents;
     };
 
-    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, integral_c Tdoc, class... Rest>
-    struct ValidatingNode<Tns, Ttag, Tdoc, Rest...>
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc, Rest...>
     {
     public:
-        using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tdoc>>;
+        using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
         using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tdoc&& _documents, Rest&&... _rest)
-            : data(std::move(_ns), std::move(_tag), std::move(_documents)),
+        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tattr&& _attributes, Tcontent&& _content, Tdoc&& _documents, Rest&&... _rest)
+            : data(std::move(_ns), std::move(_tag), std::move(_attributes), std::move(_content), std::move(_documents)),
             next(std::move(_rest)...)
         {}
 
-        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tdoc&& _documents)
-            : data(std::move(_ns), std::move(_tag), std::move(_documents)),
+        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tattr&& _attributes, Tcontent&& _content, Tdoc&& _documents)
+            : data(std::move(_ns), std::move(_tag), std::move(_attributes), std::move(_content), std::move(_documents)),
             next({})
         {}
 
@@ -588,11 +597,11 @@ namespace vt::prototype
     };
 
     // Deduction guides for TTML element nodes
-    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, integral_c Tdoc>
-    ValidatingNode(Tns&&, Ttag&&, Tdoc&&) -> ValidatingNode<Tns, Ttag, Tdoc>;
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc>
+    ValidatingNode(Tns&&, Ttag&&, Tattr&&, Tcontent&&, Tdoc&&) -> ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>;
 
-    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, integral_c Tdoc, class... Rest>
-    ValidatingNode(Tns&&, Ttag&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Ttag, Tdoc, Rest...>;
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc, class... Rest>
+    ValidatingNode(Tns&&, Ttag&&, Tattr&&, Tcontent&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc, Rest...>;
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -605,7 +614,7 @@ namespace vt
     using ValueExpressionNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::ValueExpression, std::string_view, size_t, size_t>;
     using AttributeNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::Attribute, std::string_view, size_t, size_t, size_t>;
     using ContentNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::GenericData, size_t, size_t>;
-    using ElementNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::Tag, size_t, size_t>;
+    // using ElementNode = vt::prototype::ValidatingNode<vt::prototype::NS, vt::prototype::Tag, AttributeNode, size_t>;
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|

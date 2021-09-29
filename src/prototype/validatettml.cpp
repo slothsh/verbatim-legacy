@@ -60,26 +60,40 @@ int main(int argc, char** argv)
     // };
     // constexpr vt::ValueExpressionNode b{ NS::tt, ValueExpression::alpha, std::string_view{"hello"}, 5, 6 };
 
-    // constexpr ValidatingNode c { 
-    //     NS::tt, Attribute::opacity, std::string_view{"hello"}, 0, 1, 2,
-    //     NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5
-    // };
-
-    // vt::AttributeNode d{ NS::tt, Attribute::opacity, std::string_view{"hello"}, 6, 7, 8 };
-
-    // constexpr ValidatingNode e { 
-    //     NS::tt, GenericData::PCDATA, 1, 2,
-    //     NS::tt, GenericData::PCDATA, 3, 4
-    // };
-
-    // vt::ContentNode f{ NS::tt, GenericData::PCDATA, 5, 6 };
-
-    constexpr ValidatingNode g { 
-        NS::tt, Tag::tt, 1,
-        NS::tt, Tag::tt, 2
+    constexpr ValidatingNode c { 
+        NS::tt, Attribute::opacity, std::string_view{"hello"}, 0, 1, 2,
+        NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5,
+        NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5,
+        NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5,
+        NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5
     };
 
-    vt::ElementNode h{ NS::tt, Tag::tt, 3, 4 };
+    constexpr ValidatingNode d{ NS::tt, Attribute::opacity, std::string_view{"hello"}, 6, 7, 8 };
+
+    constexpr ValidatingNode e { 
+        NS::tt, GenericData::PCDATA, 1, 2,
+        NS::tt, GenericData::PCDATA, 3, 4,
+        NS::tt, GenericData::PCDATA, 3, 4,
+        NS::tt, GenericData::PCDATA, 3, 4,
+        NS::tt, GenericData::PCDATA, 3, 4
+    };
+
+    vt::ContentNode f{ NS::tt, GenericData::PCDATA, 5, 6 };
+
+    constexpr ValidatingNode g { 
+        NS::tt, Tag::tt, std::move(c), std::move(e), 1,
+        NS::tt, Tag::tt, std::move(c), std::move(e), 1,
+        NS::tt, Tag::tt, std::move(c), std::move(e), 1,
+        NS::tt, Tag::tt, std::move(c), std::move(e), 1,
+        NS::tt, Tag::tt, std::move(c), std::move(e), 1
+    };
+
+    constexpr ValidatingNode h{ NS::tt, Tag::tt, std::move(d), std::move(e), 3 };
+
+    const auto& p = g([&h](const auto& f){
+        if (h.node == f.node) return true;
+        return false;
+    });
 
     std::cout << "\nend\n";
     return 0;
