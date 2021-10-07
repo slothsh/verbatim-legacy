@@ -61,14 +61,14 @@ int main(int argc, char** argv)
     // constexpr vt::ValueExpressionNode b{ NS::tt, ValueExpression::alpha, std::string_view{"hello"}, 5, 6 };
 
     constexpr ValidatingNode c { 
-        NS::tt, Attribute::opacity, std::string_view{"hello"}, 0, 1, 2,
-        NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5,
-        NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5,
-        NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5,
-        NS::tt, Attribute::opacity, std::string_view{"hello"}, 3, 4, 5
+        NS::tt, Attribute::opacity, "hello", 0, 1, 2,
+        NS::tt, Attribute::opacity, "hello", 3, 4, 5,
+        NS::tt, Attribute::opacity, "hello", 3, 4, 5,
+        NS::tt, Attribute::opacity, "hello", 3, 4, 5,
+        NS::tt, Attribute::opacity, "hello", 3, 4, 5
     };
 
-    constexpr ValidatingNode d{ NS::tt, Attribute::opacity, std::string_view{"hello"}, 6, 7, 8 };
+    constexpr ValidatingNode d{ NS::tt, Attribute::opacity, "hello", 6, 7, 8 };
 
     constexpr ValidatingNode e { 
         NS::tt, GenericData::PCDATA, 1, 2,
@@ -89,6 +89,10 @@ int main(int argc, char** argv)
     };
 
     constexpr ValidatingNode h{ NS::tt, Tag::tt, std::move(d), std::move(e), 3 };
+
+    constexpr std::tuple j_t1{ NS::tt, Tag::tt, std::move(c), std::move(e), 3 };
+    constexpr std::tuple j_t2{ NS::tt, Tag::tt, std::move(c), std::move(e), 3 };
+    constexpr ValidatingNode j{ std::move(j_t1), std::move(j_t1) };
 
     const auto& p = g([&h](const auto& f){
         if (h.node == f.node) return true;
