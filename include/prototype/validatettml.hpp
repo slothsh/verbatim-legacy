@@ -322,6 +322,41 @@ namespace vt::prototype
             documents(std::move(_documents))
         {}
 
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tvexpr>&& _vexpr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tdoc>&& _documents)
+            : node(std::move(_ns), std::move(_vexpr)),
+            value(std::move(_value)),
+            conditions(std::move(_conditions)),
+            documents(std::move(_documents))
+        {}
+
+        constexpr data_t& operator()(const auto&) const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        node_t       node;
+        value_t      value;
+        size_t       conditions;    
+        size_t       documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
+    struct ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tvexpr>>;
+        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
+        using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
         constexpr ValidatingNode(tuple_t&& _data)
             : node(std::move(std::get<0>(_data)), std::move(std::get<1>(_data))),
             value(std::move(std::get<2>(_data))),
@@ -350,21 +385,42 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents, Rest&&... _rest)
-            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
-            next(std::move(_rest)...)
-        {}
-
         constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
             next({})
         {}
+
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tvexpr>&& _vexpr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tdoc>&& _documents, std::add_const_t<Rest>&&... _rest)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
+            next(std::move(_rest)...)
+        {}
+
+        constexpr data_t& operator()(const auto& f) const noexcept
+        {
+            if (f(this->data())) return this->data();
+            else return this->next(f);
+        }
+
+        data_t              data;
+        next_t              next;    
+    };
+
+    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>, Rest...>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
+        using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
             : data(std::move(std::get<0>(_data)),
@@ -375,7 +431,7 @@ namespace vt::prototype
             next({})
         {}
 
-        constexpr ValidatingNode(tuple_t&& _data, Rest&&... _rest)
+        constexpr ValidatingNode(tuple_t&& _data, std::add_const_t<Rest>&&... _rest)
             : data(std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
@@ -402,10 +458,10 @@ namespace vt::prototype
     ValidatingNode(Tns&&, Tvexpr&&, Tvalue&&, Tcnd&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>;
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
-    ValidatingNode(const std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>&&) -> ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>;
+    ValidatingNode(const std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>&&) -> ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
-    ValidatingNode(const std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>&&, Rest&&...) -> ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>;
+    ValidatingNode(const std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>&&, Rest&&...) -> ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>, Rest...>;
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -434,13 +490,57 @@ namespace vt::prototype
             quantifiers(std::move(_quantifiers)),
             documents(std::move(_documents))
         {}
-        
-        constexpr ValidatingNode(tuple_t&& _data)
-            : node(std::move(std::get<0>(_data)), std::move(std::get<1>(_data))),
-            value(std::move(std::get<2>(_data))),
-            conditions(std::move(std::get<3>(_data))), 
-            quantifiers(std::move(std::get<4>(_data))),
-            documents(std::move(std::get<5>(_data)))
+
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tattr>&& _attr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tqty>&& _quantifiers, std::add_const_t<Tdoc>&& _documents)
+            : node(std::move(_ns), std::move(_attr)),
+            value(std::move(_value)),
+            conditions(std::move(_conditions)),
+            quantifiers(std::move(_quantifiers)),
+            documents(std::move(_documents))
+        {}
+
+        constexpr data_t& operator()(const auto&) const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        node_t       node;
+        value_t      value;
+        size_t       conditions;    
+        size_t       quantifiers;    
+        size_t       documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc>
+    struct ValidatingNode<std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
+        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tattr>>;
+        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(Tns&& _ns, Tattr&& _attr, Tvalue&& _value, Tcnd&& _conditions, Tqty&& _quantifiers, Tdoc&& _documents)
+            : node(std::move(_ns), std::move(_attr)),
+            value(std::move(_value)),
+            conditions(std::move(_conditions)),
+            quantifiers(std::move(_quantifiers)),
+            documents(std::move(_documents))
+        {}
+
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tattr>&& _attr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tqty>&& _quantifiers, std::add_const_t<Tdoc>&& _documents)
+            : node(std::move(_ns), std::move(_attr)),
+            value(std::move(_value)),
+            conditions(std::move(_conditions)),
+            quantifiers(std::move(_quantifiers)),
+            documents(std::move(_documents))
         {}
 
         constexpr data_t& operator()(const auto&) const noexcept
@@ -465,21 +565,42 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
-        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(Tns&& _ns, Tattr&& _attr, Tvalue&& _value, Tcnd&& _conditions, Tqty&& _quantifiers, Tdoc&& _documents, Rest&&... _rest)
-            : data(std::move(_ns), std::move(_attr), std::move(_value), std::move(_conditions), std::move(_quantifiers), std::move(_documents)),
-            next(std::move(_rest)...)
-        {}
-
         constexpr ValidatingNode(Tns&& _ns, Tattr&& _attr, Tvalue&& _value, Tcnd&& _conditions, Tqty&& _quantifiers, Tdoc&& _documents)
             : data(std::move(_ns), std::move(_attr), std::move(_value), std::move(_conditions), std::move(_quantifiers), std::move(_documents)),
             next({})
         {}
+
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tattr>&& _attr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tqty>&& _quantifiers, std::add_const_t<Tdoc>&& _documents, std::add_const_t<Rest>&&... _rest)
+            : data(std::move(_ns), std::move(_attr), std::move(_value), std::move(_conditions), std::move(_quantifiers), std::move(_documents)),
+            next(std::move(_rest)...)
+        {}
+
+        constexpr data_t& operator()(const auto& f) const noexcept
+        {
+            if (f(this->data())) return this->data();
+            else return this->next(f);
+        }
+
+        data_t              data;
+        next_t              next;    
+    };
+
+    template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>, Rest...>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
+        using tuple_t = std::add_const_t<std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
             : data(std::move(std::get<0>(_data)),
@@ -491,7 +612,7 @@ namespace vt::prototype
             next({})
         {}
 
-        constexpr ValidatingNode(tuple_t&& _data, Rest&&... _rest)
+        constexpr ValidatingNode(tuple_t&& _data, std::add_const_t<Rest>&&... _rest)
             : data(std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
@@ -519,10 +640,10 @@ namespace vt::prototype
     ValidatingNode(Tns&&, Tattr&&, Tvalue&&, Tcnd&&, Tqty&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc, Rest...>;
 
     template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc>
-    ValidatingNode(const std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>&&) -> ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>;
+    ValidatingNode(const std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>&&) -> ValidatingNode<std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
 
     template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc, class... Rest>
-    ValidatingNode(const std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>&&, Rest&&...) -> ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc, Rest...>;
+    ValidatingNode(const std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>&&, Rest&&...) -> ValidatingNode<std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>, Rest...>;
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -543,11 +664,43 @@ namespace vt::prototype
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tcontent>&& _content, std::add_const_t<Tqty>&& _quantifiers, std::add_const_t<Tdoc>&& _documents)
+            : node(std::move(_ns), std::move(_content)),
+            quantifiers(std::move(_quantifiers)),
+            documents(std::move(_documents))
+        {}
+
         constexpr ValidatingNode(Tns&& _ns, Tcontent&& _content, Tqty&& _quantifiers, Tdoc&& _documents)
             : node(std::move(_ns), std::move(_content)),
             quantifiers(std::move(_quantifiers)),
             documents(std::move(_documents))
         {}
+
+        constexpr data_t& operator()(const auto&) const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        node_t       node;
+        size_t       quantifiers;    
+        size_t       documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc>
+    struct ValidatingNode<std::tuple<Tns, Tcontent, Tqty, Tdoc>>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tcontent, Tqty, Tdoc>>;
+        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tcontent>>;
+        using tuple_t = std::add_const_t<std::tuple<Tns, Tcontent, Tqty, Tdoc>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
             : node(std::move(std::get<0>(_data)), std::move(std::get<1>(_data))),
@@ -575,21 +728,42 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tcontent, Tqty, Tdoc>>;
-        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tcontent, Tqty, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(Tns&& _ns, Tcontent&& _content, Tqty&& _quantifiers, Tdoc&& _documents, Rest&&... _rest)
-            : data(std::move(_ns), std::move(_content), std::move(_quantifiers), std::move(_documents)),
-            next(std::move(_rest)...)
-        {}
-
         constexpr ValidatingNode(Tns&& _ns, Tcontent&& _content, Tqty&& _quantifiers, Tdoc&& _documents)
             : data(std::move(_ns), std::move(_content), std::move(_quantifiers), std::move(_documents)),
             next({})
         {}
+
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tcontent>&& _content, std::add_const_t<Tqty>&& _quantifiers, std::add_const_t<Tdoc>&& _documents, std::add_const_t<Rest>&&... _rest)
+            : data(std::move(_ns), std::move(_content), std::move(_quantifiers), std::move(_documents)),
+            next(std::move(_rest)...)
+        {}
+
+        constexpr data_t& operator()(const auto& f) const noexcept
+        {
+            if (f(this->data())) return this->data();
+            else return this->next(f);
+        }
+
+        data_t              data;
+        next_t              next;    
+    };
+
+    template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<std::tuple<Tns, Tcontent, Tqty, Tdoc>, Rest...>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Tcontent, Tqty, Tdoc>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
+        using tuple_t = std::add_const_t<std::tuple<Tns, Tcontent, Tqty, Tdoc>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
             : data(std::move(std::get<0>(_data)),
@@ -599,7 +773,7 @@ namespace vt::prototype
             next({})
         {}
 
-        constexpr ValidatingNode(tuple_t&& _data, Rest&&... _rest)
+        constexpr ValidatingNode(tuple_t&& _data, std::add_const_t<Rest>&&... _rest)
             : data(std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
@@ -625,10 +799,10 @@ namespace vt::prototype
     ValidatingNode(Tns&&, Tcontent&&, Tqty&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Tcontent, Tqty, Tdoc, Rest...>;
 
     template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc>
-    ValidatingNode(const std::tuple<Tns, Tcontent, Tqty, Tdoc>&&) -> ValidatingNode<Tns, Tcontent, Tqty, Tdoc>;
+    ValidatingNode(const std::tuple<Tns, Tcontent, Tqty, Tdoc>&&) -> ValidatingNode<std::tuple<Tns, Tcontent, Tqty, Tdoc>>;
 
     template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc, class... Rest>
-    ValidatingNode(const std::tuple<Tns, Tcontent, Tqty, Tdoc>&&, Rest&&...) -> ValidatingNode<Tns, Tcontent, Tqty, Tdoc, Rest...>;
+    ValidatingNode(const std::tuple<Tns, Tcontent, Tqty, Tdoc>&&, Rest&&...) -> ValidatingNode<std::tuple<Tns, Tcontent, Tqty, Tdoc>, Rest...>;
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -660,7 +834,6 @@ namespace vt::prototype
         using node_t = Node<std::decay_t<Tns>, std::decay_t<Ttag>>;
         using attribute_t = std::decay_t<Tattr>;
         using content_t = std::decay_t<Tcontent>;
-        using tuple_t = std::add_const_t<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
@@ -678,6 +851,35 @@ namespace vt::prototype
             content(std::move(_content)),
             documents(std::move(_documents))
         {}
+
+        constexpr data_t& operator()(const auto&) const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        node_t          node;
+        attribute_t     attributes;
+        content_t       content;
+        size_t          documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc>
+    struct ValidatingNode<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
+        using node_t = Node<std::decay_t<Tns>, std::decay_t<Ttag>>;
+        using attribute_t = std::decay_t<Tattr>;
+        using content_t = std::decay_t<Tcontent>;
+        using tuple_t = std::add_const_t<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
+
+        ValidatingNode() = default;
+        ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
             : node(std::move(std::get<0>(_data)), std::move(std::get<1>(_data))),
@@ -707,38 +909,20 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
-        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tattr&& _attributes, Tcontent&& _content, Tdoc&& _documents, Rest&&... _rest)
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Ttag>&& _tag, std::add_const_t<Tattr>&& _attributes, std::add_const_t<Tcontent>&& _content, std::add_const_t<Tdoc>&& _documents, std::add_const_t<Rest>&&... _rest)
             : data(std::move(_ns), std::move(_tag), std::move(_attributes), std::move(_content), std::move(_documents)),
             next(std::move(_rest)...)
         {}
 
-        constexpr ValidatingNode(Tns&& _ns, Ttag&& _tag, Tattr&& _attributes, Tcontent&& _content, Tdoc&& _documents)
+        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Ttag>&& _tag, std::add_const_t<Tattr>&& _attributes, std::add_const_t<Tcontent>&& _content, std::add_const_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_tag), std::move(_attributes), std::move(_content), std::move(_documents)),
             next({})
-        {}
-
-        constexpr ValidatingNode(tuple_t&& _data)
-            : data(std::move(std::get<0>(_data)),
-                    std::move(std::get<1>(_data)),
-                    std::move(std::get<2>(_data)),
-                    std::move(std::get<3>(_data)),
-                    std::move(std::get<4>(_data))),
-            next({})
-        {}
-
-        constexpr ValidatingNode(tuple_t&& _data, Rest&&... _rest)
-            : data(std::move(std::get<0>(_data)),
-                    std::move(std::get<1>(_data)),
-                    std::move(std::get<2>(_data)),
-                    std::move(std::get<3>(_data)),
-                    std::move(std::get<4>(_data))),
-            next(std::move(_rest)...)
         {}
 
         constexpr data_t& operator()(const auto& f) const noexcept
@@ -751,26 +935,32 @@ namespace vt::prototype
         next_t              next;    
     };
 
-    template<element_tuple_c Next, class S, S... Seq, class... Rest>
-    struct ValidatingNode<Next, Seq, Rest...>
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc, class... Rest>
+    struct ValidatingNode<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>, Rest...>
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
-        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<Rest...>>;
+        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        template<class S, S... Idx>
-        constexpr ValidatingNode(tuple_t&& _data, std::integer_sequence<S, Idx...> _idx = Seq)
-            : data(std::move(std::get<Idx>(_data))...),
+        constexpr ValidatingNode(tuple_t&& _data)
+            : data(std::move(std::get<0>(_data)),
+                    std::move(std::get<1>(_data)),
+                    std::move(std::get<2>(_data)),
+                    std::move(std::get<3>(_data)),
+                    std::move(std::get<4>(_data))),
             next({})
         {}
 
-        template<class S, S... Idx>
-        constexpr ValidatingNode(tuple_t&& _data, std::integer_sequence<S, Idx...> _idx = Seq, Rest&&... _rest)
-            : data(std::move(std::get<Idx>(_data))...),
+        constexpr ValidatingNode(tuple_t&& _data, std::add_const_t<Rest>&&... _rest)
+            : data(std::move(std::get<0>(_data)),
+                    std::move(std::get<1>(_data)),
+                    std::move(std::get<2>(_data)),
+                    std::move(std::get<3>(_data)),
+                    std::move(std::get<4>(_data))),
             next(std::move(_rest)...)
         {}
 
@@ -792,10 +982,10 @@ namespace vt::prototype
     ValidatingNode(Tns&&, Ttag&&, Tattr&&, Tcontent&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc, Rest...>;
 
     template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc>
-    ValidatingNode(const std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>&&) -> ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>;
+    ValidatingNode(const std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>&&) -> ValidatingNode<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
 
-    template<element_tuple_c Next, class S, class Seq..., class... Rest>
-    ValidatingNode(Next&&, std::integer_sequence<S, Seq...>&&, Rest&&...) -> ValidatingNode<Next, std::integer_sequence<S, S...>, Rest...>;
+    template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc, class... Rest>
+    ValidatingNode(const std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>&&, Rest&&...) -> ValidatingNode<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>, Rest...>;
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
