@@ -18,6 +18,7 @@
 #include <memory>
 #include <utility>
 #include <concepts>
+#include <iterator>
 
 // Enumerations for TTML nodes --------------------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
@@ -294,6 +295,27 @@ namespace vt::prototype
             return *this;
         }
     };
+
+    namespace detail
+    {
+        template<class ItrValue>
+        struct _validating_input_iter
+        {
+        public:
+            using iterator_category = std::input_iterator_tag;
+            using difference_type   = size_t;
+            using value_type        = std::decay_t<ItrValue>;
+            using pointer           = value_type*;
+            using reference         = value_type&;
+
+            constexpr _validating_input_iter(pointer _ptr) : ptr(_ptr) {}
+            
+
+        private:
+            pointer ptr;
+
+        };
+    }
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
@@ -350,18 +372,17 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tvexpr>>;
-        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
-            : node(std::move(std::get<0>(_data)), std::move(std::get<1>(_data))),
-            value(std::move(std::get<2>(_data))),
-            conditions(std::move(std::get<3>(_data))), 
-            documents(std::move(std::get<4>(_data)))
+            : data(std::move(std::get<0>(_data)),
+                    std::move(std::get<1>(_data)),
+                    std::move(std::get<2>(_data)),
+                    std::move(std::get<3>(_data)), 
+                    std::move(std::get<4>(_data)))
         {}
 
         constexpr data_t& operator()(const auto&) const noexcept
@@ -374,10 +395,7 @@ namespace vt::prototype
             return *this;
         }
 
-        node_t       node;
-        value_t      value;
-        size_t       conditions;    
-        size_t       documents;
+        data_t       data;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
@@ -521,26 +539,18 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
-        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tattr>>;
-        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
+        using tuple_t = std::add_const_t<std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(Tns&& _ns, Tattr&& _attr, Tvalue&& _value, Tcnd&& _conditions, Tqty&& _quantifiers, Tdoc&& _documents)
-            : node(std::move(_ns), std::move(_attr)),
-            value(std::move(_value)),
-            conditions(std::move(_conditions)),
-            quantifiers(std::move(_quantifiers)),
-            documents(std::move(_documents))
-        {}
-
-        constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tattr>&& _attr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tqty>&& _quantifiers, std::add_const_t<Tdoc>&& _documents)
-            : node(std::move(_ns), std::move(_attr)),
-            value(std::move(_value)),
-            conditions(std::move(_conditions)),
-            quantifiers(std::move(_quantifiers)),
-            documents(std::move(_documents))
+        constexpr ValidatingNode(tuple_t&& _data)
+            : data(std::move(std::get<0>(_data)),
+                    std::move(std::get<1>(_data)),
+                    std::move(std::get<2>(_data)),
+                    std::move(std::get<3>(_data)), 
+                    std::move(std::get<4>(_data)),
+                    std::move(std::get<5>(_data)))
         {}
 
         constexpr data_t& operator()(const auto&) const noexcept
@@ -553,11 +563,7 @@ namespace vt::prototype
             return *this;
         }
 
-        node_t       node;
-        value_t      value;
-        size_t       conditions;    
-        size_t       quantifiers;    
-        size_t       documents;
+        data_t       data;
     };
 
     template<enumerable_ns_c Tns, enumerable_attr_c Tattr, string_view_c Tvalue, integral_c Tcnd, integral_c Tqty, integral_c Tdoc, class... Rest>
@@ -696,16 +702,16 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tcontent, Tqty, Tdoc>>;
-        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tcontent>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tcontent, Tqty, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
-            : node(std::move(std::get<0>(_data)), std::move(std::get<1>(_data))),
-            quantifiers(std::move(std::get<2>(_data))),
-            documents(std::move(std::get<3>(_data)))
+            : data(std::move(std::get<0>(_data)),
+                    std::move(std::get<1>(_data)),
+                    std::move(std::get<2>(_data)),
+                    std::move(std::get<3>(_data)))
         {}
 
         constexpr data_t& operator()(const auto&) const noexcept
@@ -718,9 +724,7 @@ namespace vt::prototype
             return *this;
         }
 
-        node_t       node;
-        size_t       quantifiers;    
-        size_t       documents;
+        data_t       data;
     };
 
     template<enumerable_ns_c Tns, enumerable_content_c Tcontent, integral_c Tqty, integral_c Tdoc, class... Rest>
@@ -873,19 +877,17 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
-        using node_t = Node<std::decay_t<Tns>, std::decay_t<Ttag>>;
-        using attribute_t = std::decay_t<Tattr>;
-        using content_t = std::decay_t<Tcontent>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
-            : node(std::move(std::get<0>(_data)), std::move(std::get<1>(_data))),
-            attributes(std::move(std::get<2>(_data))),
-            content(std::move(std::get<3>(_data))),
-            documents(std::move(std::get<4>(_data)))
+            : data(std::move(std::get<0>(_data)),
+                    std::move(std::get<1>(_data)),
+                    std::move(std::get<2>(_data)),
+                    std::move(std::get<3>(_data)),
+                    std::move(std::get<4>(_data)))
         {}
 
         constexpr data_t& operator()(const auto&) const noexcept
@@ -898,10 +900,7 @@ namespace vt::prototype
             return *this;
         }
 
-        node_t          node;
-        attribute_t     attributes;
-        content_t       content;
-        size_t          documents;
+        data_t          data;
     };
 
     template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc, class... Rest>
@@ -939,6 +938,7 @@ namespace vt::prototype
     struct ValidatingNode<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>, Rest...>
     {
     public:
+        // Data aliases
         using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
         using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
@@ -971,7 +971,7 @@ namespace vt::prototype
         }
 
         data_t              data;
-        next_t              next;    
+        next_t              next;
     };
 
     // Deduction guides for TTML element nodes
