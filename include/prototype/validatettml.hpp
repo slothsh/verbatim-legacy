@@ -306,6 +306,9 @@ namespace vt::prototype
         {
             return *this;
         }
+
+        iterator_t begin() const { return iterator_t{ &this->data }; }
+        iterator_t end() { return iterator_t{ &this->next.end() }; }
     };
 
     namespace detail
@@ -316,16 +319,20 @@ namespace vt::prototype
         public:
             using iterator_category = std::input_iterator_tag;
             using difference_type   = size_t;
-            using value_type        = std::decay_t<ItrValue>;
+            using value_type        = ItrValue;
             using pointer           = value_type*;
             using reference         = value_type&;
 
             constexpr _validating_input_iter(pointer _ptr) : ptr(_ptr) {}
-            
+
+            reference operator*() const { return this->ptr; }
+            pointer operator->() { return this->ptr; }
+
+            friend bool operator==(const _validating_input_iter& lhs, const _validating_input_iter& rhs) { return lhs.ptr == rhs.ptr; }
+            friend bool operator!=(const _validating_input_iter& lhs, const _validating_input_iter& rhs) { return lhs.ptr != rhs.ptr; }
 
         private:
             pointer ptr;
-
         };
     }
 }
@@ -385,6 +392,7 @@ namespace vt::prototype
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+        using iterator_t = detail::_validating_input_iter<data_t>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
@@ -394,20 +402,25 @@ namespace vt::prototype
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
                     std::move(std::get<3>(_data)), 
-                    std::move(std::get<4>(_data)))
+                    std::move(std::get<4>(_data))),
+            iterator(nullptr)
         {}
 
-        constexpr data_t& operator()(const auto&) const noexcept
+        iterator_t& operator++()
         {
-            return *this;
+            return this->iterator;
         }
 
-        constexpr data_t& operator()() const noexcept
+        iterator_t& operator++(int)
         {
-            return *this;
+            return this->iterator;
         }
+
+        iterator_t begin() const { return iterator_t{ &this->data }; }
+        iterator_t end() const { return iterator_t{ &this->data }; }
 
         data_t       data;
+        iterator_t   iterator;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
@@ -417,17 +430,20 @@ namespace vt::prototype
         using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
         using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+        using iterator_t = detail::_validating_input_iter<data_t>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
-            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
+            : iterator_t(nullptr),
+            data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
             next({})
         {}
 
         constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tvexpr>&& _vexpr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tdoc>&& _documents, std::add_const_t<Rest>&&... _rest)
-            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
+            : iterator(nullptr),
+            data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
             next(std::move(_rest)...)
         {}
 
@@ -437,23 +453,42 @@ namespace vt::prototype
             else return this->next(f);
         }
 
+        constexpr iterator_t& operator++()
+        {
+            this->iterator.ptr = this->next.iterator.ptr;
+            return *this->next.iterator;
+        }
+
+        constexpr iterator_t& operator++(int)
+        {
+            iterator_t& tmp = *this->iterator;
+            ++(*this->iterator);
+            return tmp;
+        }
+
+        iterator_t begin() const { return iterator_t{ &this->data }; }
+        iterator_t end() { return iterator_t{ &this->next.end() }; }
+
         data_t              data;
-        next_t              next;    
+        next_t              next;
+        iterator_t          iterator;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
-    struct ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>, Rest...>
+    struct ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>, Rest...> : detail::_validating_input_iter<std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>>
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
         using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
+        using iterator_t = detail::_validating_input_iter<data_t>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
-            : data(std::move(std::get<0>(_data)),
+            : iterator(nullptr),
+            data(std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
                     std::move(std::get<3>(_data)), 
@@ -462,7 +497,8 @@ namespace vt::prototype
         {}
 
         constexpr ValidatingNode(tuple_t&& _data, std::add_const_t<Rest>&&... _rest)
-            : data(std::move(std::get<0>(_data)),
+            : iterator_t(nullptr),
+            data(std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
                     std::move(std::get<3>(_data)), 
@@ -476,8 +512,22 @@ namespace vt::prototype
             else return this->next(f);
         }
 
+        constexpr iterator_t& operator++()
+        {
+            this->iterator.ptr = this->next.iterator.ptr;
+            return *this->next.iterator;
+        }
+
+        constexpr iterator_t& operator++(int)
+        {
+            iterator_t& tmp = *this->iterator;
+            ++(*this->iterator);
+            return tmp;
+        }
+
         data_t              data;
         next_t              next;    
+        iterator_t          iterator;
     };
 
     // Deduction guides for TTML value expressions
