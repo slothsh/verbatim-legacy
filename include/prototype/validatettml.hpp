@@ -76,6 +76,18 @@ namespace vt::prototype
         tt_class_animation, tt_class_block, tt_class_inline, tt_class_metadata, tt_class_parameters,
         none            = VT_ENUM_NONE  
     };
+
+    // Assert TTML enumerations are configured correctly
+    static_assert(magic_enum::enum_integer(NS::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(magic_enum::enum_integer(Tag::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(magic_enum::enum_integer(Attribute::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(magic_enum::enum_integer(ValueExpression::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(magic_enum::enum_integer(GenericData::none) == MAGIC_ENUM_RANGE_MAX);
+    static_assert(magic_enum::enum_integer(NS::IS_NS) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(magic_enum::enum_integer(Tag::IS_TAG) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(magic_enum::enum_integer(Attribute::IS_ATTRIBUTE) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(magic_enum::enum_integer(ValueExpression::IS_VALUE_EXPRESSION) == MAGIC_ENUM_RANGE_MIN);
+    static_assert(magic_enum::enum_integer(GenericData::IS_DATA) == MAGIC_ENUM_RANGE_MIN);
 }
 
 namespace vt::constants

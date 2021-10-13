@@ -10,6 +10,10 @@
 #define MAGIC_ENUM_RANGE_MAX 256
 #include <magic_enum.hpp>
 
+// Assert magic enum is configured
+static_assert(MAGIC_ENUM_RANGE_MIN == 0);
+static_assert(MAGIC_ENUM_RANGE_MAX == 256);
+
 // Debug configuration
 // Global flags
 #define EDL_DEBUG_MEMORY

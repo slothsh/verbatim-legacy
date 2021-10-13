@@ -5,20 +5,27 @@ set(build_proj null)
 
 # Project include directories
 include_directories(
-    include
+	include
 )
 
-# Platform message
-message(STATUS "Building for platform: ${CMAKE_SYSTEM_NAME}")
-
-# Mac OS configuration
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+	
+	# Catch2 Configuration
+	find_package(Catch2 3 REQUIRED)
+	include(CTest)
+	include(Catch)
+	
+	# Platform message
+	message(STATUS "Building for platform: ${CMAKE_SYSTEM_NAME}")
+	
+	# Mac OS configuration
+	if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     include_directories(
-        /usr/local/include/libxmlpp
+		/usr/local/include/libxmlpp
         /usr/local/include/fmt
 		/usr/local/include/magicenum
 		/usr/local/include/libtimecode/src/timecode
-    )
+		/usr/local/include/catch2
+	)
 	
     find_library(LIBXMLPP NAMES libxml++-5.0.1.dylib PATHS /usr/local/lib)
     set(libxmlpp ${LIBXMLPP})
@@ -56,11 +63,8 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
 
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-	# libxmlpp
-	# libfmt
-	# libmagicenum
-	# libtimecode
-	
+	# TODO
+
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
 # Executables for prototype builds
@@ -68,7 +72,7 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
 # parsettml
 add_executable(parsettml
-	./src/prototype/parsettml.cpp
+	./src/application/parsettml.cpp
 	./src/filesink.cpp
 	./src/xmlfile.cpp
 	./src/edlfile.cpp
@@ -77,34 +81,10 @@ add_executable(parsettml
 )
 set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 
-# ttmldictionary
-add_executable(ttmldictionary
-	./src/prototype/ttmldictionary.cpp
-	./src/filesink.cpp
-	./src/xmlfile.cpp
-	./src/helpers.cpp
-	./src/edlfile.cpp
-	./src/ptxedlstructure.cpp
-)
-set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
-
-# validatettml
-add_executable(validatettml
-	./src/prototype/validatettml.cpp
-)
-set_target_properties(ttmldictionary PROPERTIES LINKER_LANGUAGE CXX)
-
-# tupleaccess
-add_executable(tupleaccess
-	./src/prototype/tupleaccess.cpp
-)
-set_target_properties(tupleaccess PROPERTIES LINKER_LANGUAGE CXX)
-
 # ----------------------------------------------------------------------------|
 
 # Linking configuration for executables
 target_link_libraries(parsettml ${libfmt} ${libxmlpp})
-target_link_libraries(ttmldictionary ${libxmlpp})
 
 # Move DLLs for Windows
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -127,3 +107,13 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 		$<TARGET_FILE_DIR:parsettml>
 	)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+
+
+# Catch2 Tests
+# add_executable(test_catch2 tests/test_catch2.cpp)
+# target_link_libraries(test_catch2 PRIVATE Catch2::Catch2WithMain)
+# catch_discover_tests(test_catch2)
+
+add_executable(test_validatingnode tests/test_validatingnode.cpp)
+target_link_libraries(test_validatingnode PRIVATE Catch2::Catch2WithMain)
+catch_discover_tests(test_validatingnode)
