@@ -20,7 +20,7 @@
 int main(int argc, char** argv)
 {
     using namespace vt::prototype;
-    const ValidatingNode vn_1{ NS::tt, ValueExpression::alpha, "node_1", 1, 2, NS::tt, ValueExpression::alpha, "node_2", 1, 2, NS::tt, ValueExpression::alpha, "node_3", 1, 2 };
+    constexpr ValidatingNode vn_1{ NS::tt, ValueExpression::alpha, "node_1", 1, 2, NS::tt, ValueExpression::alpha, "node_2", 1, 2, NS::tt, ValueExpression::alpha, "node_3", 1, 2 };
 
     for (auto e : vn_1)
     {

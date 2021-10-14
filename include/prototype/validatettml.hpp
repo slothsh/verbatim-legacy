@@ -320,14 +320,14 @@ namespace vt::prototype
             using pointer           = value_type*;
             using reference         = value_type&;
 
-            constexpr _validating_input_iter(pointer _ptr) : ptr(_ptr) {}
+            constexpr _validating_input_iter(reference _ptr) : ptr(std::move(_ptr)) {}
 
-            reference operator*() const { return *this->ptr; }
-            pointer operator->() { return this->ptr; }
+            reference operator*() const { return this->ptr; }
+            reference operator->() { return this->ptr; }
 
             constexpr _validating_input_iter& operator++()
             {
-                ++(this->ptr);
+                // this->ptr = ++(this->ptr);
                 return *this;
             }
 
@@ -342,7 +342,7 @@ namespace vt::prototype
             friend bool operator!=(const _validating_input_iter& lhs, const _validating_input_iter& rhs) { return lhs.ptr != rhs.ptr; }
 
         private:
-            pointer ptr;
+            reference ptr;
         };
     }
 }
@@ -372,7 +372,7 @@ namespace vt::prototype
             value(std::move(_value)),
             conditions(std::move(_conditions)),
             documents(std::move(_documents)),
-            iterator(++this)
+            iterator(*this)
         {}
 
         constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tvexpr>&& _vexpr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tdoc>&& _documents)
@@ -380,7 +380,7 @@ namespace vt::prototype
             value(std::move(_value)),
             conditions(std::move(_conditions)),
             documents(std::move(_documents)),
-            iterator(this)
+            iterator(*this)
         {}
 
         constexpr data_t& operator()(const auto&) const noexcept
@@ -389,6 +389,11 @@ namespace vt::prototype
         }
 
         constexpr data_t& operator()() const noexcept
+        {
+            return *this;
+        }
+
+        constexpr data_t& operator++()
         {
             return *this;
         }
@@ -447,19 +452,25 @@ namespace vt::prototype
 
         constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
-            next({})
+            next({}),
+            iterator(this->data)
         {}
 
         constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tvexpr>&& _vexpr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tdoc>&& _documents, std::add_const_t<Rest>&&... _rest)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
             next(std::move(_rest)...),
-            iterator(&data)
+            iterator(this->data)
         {}
 
         constexpr data_t& operator()(const auto& f) const noexcept
         {
             if (f(this->data())) return this->data();
             else return this->next(f);
+        }
+
+        constexpr data_t& operator++()
+        {
+            return this->next;
         }
 
         constexpr iterator_t& begin() const
