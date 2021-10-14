@@ -81,6 +81,12 @@ add_executable(parsettml
 )
 set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 
+# validatingnode
+add_executable(validatingnode
+	./src/application/validatingnode.cpp
+)
+set_target_properties(validatingnode PROPERTIES LINKER_LANGUAGE CXX)
+
 # ----------------------------------------------------------------------------|
 
 # Linking configuration for executables
