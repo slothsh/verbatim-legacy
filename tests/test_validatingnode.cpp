@@ -75,10 +75,10 @@ TEST_CASE("ValidatingNode Templating Test", "[ValidatingNode : Templates]")
 TEST_CASE("ValidatingNode Iterator Test", "[ValidatingNode : Iterators]")
 {
     using namespace vt::prototype;
-    constexpr ValidatingNode vn_1{ NS::tt, ValueExpression::alpha, "node_1", 1, 2, NS::tt, ValueExpression::alpha, "node_1", 1, 2 };
+    const ValidatingNode vn_1{ NS::tt, ValueExpression::alpha, "node_1", 1, 2, NS::tt, ValueExpression::alpha, "node_1", 1, 2 };
 
-    for (auto e : vn_1)
-    {
-        std::cout << "Hello\n";
-    }
+    // for (auto e : vn_1)
+    // {
+    //     std::cout << "Hello\n";
+    // }
 }

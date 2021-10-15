@@ -218,7 +218,7 @@ namespace vt::prototype
     struct NodeID
     {
     public:
-        using id_t = std::decay_t<E>;
+        using id_t = std::remove_cvref_t<E>;
 
         constexpr NodeID() = default;
         constexpr ~NodeID() = default;
@@ -246,8 +246,8 @@ namespace vt::prototype
     struct Node
     {
     public:
-        using ns_t = NodeID<std::decay_t<Tns>>;
-        using element_t = NodeID<std::decay_t<Telem>>;
+        using ns_t = NodeID<std::remove_cvref_t<Tns>>;
+        using element_t = NodeID<std::remove_cvref_t<Telem>>;
 
         constexpr Node() = default;
         constexpr ~Node() = default;
@@ -293,6 +293,15 @@ namespace vt::prototype
     template<class T>
     concept unsigned_integral_c = integral_c<T> && !signed_integral_c<T>;
 
+    // Base class for ValidatingNodeData
+    template<class...>
+    struct ValidatingNodeData
+    {};
+
+    template<>
+    struct ValidatingNodeData<>
+    {};
+
     // Base class for ValidatingNode
     template<class...>
     struct ValidatingNode
@@ -300,46 +309,40 @@ namespace vt::prototype
 
     template<>
     struct ValidatingNode<>
-    {
-    public:
-        auto operator()() const
-        {
-            return *this;
-        }
-    };
+    {};
 
     namespace detail
     {
         template<class ItrValue>
-        struct _validating_input_iter
+        struct _validatingnode_input_iter
         {
         public:
             using iterator_category = std::input_iterator_tag;
             using difference_type   = size_t;
-            using value_type        = ItrValue;
-            using pointer           = value_type*;
-            using reference         = value_type&;
+            using value_type        = std::remove_cvref_t<ItrValue>;
+            using pointer           = std::add_const_t<value_type>*;
+            using reference         = std::add_const_t<value_type>&;
 
-            constexpr _validating_input_iter(reference _ptr) : ptr(std::move(_ptr)) {}
+            constexpr _validatingnode_input_iter(reference _ptr) : ptr(_ptr) {}
 
             reference operator*() const { return this->ptr; }
             reference operator->() { return this->ptr; }
 
-            constexpr _validating_input_iter& operator++()
+            constexpr _validatingnode_input_iter& operator++()
             {
-                // this->ptr = ++(this->ptr);
+                ++this->ptr;
                 return *this;
             }
 
-            constexpr _validating_input_iter operator++(int)
+            constexpr _validatingnode_input_iter operator++(int)
             {
-                _validating_input_iter tmp = *this;
+                _validatingnode_input_iter tmp = *this;
                 ++(*this);
                 return tmp;
             }
 
-            friend bool operator==(const _validating_input_iter& lhs, const _validating_input_iter& rhs) { return lhs.ptr == rhs.ptr; }
-            friend bool operator!=(const _validating_input_iter& lhs, const _validating_input_iter& rhs) { return lhs.ptr != rhs.ptr; }
+            friend bool operator==(const _validatingnode_input_iter& lhs, const _validatingnode_input_iter& rhs) { return lhs.ptr == rhs.ptr; }
+            friend bool operator!=(const _validatingnode_input_iter& lhs, const _validatingnode_input_iter& rhs) { return lhs.ptr != rhs.ptr; }
 
         private:
             reference ptr;
@@ -355,70 +358,81 @@ namespace vt::prototype
 namespace vt::prototype
 {
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
-    struct ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>
+    class ValidatingNodeData<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>
     {
     public:
-        using data_t = std::add_const_t<ValidatingNode<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tvexpr>, std::remove_cvref_t<Tvalue>, std::remove_cvref_t<Tcnd>, std::remove_cvref_t<Tdoc>>>;
-        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tvexpr>>;
-        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
-        using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-        using iterator_t = std::add_const_t<detail::_validating_input_iter<data_t>>;
+        using data_t = std::add_const_t<ValidatingNodeData<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tvexpr>, std::remove_cvref_t<Tvalue>, std::remove_cvref_t<Tcnd>, std::remove_cvref_t<Tdoc>>>;
+        using node_t = Node<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tvexpr>>;
+        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::remove_cvref_t<Tvalue>, std::string_view>;
+
+        ValidatingNodeData() = default;
+        ~ValidatingNodeData() = default;
+
+        constexpr ValidatingNodeData(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
+            : node(std::move(_ns), std::move(_vexpr))
+            , value(std::move(_value))
+            , conditions(std::move(_conditions))
+            , documents(std::move(_documents))
+        {}
+
+        constexpr ValidatingNodeData(std::add_const_t<Tns>&& _ns, std::add_const_t<Tvexpr>&& _vexpr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tdoc>&& _documents)
+            : node(std::move(_ns), std::move(_vexpr))
+            , value(std::move(_value))
+            , conditions(std::move(_conditions))
+            , documents(std::move(_documents))
+        {}
+
+        friend bool operator==(const data_t& lhs, const data_t& rhs)
+        {
+            return (lhs.node == rhs.node && lhs.value == rhs.value && lhs.conditions == rhs.conditions && lhs.documents == rhs.documents);
+        }
+
+        friend bool operator!=(const data_t& lhs, const data_t& rhs)
+        {
+            return (lhs.node != rhs.node && lhs.value != rhs.value && lhs.conditions != rhs.conditions && lhs.documents != rhs.documents);
+        }
+
+    private:
+        node_t       node;
+        value_t      value;
+        size_t       conditions;
+        size_t       documents;
+    };
+
+    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
+    class ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>
+    {
+    public:
+        using data_t = std::add_const_t<ValidatingNodeData<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tvexpr>, std::remove_cvref_t<Tvalue>, std::remove_cvref_t<Tcnd>, std::remove_cvref_t<Tdoc>>>;
+        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::remove_cvref_t<Tvalue>, std::string_view>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
-            : node(std::move(_ns), std::move(_vexpr)),
-            value(std::move(_value)),
-            conditions(std::move(_conditions)),
-            documents(std::move(_documents)),
-            iterator(*this)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
         {}
 
         constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tvexpr>&& _vexpr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tdoc>&& _documents)
-            : node(std::move(_ns), std::move(_vexpr)),
-            value(std::move(_value)),
-            conditions(std::move(_conditions)),
-            documents(std::move(_documents)),
-            iterator(*this)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
         {}
 
-        constexpr data_t& operator()(const auto&) const noexcept
+        constexpr auto& begin() const
         {
             return *this;
         }
 
-        constexpr data_t& operator()() const noexcept
+        constexpr auto& end() const
         {
             return *this;
         }
 
-        constexpr data_t& operator++()
-        {
-            return *this;
-        }
-
-        constexpr iterator_t& begin() const
-        {
-            return this->iterator;
-        }
-        
-        constexpr iterator_t& end() const
-        {
-            return this->iterator;
-        }
-
-        node_t       node;
-        value_t      value;
-        size_t       conditions;
-        size_t       documents;
-
-        // Iterator
-        iterator_t   iterator;
+    private:
+        data_t       data;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
-    struct ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>
+    class ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
@@ -428,70 +442,110 @@ namespace vt::prototype
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
-            : data(std::move(std::get<0>(_data)),
+            : data( std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
                     std::move(std::get<3>(_data)), 
-                    std::move(std::get<4>(_data)))
+                    std::move(std::get<4>(_data)) )
         {}
 
         data_t       data;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
-    struct ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>
+    class ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>
     {
     public:
-        using data_t = std::add_const_t<ValidatingNode<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tvexpr>, std::remove_cvref_t<Tvalue>, std::remove_cvref_t<Tcnd>, std::remove_cvref_t<Tdoc>>>;
+        using my_t = std::add_const_t<ValidatingNode<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tvexpr>, std::remove_cvref_t<Tvalue>, std::remove_cvref_t<Tcnd>, std::remove_cvref_t<Tdoc>, std::remove_cvref_t<Rest>...>>;
+        using data_t = std::add_const_t<ValidatingNodeData<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tvexpr>, std::remove_cvref_t<Tvalue>, std::remove_cvref_t<Tcnd>, std::remove_cvref_t<Tdoc>>>;
         using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
-        using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-        using iterator_t = std::add_const_t<detail::_validating_input_iter<data_t>>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
-            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
-            next({}),
-            iterator(this->data)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
+            , next({})
         {}
 
         constexpr ValidatingNode(std::add_const_t<Tns>&& _ns, std::add_const_t<Tvexpr>&& _vexpr, std::add_const_t<Tvalue>&& _value, std::add_const_t<Tcnd>&& _conditions, std::add_const_t<Tdoc>&& _documents, std::add_const_t<Rest>&&... _rest)
-            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents)),
-            next(std::move(_rest)...),
-            iterator(this->data)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
+            , next(std::move(_rest)...)
         {}
 
-        constexpr data_t& operator()(const auto& f) const noexcept
+        // constexpr Tns get_ns() const
+        // {
+        //     return data.node.ns.id;
+        // }
+
+        // constexpr Tvexpr get_vexpr() const
+        // {
+        //     return data.node.element.id;
+        // }
+
+        // constexpr std::string_view get_value() const
+        // {
+        //     return data.value;
+        // }
+
+        // constexpr Tcnd get_cnod() const
+        // {
+        //     return data.conditions;
+        // }
+
+        // constexpr Tdoc get_doc() const
+        // {
+        //     return data.documents;
+        // }
+
+        // constexpr auto get_next() const
+        // {
+        //     return next;
+        // }
+
+        // template<class... Args>
+        // constexpr ValidatingNode(const ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Args...>& _node)
+        //     : data(_node.get_ns(), _node.get_(), _node.get_value(), _node.get_cnd(), _node.get_doc())
+        //     , next_t(std::move(_node.get_next()))
+        // {}
+
+        constexpr auto& begin() const
         {
-            if (f(this->data())) return this->data();
-            else return this->next(f);
+            return *this;
         }
 
-        constexpr data_t& operator++()
-        {
-            return this->next;
-        }
-
-        constexpr iterator_t& begin() const
-        {
-            return this->iterator;
-        }
-
-        constexpr iterator_t& end() const
+        constexpr auto& end() const
         {
             return this->next.end();
         }
 
+        constexpr auto& operator++()
+        {
+            return this->next;
+        }
+
+        constexpr auto& operator++(int)
+        {
+            return this->next;
+        }
+
+        friend bool operator==(const auto& lhs, const auto& rhs)
+        {
+            return (lhs.data.node == rhs.data.node && lhs.data.value == rhs.data.value && lhs.data.conditions == rhs.data.conditions && lhs.data.documents == rhs.data.documents);
+        }
+
+        friend bool operator!=(const auto& lhs, const auto& rhs)
+        { 
+            return (lhs.data.node != rhs.data.node && lhs.data.value != rhs.data.value && lhs.data.conditions != rhs.data.conditions && lhs.data.documents != rhs.data.documents);
+        }
+
+    private:
         data_t              data;
         next_t              next;
-
-        // Iterators
-        iterator_t          iterator;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
-    struct ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>, Rest...>
+    class ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>, Rest...>
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
@@ -502,21 +556,21 @@ namespace vt::prototype
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(tuple_t&& _data)
-            : data(std::move(std::get<0>(_data)),
+            : data( std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
                     std::move(std::get<3>(_data)), 
-                    std::move(std::get<4>(_data))),
-            next({})
+                    std::move(std::get<4>(_data)) )
+            , next({})
         {}
 
         constexpr ValidatingNode(tuple_t&& _data, std::add_const_t<Rest>&&... _rest)
-            : data(std::move(std::get<0>(_data)),
+            : data( std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
                     std::move(std::get<3>(_data)), 
-                    std::move(std::get<4>(_data))),
-            next(std::move(_rest)...)
+                    std::move(std::get<4>(_data)) )
+            , next(std::move(_rest)...)
         {}
 
         constexpr data_t& operator()(const auto& f) const noexcept
@@ -555,8 +609,8 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
-        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tattr>>;
-        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
+        using node_t = Node<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tattr>>;
+        using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::remove_cvref_t<Tvalue>, std::string_view>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tattr, Tvalue, Tcnd, Tqty, Tdoc>>;
 
         ValidatingNode() = default;
@@ -725,7 +779,7 @@ namespace vt::prototype
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Tcontent, Tqty, Tdoc>>;
-        using node_t = Node<std::decay_t<Tns>, std::decay_t<Tcontent>>;
+        using node_t = Node<std::remove_cvref_t<Tns>, std::remove_cvref_t<Tcontent>>;
         using tuple_t = std::add_const_t<std::tuple<Tns, Tcontent, Tqty, Tdoc>>;
 
         ValidatingNode() = default;
@@ -889,16 +943,16 @@ namespace vt::prototype
     {};
 
     template<class T>
-    concept element_tuple_c = is_element_tuple<std::decay_t<T>>::value;
+    concept element_tuple_c = is_element_tuple<std::remove_cvref_t<T>>::value;
 
     template<enumerable_ns_c Tns, enumerable_tag_c Ttag, class Tattr, class Tcontent, integral_c Tdoc>
     struct ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>
     {
     public:
         using data_t = std::add_const_t<ValidatingNode<Tns, Ttag, Tattr, Tcontent, Tdoc>>;
-        using node_t = Node<std::decay_t<Tns>, std::decay_t<Ttag>>;
-        using attribute_t = std::decay_t<Tattr>;
-        using content_t = std::decay_t<Tcontent>;
+        using node_t = Node<std::remove_cvref_t<Tns>, std::remove_cvref_t<Ttag>>;
+        using attribute_t = std::remove_cvref_t<Tattr>;
+        using content_t = std::remove_cvref_t<Tcontent>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
