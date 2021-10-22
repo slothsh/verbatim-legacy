@@ -293,6 +293,11 @@ namespace vt::prototype
     template<class T>
     concept unsigned_integral_c = integral_c<T> && !signed_integral_c<T>;
 
+    template<class F, class... Args>
+    concept invocable_c = requires(F&& f, Args&&... args) {
+        std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
+    };
+
     // Base class for ValidatingNodeData
     template<class...>
     struct ValidatingNodeData
@@ -304,24 +309,79 @@ namespace vt::prototype
 
     namespace detail
     {
-        template<class Tfnc>
+        template<class Rtn, class... Args>
+        inline constexpr auto _make_lambda(Rtn&& rtn, Args&&... args)
+        {
+            return [r = rtn](const std::remove_cvref_t<Args>&...)->Rtn { return r; };
+        }
+
+        template<class Rtn, class... Args>
+        struct _lambda
+        {
+            using type = decltype(std::declval<decltype(_make_lambda<Rtn, Args...>)>()(std::declval<Rtn>(), std::declval<Args>()...));
+            constexpr _lambda(Rtn&& _rtn, Args&&... _args)
+                : value(_make_lambda(std::forward<Rtn>(_rtn), std::forward<Args>(_args)...))
+            {}
+            type value;
+        };
+
+        template<class Ret, class Cls, class IsMutable, class... Args>
+        struct _lambda_types
+        {
+            using is_mutable = IsMutable;
+
+            enum { arity = sizeof...(Args) };
+
+            using return_type = Ret;
+
+            template<size_t i>
+            struct arg
+            {
+                using type = typename std::tuple_element<i, std::tuple<Args...>>::type;
+            };
+        };
+
+        template<class Ld>
+        struct _lambda_type
+            : _lambda_type<decltype(&Ld::operator())>
+        {};
+
+        template<class Ret, class Cls, class... Args>
+        struct _lambda_type<Ret(Cls::*)(Args...)>
+            : _lambda_types<Ret,Cls,std::true_type,Args...>
+        {};
+
+        template<class Ret, class Cls, class... Args>
+        struct _lambda_type<Ret(Cls::*)(Args...) const>
+            : _lambda_types<Ret,Cls,std::false_type,Args...>
+        {};
+
+        template<class F, size_t I>
+        using _get_arg = typename _lambda_type<F>::template arg<I>::type;
+
+        template<class F>
+        using _get_ret = typename _lambda_type<F>::return_type;
+
+        template<class Tfnc> requires invocable_c<Tfnc, _get_arg<Tfnc, 0>>
         struct _validatingnode_input_iter
         {
         public:
-            using iterator_t        = _validatingnode_input_iter<std::decay_t<Tfnc>>;
+            using iterator_t        = _validatingnode_input_iter<Tfnc>;
             using iterator_category = std::input_iterator_tag;
+            using fnc_t             = Tfnc;
+            using value_t           = _get_ret<Tfnc>;
  
-            constexpr _validatingnode_input_iter(fnc_t&& _fnc)
-                : index(0)
-                , fnc(std::move(_fnc))
+            constexpr _validatingnode_input_iter(fnc_t&& _fnc, size_t&& _index)
+                : index(_index)
+                , fnc(_fnc)
             {}
 
-            value_t& operator*() const { return this(index); }
-            value_t& operator->() const { return this(index); }
+            value_t operator*()  const { return this->fnc(this->index); }
+            value_t operator->() const { return this->fnc(this->index); }
 
             iterator_t& operator++()
             {
-                ++this->index;
+                --this->index;
                 return *this;
             }
 
@@ -332,10 +392,11 @@ namespace vt::prototype
                 return tmp;
             }
 
-            friend bool operator==(const iterator_t& lhs, const iterator_t& rhs) { return lhs.value == rhs.value; }
-            friend bool operator!=(const iterator_t& lhs, const iterator_t& rhs) { return lhs.value != rhs.value; }
+            friend bool operator==(const iterator_t& lhs, const iterator_t& rhs) { return lhs.index == rhs.index; }
+            friend bool operator!=(const iterator_t& lhs, const iterator_t& rhs) { return lhs.index != rhs.index; }
 
             size_t index;
+            fnc_t  fnc;
         };
     }
 }
@@ -386,7 +447,7 @@ namespace vt::prototype
     public:
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
-        using fnc_t = decltype(std::declval<decltype([](){ return data_t{}; })>());
+        using fnc_t = typename detail::_lambda<data_t, size_t>::type;
         using iterator_t = detail::_validatingnode_input_iter<fnc_t>;
 
         ValidatingNode() = default;
@@ -394,28 +455,23 @@ namespace vt::prototype
 
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
-            , iterator([&this](){ return this->data })
             , index(0)
+            , iterator(detail::_lambda<data_t, size_t>(std::move(this->index)).value, std::move(this->index))
         {}
 
-        data_t operator()(const size_t& index) const
-        {
-            return this->data;
-        }
-
-        iterator_t begin() const
+        decltype(auto) begin() const
         {
             return this->iterator;
         }
 
-        iterator_t end() const
+        decltype(auto) end() const
         {
             return this->begin();
         }
 
         data_t              data;
-        iterator_t          iterator;
         size_t              index;
+        iterator_t          iterator;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
@@ -443,9 +499,11 @@ namespace vt::prototype
     class ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>
     {
     public:
-        using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, std::decay_t<Tvalue>, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
+        using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
+        using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using next_t = ValidatingNode<std::decay_t<Rest>...>;
-        using iterator_t = detail::_validatingnode_input_iter<data_t>;
+        using fnc_t = typename detail::_lambda<data_t, size_t>::type;
+        using iterator_t = detail::_validatingnode_input_iter<fnc_t>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
@@ -453,30 +511,24 @@ namespace vt::prototype
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents, std::decay_t<Rest>&&... _rest)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
             , next(std::move(_rest)...)
-            , iterator(std::move(this->next), std::move(this->data))
             , index(sizeof...(Rest) / 5)
+            , iterator(detail::_lambda<data_t, size_t>(std::move(this->index)).value, std::move(this->index))
         {}
 
-        data_t operator()(const size_t& index) const
-        {
-            if (this->index > index) return this->data;
-            return this->next.data;
-        }
-
-        iterator_t& begin() const
+        decltype(auto) begin() const
         {
             return this->iterator;
         }
 
-        iterator_t& end() const
+        decltype(auto) end() const
         {
             return this->next.end();
         }
 
         data_t              data;
         next_t              next;
-        iterator_t          iterator;
         size_t              index;
+        iterator_t          iterator;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
