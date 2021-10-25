@@ -312,7 +312,7 @@ namespace vt::prototype
         template<class Rtn, class... Args>
         inline constexpr auto _make_lambda(Rtn&& rtn, Args&&... args)
         {
-            return [r = rtn](const std::remove_cvref_t<Args>&...)->Rtn { return r; };
+            return [r = rtn](const std::decay_t<Args>&... _args)->Rtn { return r; };
         }
 
         template<class Rtn, class... Args>
@@ -362,41 +362,80 @@ namespace vt::prototype
         template<class F>
         using _get_ret = typename _lambda_type<F>::return_type;
 
-        template<class Tfnc> requires invocable_c<Tfnc, _get_arg<Tfnc, 0>>
+        struct _default_lambda
+        {
+        public:
+            using type = typename detail::_lambda<bool, bool>::type;
+            static constexpr type value = detail::_lambda<bool, bool>(false, false).value;
+        };
+        // typename _default_lambda::type _default_lambda::value = detail::_lambda<bool, bool>(false, false).value;
+
+        template<class Tdata, class Tfnc = _default_lambda::type>
+            requires invocable_c<Tfnc, _get_arg<Tfnc, 0>>
         struct _validatingnode_input_iter
         {
         public:
-            using iterator_t        = _validatingnode_input_iter<Tfnc>;
-            using iterator_category = std::input_iterator_tag;
+            using data_t            = std::decay_t<Tdata>;
             using fnc_t             = Tfnc;
-            using value_t           = _get_ret<Tfnc>;
- 
-            constexpr _validatingnode_input_iter(fnc_t&& _fnc, size_t&& _index)
+            using iterator_t        = _validatingnode_input_iter<data_t, fnc_t>;
+            using iterator_category = std::input_iterator_tag;
+
+            constexpr _validatingnode_input_iter()
+                : index(0)
+                , data({})
+                , fnc(_default_lambda::value)
+            {}
+
+            constexpr _validatingnode_input_iter(size_t&& _index, data_t&& _data)
                 : index(_index)
+                , data(_data)
+                , fnc(_default_lambda::value)
+            {}
+ 
+            constexpr _validatingnode_input_iter(size_t&& _index, data_t&& _data, fnc_t&& _fnc)
+                : index(_index)
+                , data(_data)
                 , fnc(_fnc)
             {}
 
-            value_t operator*()  const { return this->fnc(this->index); }
-            value_t operator->() const { return this->fnc(this->index); }
+            template<class T>
+            constexpr _validatingnode_input_iter(const T& _t)
+                : index(_t.index)
+                , data(_t.data)
+                , fnc(_t.fnc)
+            {}
 
-            iterator_t& operator++()
+            template<class T>
+            constexpr _validatingnode_input_iter(T&& _t) noexcept
+                : index(std::forward<size_t>(_t.index))
+                , data(std::forward<data_t>(_t.data))
+                , fnc(std::forward<fnc_t>(this->fnc))
+            {}
+
+            data_t operator*()  const { return this->data; }
+            data_t operator->() const { return this->data; }
+
+            iterator_t operator++()
             {
-                --this->index;
+                if (this->index == 0) return iterator_t{};
                 return *this;
             }
 
-            iterator_t& operator++(int)
+            iterator_t operator++(int)
             {
                 auto tmp = *this;
                 ++(*this);
                 return tmp;
             }
 
-            friend bool operator==(const iterator_t& lhs, const iterator_t& rhs) { return lhs.index == rhs.index; }
-            friend bool operator!=(const iterator_t& lhs, const iterator_t& rhs) { return lhs.index != rhs.index; }
+            // friend bool operator==(const iterator_t& lhs, const iterator_t& rhs) { return lhs.index == rhs.index; }
+            // friend bool operator!=(const iterator_t& lhs, const iterator_t& rhs) { return lhs.index != rhs.index; }
+            bool operator==(auto&& rhs) { return this->index == rhs.index; }
+            bool operator!=(auto&& rhs) { return this->index != rhs.index; }
 
-            size_t index;
-            fnc_t  fnc;
+            size_t  index;
+            data_t  data;
+            fnc_t   fnc;
         };
     }
 }
@@ -447,8 +486,7 @@ namespace vt::prototype
     public:
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
-        using fnc_t = typename detail::_lambda<data_t, size_t>::type;
-        using iterator_t = detail::_validatingnode_input_iter<fnc_t>;
+        using iterator_t = detail::_validatingnode_input_iter<data_t>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
@@ -456,15 +494,15 @@ namespace vt::prototype
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
             , index(0)
-            , iterator(detail::_lambda<data_t, size_t>(std::move(this->index)).value, std::move(this->index))
+            , iterator(std::move(this->index), std::move(this->data))
         {}
 
-        decltype(auto) begin() const
+        constexpr decltype(auto) begin() const
         {
             return this->iterator;
         }
 
-        decltype(auto) end() const
+        constexpr decltype(auto) end() const
         {
             return this->begin();
         }
@@ -502,32 +540,34 @@ namespace vt::prototype
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using next_t = ValidatingNode<std::decay_t<Rest>...>;
-        using fnc_t = typename detail::_lambda<data_t, size_t>::type;
-        using iterator_t = detail::_validatingnode_input_iter<fnc_t>;
+        using next_iter_t = std::decay_t<decltype(std::declval<next_t>().begin())>;
+        using callback_t = typename detail::_lambda<next_iter_t>::type;
+        using fnc_t = typename detail::_lambda<callback_t, size_t>::type;
+        using iterator_t = detail::_validatingnode_input_iter<data_t, fnc_t>;
 
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents, std::decay_t<Rest>&&... _rest)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
-            , next(std::move(_rest)...)
             , index(sizeof...(Rest) / 5)
-            , iterator(detail::_lambda<data_t, size_t>(std::move(this->index)).value, std::move(this->index))
+            , next(std::move(_rest)...)
+            , iterator(std::move(this->index), std::move(this->data), detail::_lambda<callback_t, size_t>(detail::_lambda<next_iter_t>(this->next.begin()).value, std::move(this->index)).value)
         {}
 
-        decltype(auto) begin() const
+        constexpr decltype(auto) begin() const
         {
             return this->iterator;
         }
 
-        decltype(auto) end() const
+        constexpr decltype(auto) end() const
         {
             return this->next.end();
         }
 
         data_t              data;
-        next_t              next;
         size_t              index;
+        next_t              next;
         iterator_t          iterator;
     };
 
