@@ -25,6 +25,14 @@
 
 namespace vt::prototype
 {
+    // Error codes
+    enum class VT_ERROR_CODE : size_t
+    {
+        IS_ERROR = VT_ENUM_ID,
+        error_empty,
+        none = VT_ENUM_NONE
+    };
+
     // Generic enumerations for prototyping
     enum class NS : size_t
     {
@@ -220,7 +228,11 @@ namespace vt::prototype
     public:
         using id_t = std::remove_cvref_t<E>;
 
-        constexpr NodeID() = default;
+        constexpr NodeID()
+            : id(E::none)
+            , value(mge::enum_name(this->id))
+        {}
+
         constexpr ~NodeID() = default;
 
         constexpr NodeID(E&& _id)
@@ -249,7 +261,11 @@ namespace vt::prototype
         using ns_t = NodeID<std::remove_cvref_t<Tns>>;
         using element_t = NodeID<std::remove_cvref_t<Telem>>;
 
-        constexpr Node() = default;
+        constexpr Node()
+            : ns({})
+            , element({})
+        {}
+
         constexpr ~Node() = default;
 
         constexpr Node(Tns&& _ns, Telem&& _element)
@@ -370,54 +386,45 @@ namespace vt::prototype
         };
         // typename _default_lambda::type _default_lambda::value = detail::_lambda<bool, bool>(false, false).value;
 
-        template<class Tdata, class Tfnc = _default_lambda::type>
-            requires invocable_c<Tfnc, _get_arg<Tfnc, 0>>
+        template<size_t Size, class Tdata>
         struct _validatingnode_input_iter
         {
         public:
             using data_t            = std::decay_t<Tdata>;
-            using fnc_t             = Tfnc;
-            using iterator_t        = _validatingnode_input_iter<data_t, fnc_t>;
+            using iterator_t        = _validatingnode_input_iter<Size, data_t>;
             using iterator_category = std::input_iterator_tag;
 
             constexpr _validatingnode_input_iter()
                 : index(0)
-                , data({})
-                , fnc(_default_lambda::value)
+                , size(Size)
             {}
 
-            constexpr _validatingnode_input_iter(size_t&& _index, data_t&& _data)
-                : index(_index)
-                , data(_data)
-                , fnc(_default_lambda::value)
-            {}
- 
-            constexpr _validatingnode_input_iter(size_t&& _index, data_t&& _data, fnc_t&& _fnc)
-                : index(_index)
-                , data(_data)
-                , fnc(_fnc)
-            {}
+            constexpr _validatingnode_input_iter(data_t&& _data)
+                : index(0)
+                , size(0)
+            {
+                for (size_t i = this->index; i < this->size; ++i) {
+                    if (i == 0) this->data[i] = _data;
+                }
+            }
 
-            template<class T>
-            constexpr _validatingnode_input_iter(const T& _t)
-                : index(_t.index)
-                , data(_t.data)
-                , fnc(_t.fnc)
-            {}
+            template<class Tnext>
+            constexpr _validatingnode_input_iter(data_t&& _data, Tnext&& _next)
+                : index(0)
+                , size(Size)
+            {
+                for (size_t i = this->index; i < this->size; ++i) {
+                    if (i == 0) this->data[i] = _data;
+                    else this->data[i] = std::move(_next(std::move(i)));
+                }
+            }
 
-            template<class T>
-            constexpr _validatingnode_input_iter(T&& _t) noexcept
-                : index(std::forward<size_t>(_t.index))
-                , data(std::forward<data_t>(_t.data))
-                , fnc(std::forward<fnc_t>(this->fnc))
-            {}
-
-            data_t operator*()  const { return this->data; }
-            data_t operator->() const { return this->data; }
+            data_t operator*()  const { return this->data[index]; }
+            data_t operator->() const { return this->data[index]; }
 
             iterator_t operator++()
             {
-                if (this->index == 0) return iterator_t{};
+                ++this->index;
                 return *this;
             }
 
@@ -428,14 +435,12 @@ namespace vt::prototype
                 return tmp;
             }
 
-            // friend bool operator==(const iterator_t& lhs, const iterator_t& rhs) { return lhs.index == rhs.index; }
-            // friend bool operator!=(const iterator_t& lhs, const iterator_t& rhs) { return lhs.index != rhs.index; }
-            bool operator==(auto&& rhs) { return this->index == rhs.index; }
-            bool operator!=(auto&& rhs) { return this->index != rhs.index; }
+            bool operator==(auto&& rhs) { return this->index == this->size; }
+            bool operator!=(auto&& rhs) { return this->index != this->size; }
 
             size_t  index;
-            data_t  data;
-            fnc_t   fnc;
+            size_t  size;
+            data_t  data[Size + 1];
         };
     }
 }
@@ -455,8 +460,14 @@ namespace vt::prototype
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using node_t = Node<std::decay_t<Tns>, std::decay_t<Tvexpr>>;
 
-        ValidatingNodeData() = default;
-        ~ValidatingNodeData() = default;
+        constexpr ValidatingNodeData()
+            : node({})
+            , value(mge::enum_name(VT_ERROR_CODE::error_empty))
+            , conditions(mge::enum_integer(constants::NodeCondition::none))
+            , documents(mge::enum_integer(constants::TTMLDocument::none))
+        {}
+
+        constexpr ~ValidatingNodeData() = default;
 
         constexpr ValidatingNodeData(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
             : node(std::move(_ns), std::move(_vexpr))
@@ -486,16 +497,22 @@ namespace vt::prototype
     public:
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
-        using iterator_t = detail::_validatingnode_input_iter<data_t>;
+        using iterator_t = detail::_validatingnode_input_iter<0, data_t>;
 
-        ValidatingNode() = default;
-        ~ValidatingNode() = default;
+        constexpr ValidatingNode() = default;
+        constexpr ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
+        constexpr ValidatingNode(size_t&& _index, std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
-            , index(0)
-            , iterator(std::move(this->index), std::move(this->data))
+            , index(_index)
+            , iterator(std::move(this->data))
         {}
+        
+        constexpr data_t operator()(size_t&& _index) const
+        {
+            if (this->index == _index) return this->data;
+            else return data_t{};
+        }
 
         constexpr decltype(auto) begin() const
         {
@@ -512,27 +529,6 @@ namespace vt::prototype
         iterator_t          iterator;
     };
 
-    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
-    class ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>
-    {
-    public:
-        using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-        using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-
-        ValidatingNode() = default;
-        ~ValidatingNode() = default;
-
-        constexpr ValidatingNode(tuple_t&& _data)
-            : data( std::move(std::get<0>(_data)),
-                    std::move(std::get<1>(_data)),
-                    std::move(std::get<2>(_data)),
-                    std::move(std::get<3>(_data)), 
-                    std::move(std::get<4>(_data)) )
-        {}
-
-        data_t       data;
-    };
-
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
     class ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>
     {
@@ -540,20 +536,30 @@ namespace vt::prototype
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using next_t = ValidatingNode<std::decay_t<Rest>...>;
-        using next_iter_t = std::decay_t<decltype(std::declval<next_t>().begin())>;
-        using callback_t = typename detail::_lambda<next_iter_t>::type;
-        using fnc_t = typename detail::_lambda<callback_t, size_t>::type;
-        using iterator_t = detail::_validatingnode_input_iter<data_t, fnc_t>;
+        using iterator_t = detail::_validatingnode_input_iter<sizeof...(Rest) / 5 + 1, data_t>;
 
-        ValidatingNode() = default;
-        ~ValidatingNode() = default;
+        constexpr ValidatingNode() = default;
+        constexpr ~ValidatingNode() = default;
 
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents, std::decay_t<Rest>&&... _rest)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
-            , index(sizeof...(Rest) / 5)
-            , next(std::move(_rest)...)
-            , iterator(std::move(this->index), std::move(this->data), detail::_lambda<callback_t, size_t>(detail::_lambda<next_iter_t>(this->next.begin()).value, std::move(this->index)).value)
+            , index(0)
+            , next(this->index + 1, std::move(_rest)...)
+            , iterator(std::move(this->data), std::move(this->next))
         {}
+
+        constexpr ValidatingNode(size_t&& _index, std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents, std::decay_t<Rest>&&... _rest)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
+            , index(_index)
+            , next(this->index + 1, std::move(_rest)...)
+            , iterator(std::move(this->data), std::move(this->next))
+        {}
+
+        constexpr data_t operator()(size_t&& _index) const
+        {
+            if (this->index == _index) return this->data;
+            return this->next(std::move(_index));
+        }
 
         constexpr decltype(auto) begin() const
         {
@@ -571,57 +577,12 @@ namespace vt::prototype
         iterator_t          iterator;
     };
 
-    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
-    class ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>, Rest...>
-    {
-    public:
-        using data_t = std::add_const_t<ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-        using next_t = std::conditional_t<sizeof...(Rest) == 0, ValidatingNode<>, ValidatingNode<std::remove_cvref_t<Rest>...>>;
-        using tuple_t = std::add_const_t<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-
-        ValidatingNode() = default;
-        ~ValidatingNode() = default;
-
-        constexpr ValidatingNode(tuple_t&& _data)
-            : data( std::move(std::get<0>(_data)),
-                    std::move(std::get<1>(_data)),
-                    std::move(std::get<2>(_data)),
-                    std::move(std::get<3>(_data)), 
-                    std::move(std::get<4>(_data)) )
-            , next({})
-        {}
-
-        constexpr ValidatingNode(tuple_t&& _data, std::add_const_t<Rest>&&... _rest)
-            : data( std::move(std::get<0>(_data)),
-                    std::move(std::get<1>(_data)),
-                    std::move(std::get<2>(_data)),
-                    std::move(std::get<3>(_data)), 
-                    std::move(std::get<4>(_data)) )
-            , next(std::move(_rest)...)
-        {}
-
-        constexpr data_t& operator()(const auto& f) const noexcept
-        {
-            if (f(this->data())) return this->data();
-            else return this->next(f);
-        }
-        
-        data_t              data;
-        next_t              next;
-    };
-
     // Deduction guides for TTML value expressions
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
     ValidatingNode(Tns&&, Tvexpr&&, Tvalue&&, Tcnd&&, Tdoc&&) -> ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>;
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
     ValidatingNode(Tns&&, Tvexpr&&, Tvalue&&, Tcnd&&, Tdoc&&, Rest&&...) -> ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>;
-
-    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
-    ValidatingNode(const std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>&&) -> ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>>;
-
-    template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
-    ValidatingNode(const std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>&&, Rest&&...) -> ValidatingNode<std::tuple<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>, Rest...>;
 }
 
 // ------------------------------------------------------------|END|-----------------------------------------------------------|
