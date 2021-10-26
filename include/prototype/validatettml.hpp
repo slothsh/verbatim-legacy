@@ -230,7 +230,7 @@ namespace vt::prototype
 
         constexpr NodeID()
             : id(E::none)
-            , value(mge::enum_name(this->id))
+            , value(mge::enum_name(E::none))
         {}
 
         constexpr ~NodeID() = default;
@@ -325,67 +325,6 @@ namespace vt::prototype
 
     namespace detail
     {
-        template<class Rtn, class... Args>
-        inline constexpr auto _make_lambda(Rtn&& rtn, Args&&... args)
-        {
-            return [r = rtn](const std::decay_t<Args>&... _args)->Rtn { return r; };
-        }
-
-        template<class Rtn, class... Args>
-        struct _lambda
-        {
-            using type = decltype(std::declval<decltype(_make_lambda<Rtn, Args...>)>()(std::declval<Rtn>(), std::declval<Args>()...));
-            constexpr _lambda(Rtn&& _rtn, Args&&... _args)
-                : value(_make_lambda(std::forward<Rtn>(_rtn), std::forward<Args>(_args)...))
-            {}
-            type value;
-        };
-
-        template<class Ret, class Cls, class IsMutable, class... Args>
-        struct _lambda_types
-        {
-            using is_mutable = IsMutable;
-
-            enum { arity = sizeof...(Args) };
-
-            using return_type = Ret;
-
-            template<size_t i>
-            struct arg
-            {
-                using type = typename std::tuple_element<i, std::tuple<Args...>>::type;
-            };
-        };
-
-        template<class Ld>
-        struct _lambda_type
-            : _lambda_type<decltype(&Ld::operator())>
-        {};
-
-        template<class Ret, class Cls, class... Args>
-        struct _lambda_type<Ret(Cls::*)(Args...)>
-            : _lambda_types<Ret,Cls,std::true_type,Args...>
-        {};
-
-        template<class Ret, class Cls, class... Args>
-        struct _lambda_type<Ret(Cls::*)(Args...) const>
-            : _lambda_types<Ret,Cls,std::false_type,Args...>
-        {};
-
-        template<class F, size_t I>
-        using _get_arg = typename _lambda_type<F>::template arg<I>::type;
-
-        template<class F>
-        using _get_ret = typename _lambda_type<F>::return_type;
-
-        struct _default_lambda
-        {
-        public:
-            using type = typename detail::_lambda<bool, bool>::type;
-            static constexpr type value = detail::_lambda<bool, bool>(false, false).value;
-        };
-        // typename _default_lambda::type _default_lambda::value = detail::_lambda<bool, bool>(false, false).value;
-
         template<size_t Size, class Tdata>
         struct _validatingnode_input_iter
         {
@@ -393,22 +332,23 @@ namespace vt::prototype
             using data_t            = std::decay_t<Tdata>;
             using iterator_t        = _validatingnode_input_iter<Size, data_t>;
             using iterator_category = std::input_iterator_tag;
+            using difference_type   = size_t;
 
             constexpr _validatingnode_input_iter()
                 : index(0)
-                , size(Size)
+                , size(1)
             {}
 
             constexpr _validatingnode_input_iter(data_t&& _data)
                 : index(0)
-                , size(0)
+                , size(1)
             {
                 for (size_t i = this->index; i < this->size; ++i) {
                     if (i == 0) this->data[i] = _data;
                 }
             }
 
-            template<class Tnext>
+            template<class Tnext> // TODO: Concept to validate type
             constexpr _validatingnode_input_iter(data_t&& _data, Tnext&& _next)
                 : index(0)
                 , size(Size)
@@ -419,8 +359,8 @@ namespace vt::prototype
                 }
             }
 
-            data_t operator*()  const { return this->data[index]; }
-            data_t operator->() const { return this->data[index]; }
+            data_t operator*() { return this->data[index]; }
+            data_t operator->() { return this->data[index]; }
 
             iterator_t operator++()
             {
@@ -435,8 +375,17 @@ namespace vt::prototype
                 return tmp;
             }
 
-            bool operator==(auto&& rhs) { return this->index == this->size; }
-            bool operator!=(auto&& rhs) { return this->index != this->size; }
+            bool operator==(auto&& rhs)
+            {
+                if (this->size == 1 && this->index == this->size) return true;
+                return this->index == this->size;
+            }
+
+            bool operator!=(auto&& rhs)
+            {
+                if (this->size == 1 && this->index != this->size) return true;
+                return this->index != this->size;
+            }
 
             size_t  index;
             size_t  size;
@@ -482,25 +431,22 @@ namespace vt::prototype
         size_t       documents;
     };
 
-    namespace detail
-    {
-        template<class T>
-        inline constexpr decltype(auto) _my_data(T&& _t)
-        {
-            return _t.data;
-        }
-    }
-
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc>
     class ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>
     {
     public:
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
-        using iterator_t = detail::_validatingnode_input_iter<0, data_t>;
+        using iterator_t = detail::_validatingnode_input_iter<1, data_t>;
 
-        constexpr ValidatingNode() = default;
+        constexpr ValidatingNode() = delete;
         constexpr ~ValidatingNode() = default;
+
+        constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
+            : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
+            , index(0)
+            , iterator(std::move(this->data))
+        {}
 
         constexpr ValidatingNode(size_t&& _index, std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
@@ -514,12 +460,12 @@ namespace vt::prototype
             else return data_t{};
         }
 
-        constexpr decltype(auto) begin() const
+        constexpr auto begin() const
         {
             return this->iterator;
         }
 
-        constexpr decltype(auto) end() const
+        constexpr auto end() const
         {
             return this->begin();
         }
@@ -538,7 +484,7 @@ namespace vt::prototype
         using next_t = ValidatingNode<std::decay_t<Rest>...>;
         using iterator_t = detail::_validatingnode_input_iter<sizeof...(Rest) / 5 + 1, data_t>;
 
-        constexpr ValidatingNode() = default;
+        constexpr ValidatingNode() = delete;
         constexpr ~ValidatingNode() = default;
 
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents, std::decay_t<Rest>&&... _rest)
@@ -561,12 +507,12 @@ namespace vt::prototype
             return this->next(std::move(_index));
         }
 
-        constexpr decltype(auto) begin() const
+        constexpr auto begin() const
         {
             return this->iterator;
         }
 
-        constexpr decltype(auto) end() const
+        constexpr auto end() const
         {
             return this->next.end();
         }
