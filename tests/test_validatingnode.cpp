@@ -18,67 +18,35 @@
 // Project headers
 #include "../include/prototype/validatettml.hpp"
 
-TEST_CASE("ValidatingNode Templating Test", "[ValidatingNode : Templates]")
-{
-	using namespace vt::prototype;
-
-    // constexpr std::tuple a_t{ NS::tt, ValueExpression::alpha, "hello", 1, 2 };
-    // constexpr ValidatingNode a { 
-    //     NS::tt, ValueExpression::alpha, "hello", 1, 2,
-    //     NS::tt, ValueExpression::alpha, "hello", 3, 4,
-    //     std::move(a_t),
-    //     NS::tt, ValueExpression::alpha, "hello", 3, 4,
-    //     std::move(a_t),
-    //     NS::tt, ValueExpression::alpha, "hello", 3, 4,
-    //     std::move(a_t)
-    // };
-    // constexpr vt::ValueExpressionNode b{ NS::tt, ValueExpression::alpha, "hello", 5, 6 };
-
-    // constexpr std::tuple c_t{ NS::tt, Attribute::opacity, "hello", 0, 1, 2 };
-    // constexpr ValidatingNode c { 
-    //     NS::tt, Attribute::opacity, "hello", 0, 1, 2,
-    //     std::move(c_t),
-    //     NS::tt, Attribute::opacity, "hello", 0, 1, 2,
-    //     std::move(c_t),
-    //     std::move(c_t),
-    //     NS::tt, Attribute::opacity, "hello", 0, 1, 2,
-    //     NS::tt, Attribute::opacity, "hello", 0, 1, 2
-    // };
-
-    // constexpr ValidatingNode d{ NS::tt, Attribute::opacity, "hello", 1, 2, 3 };
-
-    // constexpr std::tuple e_t{ NS::tt, GenericData::PCDATA, 1, 2 };
-    // constexpr ValidatingNode e { 
-    //     std::move(e_t)
-    // };
-
-    // vt::ContentNode f{ NS::tt, GenericData::PCDATA, 1, 2 };
-
-    // constexpr ValidatingNode g { 
-    //     NS::tt, Tag::tt, std::move(c), std::move(e), 1,
-    //     NS::tt, Tag::tt, std::move(c), std::move(e), 1,
-    //     NS::tt, Tag::tt, std::move(c), std::move(e), 1,
-    //     NS::tt, Tag::tt, std::move(c), std::move(e), 1,
-    //     NS::tt, Tag::tt, std::move(c), std::move(e), 1
-    // };
-
-    // constexpr ValidatingNode h{ NS::tt, Tag::tt, std::move(d), std::move(e), 3 };
-
-    // constexpr std::tuple j_t1{ NS::tt, Tag::tt, std::move(c), std::move(e), 3 };
-    // constexpr std::tuple j_t2{ NS::tt, Tag::tt, std::move(c), std::move(e), 3 };
-    // constexpr ValidatingNode j_1{ NS::tt, Tag::tt, std::move(d), std::move(e), 3 };
-    // constexpr ValidatingNode j_2{ NS::tt, Tag::tt, std::move(d), std::move(e), 3, std::tuple{ NS::tt, Tag::tt, std::move(d), std::move(e), 3 }, std::tuple{ NS::tt, Tag::tt, std::move(d), std::move(e), 3 } };
-
-    REQUIRE(true);
-}
-
-TEST_CASE("ValidatingNode Iterator Test", "[ValidatingNode : Iterators]")
+// Value Expressions
+TEST_CASE("[ValidatingNode : Iterators]", "[ValidatingNode : Iterators]")
 {
     using namespace vt::prototype;
-    const ValidatingNode vn_1{ NS::tt, ValueExpression::alpha, "node_1", 1, 2, NS::tt, ValueExpression::alpha, "node_1", 1, 2 };
 
-    // for (auto e : vn_1)
-    // {
-    //     std::cout << "Hello\n";
-    // }
+    // Single entry
+    constexpr ValidatingNode vn_1 { NS::tt, ValueExpression::alpha, "node_1", 1, 2 };
+
+    for (const auto e : vn_1)
+    {
+        std::cout << e.value << '\n';
+    }
+
+    // Multiple entries
+    constexpr ValidatingNode vn_2 {
+        NS::tt, ValueExpression::alpha, "node_1", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_2", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_3", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_4", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_5", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_6", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_7", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_8", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_9", 1, 2,
+        NS::xml, ValueExpression::alpha, "node_10", 1, 2,
+    };
+
+    for (const auto e : vn_2)
+    {
+        std::cout << e.value << '\n';
+    }
 }

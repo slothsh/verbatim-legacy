@@ -20,8 +20,8 @@
 int main(int argc, char** argv)
 {
     using namespace vt::prototype;
-    // constexpr ValidatingNode vn_1{ NS::tt, ValueExpression::alpha, "node_1", 1, 2 };
-    constexpr ValidatingNode vn_1{
+    constexpr ValidatingNode vn_1{ NS::tt, ValueExpression::alpha, "node_1", 1, 2 };
+    constexpr ValidatingNode vn_2{
         NS::tt, ValueExpression::alpha, "node_1", 1, 2,
         NS::xml, ValueExpression::alpha, "node_2", 1, 2,
         NS::xml, ValueExpression::alpha, "node_3", 1, 2,
@@ -35,6 +35,11 @@ int main(int argc, char** argv)
     };
 
     for (const auto& e : vn_1)
+    {
+        std::cout << e.value << '\n';
+    }
+
+    for (const auto& e : vn_2)
     {
         std::cout << e.value << '\n';
     }
