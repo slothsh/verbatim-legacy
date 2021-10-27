@@ -353,6 +353,7 @@ namespace vt::prototype
                 }
             }
 
+            // Copy assignment
             constexpr _validatingnode_input_iter& operator=(const _validatingnode_input_iter& _iterator)
             {
                 this->index = _iterator.index;
