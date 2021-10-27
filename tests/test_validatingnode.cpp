@@ -13,13 +13,13 @@
 #include <type_traits>
 
 // Third-party headers
-#include <catch2/catch_test_macros.hpp>
-
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch_all.hpp>
 // Project headers
 #include "../include/prototype/validatettml.hpp"
 
 // Value Expressions
-TEST_CASE("[ValidatingNode : Iterators]", "[ValidatingNode : Iterators]")
+TEST_CASE("ValidatingNode iterators for TTML value expressions", "[ValidatingNode : Iterators]")
 {
     using namespace vt::prototype;
 

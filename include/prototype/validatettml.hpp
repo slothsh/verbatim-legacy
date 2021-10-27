@@ -240,11 +240,6 @@ namespace vt::prototype
             value(magic_enum::enum_name<E>(_id))
         {}
 
-        constexpr NodeID(const E&& _id)
-            : id(_id),
-            value(magic_enum::enum_name<E>(_id))
-        {}
-
         constexpr bool operator==(const NodeID& _nodeid) const noexcept
         {
             return (this->id == _nodeid.id && this->value == _nodeid.value);

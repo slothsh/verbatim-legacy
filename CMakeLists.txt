@@ -8,17 +8,17 @@ include_directories(
 	include
 )
 
-	
-	# Catch2 Configuration
-	find_package(Catch2 3 REQUIRED)
-	include(CTest)
-	include(Catch)
-	
-	# Platform message
-	message(STATUS "Building for platform: ${CMAKE_SYSTEM_NAME}")
+# Catch2 Configuration
+find_package(Catch2 3 REQUIRED)
+include(CTest)
+include(Catch)
+
+# Platform message
+message(STATUS "Building for platform: ${CMAKE_SYSTEM_NAME}")
 	
 	# Mac OS configuration
-	if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+
     include_directories(
 		/usr/local/include/libxmlpp
         /usr/local/include/fmt
@@ -43,14 +43,19 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	file(TO_CMAKE_PATH $ENV{LIBFMT_PATH} libfmt_path)
 	file(TO_CMAKE_PATH $ENV{LIBMAGICENUM_PATH} libmagicenum_path)
 	file(TO_CMAKE_PATH $ENV{LIBTIMECODE_PATH} libtimecode_path)
+	file(TO_CMAKE_PATH $ENV{CATCH2_PATH} catch2_path)
 	message(STATUS ${libxmlpp_path})
 	message(STATUS ${libfmt_path})
+	message(STATUS ${libmagicenum_path})
+	message(STATUS ${libtimecode_path})
+	message(STATUS ${catch2_path})
 
 	include_directories(
 		${libxmlpp_path}/include/libxml++-5.0
 		${libfmt_path}/include
 		${libmagicenum_path}/include
 		${libtimecode_path}/src/timecode
+		${catch2_path}/include
 	)
 
 	find_library(LIBFMT NAMES fmtd.lib PATHS ${libfmt_path}/lib)
@@ -97,19 +102,19 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	add_custom_command(
 		TARGET parsettml POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
-		"${libxmlpp_path}/bin/xml++-vc142-5.0-1.dll"      
+		"${libxmlpp_path}/bin/xml++-vc142-5.0-1.dll"     
 		$<TARGET_FILE_DIR:parsettml>
 	)
 	add_custom_command(
 		TARGET parsettml POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
-		"${libfmt_path}/lib/fmtd.dll"      
+		"${libfmt_path}/lib/fmtd.dll"
 		$<TARGET_FILE_DIR:parsettml>
 	)
 	add_custom_command(
 		TARGET parsettml POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
-		"${libfmt_path}/lib/fmtd.dll"      
+		"${libfmt_path}/lib/fmtd.dll"
 		$<TARGET_FILE_DIR:parsettml>
 	)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
