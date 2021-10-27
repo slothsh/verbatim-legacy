@@ -121,10 +121,10 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
 
 # Catch2 Tests
-# add_executable(test_catch2 tests/test_catch2.cpp)
+# add_executable(test_catch2 tests/catch2.cpp)
 # target_link_libraries(test_catch2 PRIVATE Catch2::Catch2WithMain)
 # catch_discover_tests(test_catch2)
 
-add_executable(test_validatingnode tests/test_validatingnode.cpp)
+add_executable(test_validatingnode tests/validatingnode.cpp)
 target_link_libraries(test_validatingnode PRIVATE Catch2::Catch2WithMain)
 catch_discover_tests(test_validatingnode)

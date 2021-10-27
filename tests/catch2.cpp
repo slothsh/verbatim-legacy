@@ -1,4 +1,5 @@
 // Sanity check for Catch2 library
+#define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 
 unsigned int Factorial( unsigned int number ) {

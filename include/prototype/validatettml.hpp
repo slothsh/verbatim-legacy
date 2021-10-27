@@ -312,11 +312,19 @@ namespace vt::prototype
     // Base class for ValidatingNodeData
     template<class...>
     struct ValidatingNodeData
-    {};
+    {
+    public:
+        constexpr ValidatingNodeData() = delete;
+        constexpr ~ValidatingNodeData() = default;
+    };
     // Base class for ValidatingNode
     template<class...>
     struct ValidatingNode
-    {};
+    {
+    public:
+        constexpr ValidatingNode() = delete;
+        constexpr ~ValidatingNode() = default;
+    };
 
     namespace detail
     {
@@ -329,11 +337,33 @@ namespace vt::prototype
             using iterator_category = std::input_iterator_tag;
             using difference_type   = size_t;
 
+            // Default ctor
             constexpr _validatingnode_input_iter()
                 : index(0)
                 , size(1)
             {}
 
+            // Copy ctor
+            constexpr _validatingnode_input_iter(const _validatingnode_input_iter& _iterator)
+                : index(_iterator.index)
+                , size(_iterator.size)
+            {
+                for (size_t i = 0; i < this->size; ++i) {
+                    this->data[i] =  _iterator.data[i]; 
+                }
+            }
+
+            constexpr _validatingnode_input_iter& operator=(const _validatingnode_input_iter& _iterator)
+            {
+                this->index = _iterator.index;
+                this->size = _iterator.size;
+
+                for (size_t i = 0; i < this->size; ++i) {
+                    this->data[i] =  _iterator.data[i]; 
+                }
+            }
+
+            // Templated base case ctor
             constexpr _validatingnode_input_iter(data_t&& _data)
                 : index(0)
                 , size(1)
@@ -343,6 +373,7 @@ namespace vt::prototype
                 }
             }
 
+            // Templated recursive case ctor
             template<class Tnext> // TODO: Concept to validate type
             constexpr _validatingnode_input_iter(data_t&& _data, Tnext&& _next)
                 : index(0)
@@ -354,9 +385,11 @@ namespace vt::prototype
                 }
             }
 
+            // Dereference operators
             data_t operator*() { return this->data[index]; }
             data_t operator->() { return this->data[index]; }
 
+            // Increment operators
             iterator_t operator++()
             {
                 ++this->index;
@@ -370,6 +403,7 @@ namespace vt::prototype
                 return tmp;
             }
 
+            // Equality comparison operators
             bool operator==(auto&& rhs)
             {
                 if (this->size == 1 && this->index == this->size) return true;
@@ -382,6 +416,7 @@ namespace vt::prototype
                 return this->index != this->size;
             }
 
+            // Data members
             size_t  index;
             size_t  size;
             data_t  data[Size + 1];
@@ -400,10 +435,12 @@ namespace vt::prototype
     class ValidatingNodeData<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>
     {
     public:
+        // Type aliases
         using value_t = std::conditional_t<std::is_same_v<Tvalue, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using node_t = Node<std::decay_t<Tns>, std::decay_t<Tvexpr>>;
 
+        // Default ctor & dtor
         constexpr ValidatingNodeData()
             : node({})
             , value(mge::enum_name(VT_ERROR_CODE::error_empty))
@@ -413,6 +450,8 @@ namespace vt::prototype
 
         constexpr ~ValidatingNodeData() = default;
 
+
+        // Templated ctor
         constexpr ValidatingNodeData(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
             : node(std::move(_ns), std::move(_vexpr))
             , value(std::move(_value))
@@ -430,31 +469,37 @@ namespace vt::prototype
     class ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>
     {
     public:
+        // Type aliases
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using iterator_t = detail::_validatingnode_input_iter<1, data_t>;
 
+        // Default ctor & dtor
         constexpr ValidatingNode() = delete;
         constexpr ~ValidatingNode() = default;
 
+        // Template root ctor
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
             , index(0)
             , iterator(std::move(this->data))
         {}
 
+        // Template recursive ctor
         constexpr ValidatingNode(size_t&& _index, std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
             , index(_index)
             , iterator(std::move(this->data))
         {}
-        
+
+        // Data access for current node
         constexpr data_t operator()(size_t&& _index) const
         {
             if (this->index == _index) return this->data;
             else return data_t{};
         }
 
+        // Iterator access
         constexpr auto begin() const
         {
             return this->iterator;
@@ -462,7 +507,7 @@ namespace vt::prototype
 
         constexpr auto end() const
         {
-            return this->begin();
+            return this->iterator;
         }
 
         data_t              data;
@@ -474,14 +519,17 @@ namespace vt::prototype
     class ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>
     {
     public:
+        // Type aliases
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using next_t = ValidatingNode<std::decay_t<Rest>...>;
         using iterator_t = detail::_validatingnode_input_iter<sizeof...(Rest) / 5 + 1, data_t>;
 
+        // Default ctor & dtor
         constexpr ValidatingNode() = delete;
         constexpr ~ValidatingNode() = default;
 
+        // Template root ctor
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents, std::decay_t<Rest>&&... _rest)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
             , index(0)
@@ -489,6 +537,7 @@ namespace vt::prototype
             , iterator(std::move(this->data), std::move(this->next))
         {}
 
+        // Template recursive ctor
         constexpr ValidatingNode(size_t&& _index, std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents, std::decay_t<Rest>&&... _rest)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
             , index(_index)
@@ -496,12 +545,14 @@ namespace vt::prototype
             , iterator(std::move(this->data), std::move(this->next))
         {}
 
+        // Data access for current node
         constexpr data_t operator()(size_t&& _index) const
         {
             if (this->index == _index) return this->data;
             return this->next(std::move(_index));
         }
 
+        // Iterator access
         constexpr auto begin() const
         {
             return this->iterator;
@@ -509,7 +560,7 @@ namespace vt::prototype
 
         constexpr auto end() const
         {
-            return this->next.end();
+            return this->iterator;
         }
 
         data_t              data;

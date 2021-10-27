@@ -9,8 +9,8 @@
 
 // Standard headers
 #include <iostream>
-#include <concepts>
-#include <type_traits>
+#include <string>
+#include <algorithm>
 
 // Third-party headers
 
@@ -20,27 +20,48 @@
 int main(int argc, char** argv)
 {
     using namespace vt::prototype;
-    constexpr ValidatingNode vn_1{ NS::tt, ValueExpression::alpha, "node_1", 1, 2 };
-    constexpr ValidatingNode vn_2{
-        NS::tt, ValueExpression::alpha, "node_1", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_2", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_3", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_4", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_5", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_6", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_7", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_8", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_9", 1, 2,
-        NS::xml, ValueExpression::alpha, "node_10", 1, 2,
-    };
+
+    constexpr ValidatingNode vn_1 { NS::tt, ValueExpression::alpha, "vn_1_node_1", 1, 2 };
 
     for (const auto& e : vn_1)
     {
-        std::cout << e.value << '\n';
+        std::clog << e.value << '\n';
     }
+
+    std::clog << "-------------------------------------------------------\n";
+    constexpr ValidatingNode vn_2 {
+        NS::tt, ValueExpression::alpha, "vn_2_node_1", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_2", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_3", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_4", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_5", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_6", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_7", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_8", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_9", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_2_node_10", 1, 2
+    };
 
     for (const auto& e : vn_2)
     {
-        std::cout << e.value << '\n';
+        std::clog << e.value << '\n';
     }
+
+    std::clog << "-------------------------------------------------------\n";
+    constexpr ValidatingNode vn_3 {
+        NS::tt, ValueExpression::alpha, "vn_3_node_1", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_3_node_2", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_3_node_3", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_3_node_4", 1, 2,
+        NS::xml, ValueExpression::alpha, "vn_3_node_5", 1, 2
+    };
+
+    std::for_each(vn_2.begin(), vn_2.end(), [](const auto& _node) {
+        std::clog << _node.value << '\n';
+    });
+
+    std::clog << "-------------------------------------------------------\n";
+    std::clog << "size of vn_1: " << sizeof(vn_1) << '\n';
+    std::clog << "size of vn_2: " << sizeof(vn_2) << '\n';
+    std::clog << "size of vn_3: " << sizeof(vn_3) << '\n';
 }
