@@ -328,6 +328,9 @@ namespace vt::prototype
 
     namespace detail
     {
+        template<class Tleft, class Tright>
+        void swap(const Tleft& lhs, const Tright& rhs);
+
         template<size_t Size, class Tdata>
         struct _validatingnode_input_iter
         {
@@ -365,6 +368,8 @@ namespace vt::prototype
                 for (size_t i = 0; i < this->size; ++i) {
                     this->data[i] =  _iterator.data[i]; 
                 }
+
+                return *this;
             }
 
             // Templated base case ctor
@@ -408,16 +413,25 @@ namespace vt::prototype
             }
 
             // Equality comparison operators
-            bool operator==(auto&& rhs)
+            bool operator==(auto&&)
             {
                 if (this->size == 1 && this->index == this->size) return true;
                 return this->index == this->size;
             }
 
-            bool operator!=(auto&& rhs)
+            bool operator!=(auto&&)
             {
                 if (this->size == 1 && this->index != this->size) return true;
                 return this->index != this->size;
+            }
+
+            // Standard template library swap implementation
+            friend void swap(iterator_t& lhs, iterator_t& rhs)
+            {
+                auto tmp_l = lhs;
+                std::swap(lhs.index, rhs.index);
+                std::swap(lhs.size, rhs.size);
+                std::swap(lhs.data, rhs.data);
             }
 
             // Data members
@@ -463,6 +477,15 @@ namespace vt::prototype
             , documents(std::move(_documents))
         {}
 
+        // Standard template library swap implementation
+        friend void swap(auto& lhs, auto& rhs)
+        {
+            std::swap(lhs.node, rhs.node);
+            std::swap(lhs.value, rhs.value);
+            std::swap(lhs.conditions, rhs.conditions);
+            std::swap(lhs.documents, rhs.documents);
+        }
+
         node_t       node;
         value_t      value;
         size_t       conditions;
@@ -474,6 +497,7 @@ namespace vt::prototype
     {
     public:
         // Type aliases
+        using my_t = ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>;
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using iterator_t = detail::_validatingnode_input_iter<1, data_t>;
@@ -485,17 +509,17 @@ namespace vt::prototype
         // Template root ctor
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
-            , tail_data({})
             , index(0)
             , iterator(std::move(this->data))
+            , tail_data({})
         {}
 
         // Template recursive ctor
         constexpr ValidatingNode(size_t&& _index, std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
-            , tail_data({})
             , index(_index)
             , iterator(std::move(this->data))
+            , tail_data({})
         {}
 
         // Data access for current node
@@ -531,6 +555,15 @@ namespace vt::prototype
             return this->iterator;
         }
 
+        // Standard template library swap implementation
+        friend void swap(my_t& lhs, my_t& rhs)
+        {
+            std::swap(lhs.data, rhs.data);
+            std::swap(lhs.index, rhs.index);
+            std::swap(lhs.iterator, rhs.iterator);
+            std::swap(lhs.tail_data, rhs.tail_data);
+        }
+
         // Member variables
         data_t              data;
         size_t              index;
@@ -545,6 +578,7 @@ namespace vt::prototype
     {
     public:
         // Type aliases
+        using my_t = ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>;
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using next_t = ValidatingNode<std::decay_t<Rest>...>;
@@ -602,6 +636,15 @@ namespace vt::prototype
         constexpr iterator_t end() const
         {
             return this->iterator;
+        }
+
+        // Standard template library swap implementation
+        friend void swap(my_t& lhs, my_t& rhs)
+        {
+            std::swap(lhs.data, rhs.data);
+            std::swap(lhs.index, rhs.index);
+            std::swap(lhs.next, rhs.next);
+            std::swap(lhs.iterator, rhs.iterator);
         }
 
         data_t              data;

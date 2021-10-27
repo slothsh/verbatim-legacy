@@ -36,6 +36,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
 	set(libtimecode_src /usr/local/include/libtimecode/src/timecode.c)
 
+	# Compiler warnings
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
+
 # Windows configuration
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	# Fetch dependency paths and store in variables
@@ -66,6 +69,8 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	
 	set(libtimecode_src ${libtimecode_path}/src/timecode.c)
 
+	# Compiler warnings
+	# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
 
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 	# TODO
@@ -118,7 +123,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 		$<TARGET_FILE_DIR:parsettml>
 	)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-
 
 # Catch2 Tests
 # add_executable(test_catch2 tests/catch2.cpp)

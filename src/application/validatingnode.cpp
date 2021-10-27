@@ -17,7 +17,7 @@
 // Project headers
 #include "../../include/prototype/validatettml.hpp"
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
     using namespace vt::prototype;
 
