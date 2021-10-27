@@ -343,6 +343,9 @@ namespace vt::prototype
                 , size(1)
             {}
 
+            // Default dtor
+            constexpr ~_validatingnode_input_iter() = default;
+
             // Copy ctor
             constexpr _validatingnode_input_iter(const _validatingnode_input_iter& _iterator)
                 : index(_iterator.index)
@@ -387,11 +390,11 @@ namespace vt::prototype
             }
 
             // Dereference operators
-            data_t operator*() { return this->data[index]; }
-            data_t operator->() { return this->data[index]; }
+            data_t& operator*() { return this->data[index]; }
+            data_t& operator->() { return this->data[index]; }
 
             // Increment operators
-            iterator_t operator++()
+            iterator_t& operator++()
             {
                 ++this->index;
                 return *this;
@@ -482,6 +485,7 @@ namespace vt::prototype
         // Template root ctor
         constexpr ValidatingNode(std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
+            , tail_data({})
             , index(0)
             , iterator(std::move(this->data))
         {}
@@ -489,11 +493,18 @@ namespace vt::prototype
         // Template recursive ctor
         constexpr ValidatingNode(size_t&& _index, std::decay_t<Tns>&& _ns, std::decay_t<Tvexpr>&& _vexpr, std::decay_t<Tvalue>&& _value, std::decay_t<Tcnd>&& _conditions, std::decay_t<Tdoc>&& _documents)
             : data(std::move(_ns), std::move(_vexpr), std::move(_value), std::move(_conditions), std::move(_documents))
+            , tail_data({})
             , index(_index)
             , iterator(std::move(this->data))
         {}
 
         // Data access for current node
+        constexpr data_t& operator()(size_t&& _index)
+        {
+            if (this->index == _index) return this->data;
+            else return this->tail_data;
+        }
+
         constexpr data_t operator()(size_t&& _index) const
         {
             if (this->index == _index) return this->data;
@@ -501,19 +512,32 @@ namespace vt::prototype
         }
 
         // Iterator access
-        constexpr auto begin() const
+        constexpr iterator_t& begin()
         {
             return this->iterator;
         }
 
-        constexpr auto end() const
+        constexpr iterator_t begin() const
         {
             return this->iterator;
         }
 
+        constexpr iterator_t& end()
+        {
+            return this->iterator;
+        }
+        constexpr iterator_t end() const
+        {
+            return this->iterator;
+        }
+
+        // Member variables
         data_t              data;
         size_t              index;
         iterator_t          iterator;
+
+    private:
+        data_t              tail_data;
     };
 
     template<enumerable_ns_c Tns, enumerable_vexpr_c Tvexpr, string_view_c Tvalue, integral_c Tcnd, integral_c Tdoc, class... Rest>
@@ -547,6 +571,12 @@ namespace vt::prototype
         {}
 
         // Data access for current node
+        constexpr data_t& operator()(size_t&& _index)
+        {
+            if (this->index == _index) return this->data;
+            return this->next(std::move(_index));
+        }
+
         constexpr data_t operator()(size_t&& _index) const
         {
             if (this->index == _index) return this->data;
@@ -554,12 +584,22 @@ namespace vt::prototype
         }
 
         // Iterator access
-        constexpr auto begin() const
+        constexpr iterator_t& begin()
         {
             return this->iterator;
         }
 
-        constexpr auto end() const
+        constexpr iterator_t begin() const
+        {
+            return this->iterator;
+        }
+
+        constexpr iterator_t& end()
+        {
+            return this->iterator;
+        }
+
+        constexpr iterator_t end() const
         {
             return this->iterator;
         }
