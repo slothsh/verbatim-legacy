@@ -360,7 +360,7 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
 
     // ------------------------------------------------------------------------------------------------|
 
-    // for_each : single entry
+    // for_each : single entry : 
     std::for_each(vn_1.begin(), vn_1.end(), [&count, &name](const auto& _data) {
         ++count;
         name = _data.value;

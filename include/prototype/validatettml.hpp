@@ -417,8 +417,10 @@ namespace vt::prototype
             }
 
             // Dereference operators
+            constexpr data_t& operator*() { return this->data[this->index]; }
             constexpr data_t operator*() const { return this->data[this->index]; }
             constexpr data_t& operator->() { return this->data[this->index]; }
+            constexpr data_t operator->() const { return this->data[this->index]; }
 
             // Increment operators
             constexpr iterator_t& operator++()
@@ -435,16 +437,24 @@ namespace vt::prototype
             }
 
             // Equality comparison operators
-            constexpr bool operator==(auto&&)
+            constexpr bool operator==(auto&& rhs)
             {
-                if (this->size == 1 && this->index == this->size) return true;
-                return this->index == this->size;
+                if (this->size == 1 && rhs.size == 1
+                && this->index == rhs.size) {
+                    return true;
+                }
+                
+                return this->index == rhs.size;
             }
 
-            constexpr bool operator!=(auto&&)
+            constexpr bool operator!=(auto&& rhs)
             {
-                if (this->size == 1 && this->index != this->size) return true;
-                return this->index != this->size;
+                if (this->size == 1 && rhs.size == 1
+                && this->index != rhs.size) {
+                    return true;
+                }
+                
+                return this->index != rhs.size;
             }
 
             // Standard template library swap implementation
