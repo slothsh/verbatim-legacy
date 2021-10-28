@@ -19,6 +19,7 @@
 #include <utility>
 #include <concepts>
 #include <iterator>
+#include <initializer_list>
 
 // Enumerations for TTML nodes --------------------------------------------------------------------------------------- 1 of 1 -|
 // ============================================================================================================================|
@@ -343,14 +344,17 @@ namespace vt::prototype
         public:
             using data_t            = std::decay_t<Tdata>;
             using iterator_t        = _validatingnode_input_iter<Size, data_t>;
-            using iterator_category = std::input_iterator_tag;
+            using iterator_category = std::forward_iterator_tag;
             using difference_type   = size_t;
 
             // Default ctor
             constexpr _validatingnode_input_iter()
                 : index(0)
                 , size(1)
-            {}
+                , data()
+            {
+                static_assert(Size == 0, "templated size of default constructed _validatingnode_input_iter must be 0");
+            }
 
             // Default dtor
             constexpr ~_validatingnode_input_iter() = default;
@@ -379,7 +383,7 @@ namespace vt::prototype
             }
 
             // Templated base case ctor
-            constexpr _validatingnode_input_iter(data_t&& _data)
+            constexpr explicit _validatingnode_input_iter(data_t&& _data)
                 : index(0)
                 , size(1)
             {
@@ -390,7 +394,7 @@ namespace vt::prototype
 
             // Templated recursive case ctor
             template<class Tnext> // TODO: Concept to validate type
-            constexpr _validatingnode_input_iter(data_t&& _data, Tnext&& _next)
+            constexpr explicit _validatingnode_input_iter(data_t&& _data, Tnext&& _next)
                 : index(0)
                 , size(Size)
             {

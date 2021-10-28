@@ -21,7 +21,6 @@
 // Project headers
 #include "../include/prototype/validatettml.hpp"
 
-
 // ValidatingNode Value Expressions
 TEST_CASE("ValidatingNode structure initialization & move semantics", "[ValidatingNode : Value Expressions] [Initialization & Move Semantics]")
 {
@@ -105,6 +104,28 @@ TEST_CASE("ValidatingNode iterator initialization & move semantics", "[Validatin
         NS::ttp, ValueExpression::color, "node_3", 7, 8,
         NS::ttm, ValueExpression::duration, "node_4", 9, 10
     };
+
+    // ------------------------------------------------------------------------------------------------|
+
+    // Iterator default initialisation
+    using iterator_empty_t = detail::_validatingnode_input_iter<0, int>;
+    using iterator_two_t = detail::_validatingnode_input_iter<2, int>;
+
+    iterator_empty_t iter_1{};
+    const iterator_empty_t iter_const_1{};
+    constexpr iterator_empty_t iter_constexpr_1{};
+
+    REQUIRE(iter_1.index == 0);
+    REQUIRE(iter_1.size == 1);
+    REQUIRE(iter_const_1.index == 0);
+    REQUIRE(iter_const_1.size == 1);
+    REQUIRE(iter_constexpr_1.index == 0);
+    REQUIRE(iter_constexpr_1.size == 1);
+
+    // ------------------------------------------------------------------------------------------------|
+
+    // LegacyForwardIterator multi pass guarantee
+    iterator_two_t
 
     // ------------------------------------------------------------------------------------------------|
     
