@@ -328,8 +328,14 @@ namespace vt::prototype
 
     namespace detail
     {
-        template<class Tleft, class Tright>
-        void swap(const Tleft& lhs, const Tright& rhs);
+        template<class T> // TODO: concepts
+        struct _validatingnode_data_part
+        {
+        public:
+            // Type aliases
+            using type = typename std::decay_t<T>::data_t;
+            static type value;
+        };
 
         template<size_t Size, class Tdata>
         struct _validatingnode_input_iter
@@ -394,18 +400,34 @@ namespace vt::prototype
                 }
             }
 
+            // Indexed access call operator
+            constexpr iterator_t& operator()(int _index)
+            {
+                if (_index >= static_cast<int>(this->size) || _index < 0) this->index = this->size - 1;
+                else this->index = _index;
+                return *this;
+            }
+
+            constexpr iterator_t operator()(int _index) const
+            {
+                iterator_t tmp = *this;
+                if (_index >= static_cast<int>(this->size) || _index < 0) tmp.index = tmp.size - 1;
+                else tmp.index = _index;
+                return tmp;
+            }
+
             // Dereference operators
-            data_t& operator*() { return this->data[index]; }
-            data_t& operator->() { return this->data[index]; }
+            constexpr data_t operator*() const { return this->data[this->index]; }
+            constexpr data_t& operator->() { return this->data[this->index]; }
 
             // Increment operators
-            iterator_t& operator++()
+            constexpr iterator_t& operator++()
             {
                 ++this->index;
                 return *this;
             }
 
-            iterator_t operator++(int)
+            constexpr iterator_t operator++(int)
             {
                 auto tmp = *this;
                 ++(*this);
@@ -413,13 +435,13 @@ namespace vt::prototype
             }
 
             // Equality comparison operators
-            bool operator==(auto&&)
+            constexpr bool operator==(auto&&)
             {
                 if (this->size == 1 && this->index == this->size) return true;
                 return this->index == this->size;
             }
 
-            bool operator!=(auto&&)
+            constexpr bool operator!=(auto&&)
             {
                 if (this->size == 1 && this->index != this->size) return true;
                 return this->index != this->size;
@@ -428,7 +450,6 @@ namespace vt::prototype
             // Standard template library swap implementation
             friend void swap(iterator_t& lhs, iterator_t& rhs)
             {
-                auto tmp_l = lhs;
                 std::swap(lhs.index, rhs.index);
                 std::swap(lhs.size, rhs.size);
                 std::swap(lhs.data, rhs.data);
@@ -468,7 +489,6 @@ namespace vt::prototype
 
         constexpr ~ValidatingNodeData() = default;
 
-
         // Templated ctor
         constexpr ValidatingNodeData(Tns&& _ns, Tvexpr&& _vexpr, Tvalue&& _value, Tcnd&& _conditions, Tdoc&& _documents)
             : node(std::move(_ns), std::move(_vexpr))
@@ -497,7 +517,6 @@ namespace vt::prototype
     {
     public:
         // Type aliases
-        using my_t = ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc>;
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using iterator_t = detail::_validatingnode_input_iter<1, data_t>;
@@ -529,7 +548,7 @@ namespace vt::prototype
             else return this->tail_data;
         }
 
-        constexpr data_t operator()(size_t&& _index) const
+        constexpr data_t operator()(size_t&& _index) const noexcept
         {
             if (this->index == _index) return this->data;
             else return data_t{};
@@ -538,30 +557,22 @@ namespace vt::prototype
         // Iterator access
         constexpr iterator_t& begin()
         {
-            return this->iterator;
+            return this->iterator(0);
         }
 
-        constexpr iterator_t begin() const
+        constexpr iterator_t begin() const noexcept
         {
-            return this->iterator;
+            return this->iterator(0);
         }
 
         constexpr iterator_t& end()
         {
-            return this->iterator;
-        }
-        constexpr iterator_t end() const
-        {
-            return this->iterator;
+            return this->iterator(-1);
         }
 
-        // Standard template library swap implementation
-        friend void swap(my_t& lhs, my_t& rhs)
+        constexpr iterator_t end() const noexcept
         {
-            std::swap(lhs.data, rhs.data);
-            std::swap(lhs.index, rhs.index);
-            std::swap(lhs.iterator, rhs.iterator);
-            std::swap(lhs.tail_data, rhs.tail_data);
+            return this->iterator(-1);
         }
 
         // Member variables
@@ -578,7 +589,6 @@ namespace vt::prototype
     {
     public:
         // Type aliases
-        using my_t = ValidatingNode<Tns, Tvexpr, Tvalue, Tcnd, Tdoc, Rest...>;
         using value_t = std::conditional_t<std::is_same_v<std::decay_t<Tvalue>, std::string_view>, std::decay_t<Tvalue>, std::string_view>;
         using data_t = ValidatingNodeData<std::decay_t<Tns>, std::decay_t<Tvexpr>, value_t, std::decay_t<Tcnd>, std::decay_t<Tdoc>>;
         using next_t = ValidatingNode<std::decay_t<Rest>...>;
@@ -611,7 +621,7 @@ namespace vt::prototype
             return this->next(std::move(_index));
         }
 
-        constexpr data_t operator()(size_t&& _index) const
+        constexpr data_t operator()(size_t&& _index) const noexcept
         {
             if (this->index == _index) return this->data;
             return this->next(std::move(_index));
@@ -620,31 +630,22 @@ namespace vt::prototype
         // Iterator access
         constexpr iterator_t& begin()
         {
-            return this->iterator;
+            return this->iterator(0);
         }
 
-        constexpr iterator_t begin() const
+        constexpr iterator_t begin() const noexcept
         {
-            return this->iterator;
+            return this->iterator(0);
         }
 
         constexpr iterator_t& end()
         {
-            return this->iterator;
+            return this->iterator(-1);
         }
 
-        constexpr iterator_t end() const
+        constexpr iterator_t end() const noexcept
         {
-            return this->iterator;
-        }
-
-        // Standard template library swap implementation
-        friend void swap(my_t& lhs, my_t& rhs)
-        {
-            std::swap(lhs.data, rhs.data);
-            std::swap(lhs.index, rhs.index);
-            std::swap(lhs.next, rhs.next);
-            std::swap(lhs.iterator, rhs.iterator);
+            return this->iterator(-1);
         }
 
         data_t              data;
