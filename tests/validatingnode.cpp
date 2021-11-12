@@ -37,50 +37,50 @@ TEST_CASE("ValidatingNode structure initialization & move semantics", "[Validati
     // ------------------------------------------------------------------------------------------------|
     
     // Initialization : single entry
-    REQUIRE(vn_1.data.node.ns.id == NS::tt);
+    CHECK(vn_1.data.node.ns.id == NS::tt);
     value = vn_1.data.node.ns.value;
-    REQUIRE(value == "tt"); value = "";
+    CHECK(value == "tt"); value = "";
 
-    REQUIRE(vn_1.data.node.element.id == ValueExpression::alpha);
+    CHECK(vn_1.data.node.element.id == ValueExpression::alpha);
     value = vn_1.data.node.element.value;
-    REQUIRE(value == "alpha"); value = "";
+    CHECK(value == "alpha"); value = "";
 
     value = vn_1.data.value;
-    REQUIRE(value == "node_1"); value = "";
+    CHECK(value == "node_1"); value = "";
 
-    REQUIRE(vn_1.data.conditions == 1);
-    REQUIRE(vn_1.data.documents == 2);
+    CHECK(vn_1.data.conditions == 1);
+    CHECK(vn_1.data.documents == 2);
 
     // Initialization : multiple entries
     // Entry 1
-    REQUIRE(vn_2.data.node.ns.id == NS::tts);
+    CHECK(vn_2.data.node.ns.id == NS::tts);
     value = vn_2.data.node.ns.value;
-    REQUIRE(value == "tts"); value = "";
+    CHECK(value == "tts"); value = "";
 
-    REQUIRE(vn_2.data.node.element.id == ValueExpression::color);
+    CHECK(vn_2.data.node.element.id == ValueExpression::color);
     value = vn_2.data.node.element.value;
-    REQUIRE(value == "color"); value = "";
+    CHECK(value == "color"); value = "";
 
     value = vn_2.data.value;
-    REQUIRE(value == "node_1"); value = "";
+    CHECK(value == "node_1"); value = "";
 
-    REQUIRE(vn_2.data.conditions == 3);
-    REQUIRE(vn_2.data.documents == 4);
+    CHECK(vn_2.data.conditions == 3);
+    CHECK(vn_2.data.documents == 4);
 
     // Entry 2
-    REQUIRE(vn_2.next.data.node.ns.id == NS::xml);
+    CHECK(vn_2.next.data.node.ns.id == NS::xml);
     value = vn_2.next.data.node.ns.value;
-    REQUIRE(value == "xml"); value = "";
+    CHECK(value == "xml"); value = "";
 
-    REQUIRE(vn_2.next.data.node.element.id == ValueExpression::duration);
+    CHECK(vn_2.next.data.node.element.id == ValueExpression::duration);
     value = vn_2.next.data.node.element.value;
-    REQUIRE(value == "duration"); value = "";
+    CHECK(value == "duration"); value = "";
 
     value = vn_2.next.data.value;
-    REQUIRE(value == "node_2"); value = "";
+    CHECK(value == "node_2"); value = "";
 
-    REQUIRE(vn_2.next.data.conditions == 5);
-    REQUIRE(vn_2.next.data.documents == 6);
+    CHECK(vn_2.next.data.conditions == 5);
+    CHECK(vn_2.next.data.documents == 6);
 
     // ------------------------------------------------------------------------------------------------|
 }
@@ -108,24 +108,30 @@ TEST_CASE("ValidatingNode iterator initialization & move semantics", "[Validatin
     // ------------------------------------------------------------------------------------------------|
 
     // Iterator default initialisation
-    using iterator_empty_t = detail::_validatingnode_input_iter<0, int>;
-    using iterator_two_t = detail::_validatingnode_input_iter<2, int>;
+    using data_t = typename decltype(vn_1)::data_t;
+    using iterator_empty_t = detail::_validatingnode_input_iter<0, data_t>;
+    using iterator_one_t = detail::_validatingnode_input_iter<1, data_t>;
+    using iterator_two_t = detail::_validatingnode_input_iter<2, data_t>;
+    using iterator_three_t = detail::_validatingnode_input_iter<3, data_t>;
 
     iterator_empty_t iter_1{};
     const iterator_empty_t iter_const_1{};
     constexpr iterator_empty_t iter_constexpr_1{};
 
-    REQUIRE(iter_1.index == 0);
-    REQUIRE(iter_1.size == 1);
-    REQUIRE(iter_const_1.index == 0);
-    REQUIRE(iter_const_1.size == 1);
-    REQUIRE(iter_constexpr_1.index == 0);
-    REQUIRE(iter_constexpr_1.size == 1);
+    CHECK(iter_1.index == 0);
+    CHECK(iter_1.size == 1);
+    CHECK(iter_const_1.index == 0);
+    CHECK(iter_const_1.size == 1);
+    CHECK(iter_constexpr_1.index == 0);
+    CHECK(iter_constexpr_1.size == 1);
 
     // ------------------------------------------------------------------------------------------------|
 
-    // LegacyForwardIterator multi pass guarantee
-    iterator_two_t
+    // Iterator Copy Construction
+    iterator_three_t iter_2{ data_t{ NS::tts, ValueExpression::duration, "node_2", 3, 4 }, vn_1 };
+    iterator_three_t iter_3 { iter_2 };
+
+    CHECK(iter_2 == iter_3);
 
     // ------------------------------------------------------------------------------------------------|
     
@@ -133,56 +139,59 @@ TEST_CASE("ValidatingNode iterator initialization & move semantics", "[Validatin
     std::swap(vn_1.begin(), vn_2.begin());
 
     // vn_1
-    REQUIRE((*vn_1.begin()).node.ns.id == NS::tts);
-    value = (*vn_1.begin()).node.ns.value; REQUIRE(value == "tts");
-    REQUIRE((*vn_1.begin()).node.element.id == ValueExpression::duration);
-    value = (*vn_1.begin()).node.element.value; REQUIRE(value == "duration");
-    value = (*vn_1.begin()).value; REQUIRE(value == "node_2");
+    CHECK((*vn_1.begin()).node.ns.id == NS::tts);
+    value = (*vn_1.begin()).node.ns.value; CHECK(value == "tts");
+    CHECK((*vn_1.begin()).node.element.id == ValueExpression::duration);
+    value = (*vn_1.begin()).node.element.value; CHECK(value == "duration");
+    value = (*vn_1.begin()).value; CHECK(value == "node_2");
 
-    REQUIRE((*vn_1.begin()).node.ns.id == NS::tts);
-    value = (*vn_1.begin()).node.ns.value; REQUIRE(value == "tts");
-    REQUIRE((*vn_1.begin()).node.element.id == ValueExpression::duration);
-    value = (*vn_1.begin()).node.element.value; REQUIRE(value == "duration");
-    value = (*vn_1.begin()).value; REQUIRE(value == "node_2");
+    CHECK((*vn_1.begin()).node.ns.id == NS::tts);
+    value = (*vn_1.begin()).node.ns.value; CHECK(value == "tts");
+    CHECK((*vn_1.begin()).node.element.id == ValueExpression::duration);
+    value = (*vn_1.begin()).node.element.value; CHECK(value == "duration");
+    value = (*vn_1.begin()).value; CHECK(value == "node_2");
 
-    REQUIRE((*vn_1.begin()).conditions == 3);
-    REQUIRE((*vn_1.begin()).documents == 4);
-    REQUIRE((*vn_1.end()).conditions == 3);
-    REQUIRE((*vn_1.end()).documents == 4);
+    CHECK((*vn_1.begin()).conditions == 3);
+    CHECK((*vn_1.begin()).documents == 4);
+
+    // CHECK((*vn_1.end()).value == magic_enum::enum_name(VT_ERROR_CODE::error_empty));
+    CHECK((*vn_1.end()).conditions == magic_enum::enum_integer(vt::constants::NodeCondition::none));
+    CHECK((*vn_1.end()).documents == magic_enum::enum_integer(vt::constants::TTMLDocument::none));
 
     for (const auto& n : vn_1) {
         ++count;
         value = n.value;
     }
 
-    REQUIRE(count == 1);        count = 0;
-    REQUIRE(value == "node_2"); value = "";
+    CHECK(count == 1);        count = 0;
+    CHECK(value == "node_2"); value = "";
 
     // vn_2
-    REQUIRE((*vn_2.begin()).node.ns.id == NS::tt);
-    value = (*vn_2.begin()).node.ns.value; REQUIRE(value == "tt");
-    REQUIRE((*vn_2.begin()).node.element.id == ValueExpression::alpha);
-    value = (*vn_2.begin()).node.element.value; REQUIRE(value == "alpha");
-    value = (*vn_2.begin()).value; REQUIRE(value == "node_1");
+    CHECK((*vn_2.begin()).node.ns.id == NS::tt);
+    value = (*vn_2.begin()).node.ns.value; CHECK(value == "tt");
+    CHECK((*vn_2.begin()).node.element.id == ValueExpression::alpha);
+    value = (*vn_2.begin()).node.element.value; CHECK(value == "alpha");
+    value = (*vn_2.begin()).value; CHECK(value == "node_1");
 
-    REQUIRE((*vn_2.begin()).node.ns.id == NS::tt);
-    value = (*vn_2.begin()).node.ns.value; REQUIRE(value == "tt");
-    REQUIRE((*vn_2.begin()).node.element.id == ValueExpression::alpha);
-    value = (*vn_2.begin()).node.element.value; REQUIRE(value == "alpha");
-    value = (*vn_2.begin()).value; REQUIRE(value == "node_1");
+    CHECK((*vn_2.begin()).node.ns.id == NS::tt);
+    value = (*vn_2.begin()).node.ns.value; CHECK(value == "tt");
+    CHECK((*vn_2.begin()).node.element.id == ValueExpression::alpha);
+    value = (*vn_2.begin()).node.element.value; CHECK(value == "alpha");
+    value = (*vn_2.begin()).value; CHECK(value == "node_1");
 
-    REQUIRE((*vn_2.begin()).conditions == 1);
-    REQUIRE((*vn_2.begin()).documents == 2);
-    REQUIRE((*vn_2.end()).conditions == 1);
-    REQUIRE((*vn_2.end()).documents == 2);
+    CHECK((*vn_2.begin()).conditions == 1);
+    CHECK((*vn_2.begin()).documents == 2);
+
+    CHECK((*vn_2.end()).conditions == magic_enum::enum_integer(vt::constants::NodeCondition::none));
+    CHECK((*vn_2.end()).documents == magic_enum::enum_integer(vt::constants::TTMLDocument::none));
 
     for (const auto& n : vn_2) {
         ++count;
         value = n.value;
     }
 
-    REQUIRE(count == 1);        count = 0;
-    REQUIRE(value == "node_1"); value = "";
+    CHECK(count == 1);        count = 0;
+    CHECK(value == "node_1"); value = "";
 
     // ------------------------------------------------------------------------------------------------|
     
@@ -190,56 +199,56 @@ TEST_CASE("ValidatingNode iterator initialization & move semantics", "[Validatin
     std::swap(vn_3.begin(), vn_4.begin());
 
     // vn_2
-    REQUIRE((*vn_3.begin()).node.ns.id == NS::ttp);
-    value = (*vn_3.begin()).node.ns.value; REQUIRE(value == "ttp");
-    REQUIRE((*vn_3.begin()).node.element.id == ValueExpression::color);
-    value = (*vn_3.begin()).node.element.value; REQUIRE(value == "color");
-    value = (*vn_3.begin()).value; REQUIRE(value == "node_3");
+    CHECK((*vn_3.begin()).node.ns.id == NS::ttp);
+    value = (*vn_3.begin()).node.ns.value; CHECK(value == "ttp");
+    CHECK((*vn_3.begin()).node.element.id == ValueExpression::color);
+    value = (*vn_3.begin()).node.element.value; CHECK(value == "color");
+    value = (*vn_3.begin()).value; CHECK(value == "node_3");
 
-    REQUIRE((*vn_3.end()).node.ns.id == NS::ttm);
-    value = (*vn_3.end()).node.ns.value; REQUIRE(value == "ttm");
-    REQUIRE((*vn_3.end()).node.element.id == ValueExpression::duration);
-    value = (*vn_3.end()).node.element.value; REQUIRE(value == "duration");
-    value = (*vn_3.end()).value; REQUIRE(value == "node_4");
+    CHECK((*vn_3.end()).node.ns.id == NS::none);
+    value = (*vn_3.end()).node.ns.value; CHECK(value == "none");
+    CHECK((*vn_3.end()).node.element.id == ValueExpression::none);
+    value = (*vn_3.end()).node.element.value; CHECK(value == "none");
+    value = (*vn_3.end()).value; CHECK(value == "node_4");
 
-    REQUIRE((*vn_3.begin()).conditions == 7);
-    REQUIRE((*vn_3.begin()).documents == 8);
-    REQUIRE((*vn_3.end()).conditions == 9);
-    REQUIRE((*vn_3.end()).documents == 10);
+    CHECK((*vn_3.begin()).conditions == 7);
+    CHECK((*vn_3.begin()).documents == 8);
+    CHECK((*vn_3.end()).conditions == 9);
+    CHECK((*vn_3.end()).documents == 10);
 
     for (const auto& n : vn_3) {
         ++count;
         value = n.value;
     }
 
-    REQUIRE(count == 2);        count = 0;
-    REQUIRE(value == "node_4"); value = "";
+    CHECK(count == 2);        count = 0;
+    CHECK(value == "node_4"); value = "";
 
     // vn_4
-    REQUIRE((*vn_4.begin()).node.ns.id == NS::tts);
-    value = (*vn_4.begin()).node.ns.value; REQUIRE(value == "tts");
-    REQUIRE((*vn_4.begin()).node.element.id == ValueExpression::alpha);
-    value = (*vn_4.begin()).node.element.value; REQUIRE(value == "alpha");
-    value = (*vn_4.begin()).value; REQUIRE(value == "node_1");
+    CHECK((*vn_4.begin()).node.ns.id == NS::tts);
+    value = (*vn_4.begin()).node.ns.value; CHECK(value == "tts");
+    CHECK((*vn_4.begin()).node.element.id == ValueExpression::alpha);
+    value = (*vn_4.begin()).node.element.value; CHECK(value == "alpha");
+    value = (*vn_4.begin()).value; CHECK(value == "node_1");
 
-    REQUIRE((*vn_4.end()).node.ns.id == NS::xml);
-    value = (*vn_4.end()).node.ns.value; REQUIRE(value == "xml");
-    REQUIRE((*vn_4.end()).node.element.id == ValueExpression::any_uri);
-    value = (*vn_4.end()).node.element.value; REQUIRE(value == "any_uri");
-    value = (*vn_4.end()).value; REQUIRE(value == "node_2");
+    CHECK((*vn_4.end()).node.ns.id == NS::none);
+    value = (*vn_4.end()).node.ns.value; CHECK(value == "none");
+    CHECK((*vn_4.end()).node.element.id == ValueExpression::none);
+    value = (*vn_4.end()).node.element.value; CHECK(value == "none");
+    value = (*vn_4.end()).value; CHECK(value == "node_2");
 
-    REQUIRE((*vn_4.begin()).conditions == 3);
-    REQUIRE((*vn_4.begin()).documents == 4);
-    REQUIRE((*vn_4.end()).conditions == 5);
-    REQUIRE((*vn_4.end()).documents == 6);
+    CHECK((*vn_4.begin()).conditions == 3);
+    CHECK((*vn_4.begin()).documents == 4);
+    CHECK((*vn_4.end()).conditions == magic_enum::enum_integer(vt::constants::NodeCondition::none));
+    CHECK((*vn_4.end()).documents == magic_enum::enum_integer(vt::constants::TTMLDocument::none));
 
     for (const auto& n : vn_4) {
         ++count;
         value = n.value;
     }
 
-    REQUIRE(count == 2);        count = 0;
-    REQUIRE(value == "node_2"); value = "";
+    CHECK(count == 2);        count = 0;
+    CHECK(value == "node_2"); value = "";
 }
 
 TEST_CASE("ValidatingNode structure range-based for-loop", "[ValidatingNode : Value Expressions] [Range-Based For-Loop]")
@@ -284,7 +293,7 @@ TEST_CASE("ValidatingNode structure range-based for-loop", "[ValidatingNode : Va
     }
 
     CHECK(count == 10);             count = 0;
-    REQUIRE(name == "node_10");     name = "";
+    CHECK(name == "node_10");     name = "";
 
     // ------------------------------------------------------------------------------------------------|
 }
@@ -332,7 +341,7 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
         return _data.node.ns.id == NS::tt && _data.node.ns.id != NS::tts;
     });
 
-    REQUIRE(vn_1_all_of);
+    CHECK(vn_1_all_of);
 
     // ------------------------------------------------------------------------------------------------|
 
@@ -341,7 +350,7 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
         return _data.node.ns.id == NS::tt && _data.node.ns.id != NS::tts;
     });
 
-    REQUIRE(vn_1_all_of_constexpr);
+    CHECK(vn_1_all_of_constexpr);
 
     // ------------------------------------------------------------------------------------------------|
     
@@ -350,7 +359,7 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
         return _data.node.ns.id == NS::tt && _data.node.ns.id != NS::tts;
     });
 
-    REQUIRE(vn_1_any_of);
+    CHECK(vn_1_any_of);
 
     // ------------------------------------------------------------------------------------------------|
 
@@ -359,7 +368,7 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
         return _data.node.ns.id == NS::tt && _data.node.ns.id != NS::tts;
     });
 
-    REQUIRE(vn_1_any_of_constexpr);
+    CHECK(vn_1_any_of_constexpr);
 
     // ------------------------------------------------------------------------------------------------|
     
@@ -387,8 +396,8 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
         name = _data.value;
     });
 
-    REQUIRE(count == 1);        count = 0;
-    REQUIRE(name == "node_1");  name = "";
+    CHECK(count == 1);        count = 0;
+    CHECK(name == "node_1");  name = "";
     
     // ------------------------------------------------------------------------------------------------|
 
@@ -398,8 +407,8 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
         name = _data.value;
     });
 
-    REQUIRE(count == 10);        count = 0;
-    REQUIRE(name == "node_10");  name = "";
+    CHECK(count == 10);        count = 0;
+    CHECK(name == "node_10");  name = "";
 
     // ------------------------------------------------------------------------------------------------|
 
@@ -409,8 +418,8 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
         name = _data.value;
     });
 
-    REQUIRE(count == 1);        count = 0;
-    REQUIRE(name == "node_1");  name = "";
+    CHECK(count == 1);        count = 0;
+    CHECK(name == "node_1");  name = "";
     
     // ------------------------------------------------------------------------------------------------|
 
@@ -420,8 +429,8 @@ TEST_CASE("ValidatingNode structure STL non-modifying sequence operations", "[Va
         name = _data.value;
     });
 
-    REQUIRE(count == 5);         count = 0;
-    REQUIRE(name == "node_5");   name = "";
+    CHECK(count == 5);         count = 0;
+    CHECK(name == "node_5");   name = "";
 
     // ------------------------------------------------------------------------------------------------|
 }

@@ -7,7 +7,7 @@
 
 // Configuration headers
 #ifndef VTCONFIG_HEADER
-#include "config.hpp"
+#include "../config.hpp"
 #endif
 
 // Standard headers
@@ -230,15 +230,15 @@ namespace vt::prototype
         using id_t = std::remove_cvref_t<E>;
 
         constexpr NodeID()
-            : id(E::none)
-            , value(mge::enum_name(E::none))
+            : id(id_t::none)
+            , value(mge::enum_name(id_t::none))
         {}
 
         constexpr ~NodeID() = default;
 
-        constexpr NodeID(E&& _id)
+        constexpr NodeID(id_t&& _id)
             : id(_id),
-            value(magic_enum::enum_name<E>(_id))
+            value(magic_enum::enum_name<id_t>(_id))
         {}
 
         constexpr bool operator==(const NodeID& _nodeid) const noexcept
@@ -407,7 +407,7 @@ namespace vt::prototype
             // Indexed access call operator
             constexpr iterator_t& operator()(int _index)
             {
-                if (_index >= static_cast<int>(this->size) || _index < 0) this->index = this->size - 1;
+                if (_index >= static_cast<int>(this->size) || _index < 0) this->index = this->size;
                 else this->index = _index;
                 return *this;
             }
@@ -415,7 +415,7 @@ namespace vt::prototype
             constexpr iterator_t operator()(int _index) const
             {
                 iterator_t tmp = *this;
-                if (_index >= static_cast<int>(this->size) || _index < 0) tmp.index = tmp.size - 1;
+                if (_index >= static_cast<int>(this->size) || _index < 0) tmp.index = tmp.size;
                 else tmp.index = _index;
                 return tmp;
             }
@@ -441,25 +441,30 @@ namespace vt::prototype
             }
 
             // Equality comparison operators
-            constexpr bool operator==(auto&& rhs)
+            template<class Tleft, class Tright>
+            constexpr inline bool compareEquals(Tleft&& lhs, Tright&& rhs)
             {
-                if (this->size == 1 && rhs.size == 1
-                && this->index == rhs.size) {
-                    return true;
-                }
-                
-                return this->index == rhs.size;
+                if (lhs.index == rhs.index && lhs.size == rhs.size) return true;
+                return false;
             }
 
-            constexpr bool operator!=(auto&& rhs)
+            template<class Tleft, class Tright>
+            constexpr inline bool compareEquals(Tleft&& lhs, Tright&& rhs) const
             {
-                if (this->size == 1 && rhs.size == 1
-                && this->index != rhs.size) {
-                    return true;
-                }
-                
-                return this->index != rhs.size;
+                if (lhs.index == rhs.index && lhs.size == rhs.size) return true;
+                return false;
             }
+
+            template<class Tleft, class Tright>
+            constexpr inline bool compareNotEquals(Tleft&& lhs, Tright&& rhs)       { return !(lhs == rhs); }
+
+            template<class Tleft, class Tright>
+            constexpr inline bool compareNotEquals(Tleft&& lhs, Tright&& rhs) const { return !(lhs == rhs); }
+
+            constexpr bool operator==(auto&& rhs)       { return this->compareEquals(std::forward<decltype(*this)>(*this),    std::forward<decltype(rhs)>(rhs)); }
+            constexpr bool operator!=(auto&& rhs)       { return this->compareNotEquals(std::forward<decltype(*this)>(*this), std::forward<decltype(rhs)>(rhs)); }
+            constexpr bool operator==(auto&& rhs) const { return this->compareEquals(std::forward<decltype(*this)>(*this),    std::forward<decltype(rhs)>(rhs)); }
+            constexpr bool operator!=(auto&& rhs) const { return this->compareNotEquals(std::forward<decltype(*this)>(*this), std::forward<decltype(rhs)>(rhs)); }
 
             // Standard template library swap implementation
             friend void swap(iterator_t& lhs, iterator_t& rhs)
@@ -738,7 +743,7 @@ namespace vt::prototype
         ValidatingNode() = default;
         ~ValidatingNode() = default;
 
-        constexpr ValidatingNode(tuple_t&& _data)
+        constexpr ValidatingNode(tuple_t&& _data) 
             : data(std::move(std::get<0>(_data)),
                     std::move(std::get<1>(_data)),
                     std::move(std::get<2>(_data)),
