@@ -93,9 +93,19 @@ set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 
 # validatingnode
 add_executable(validatingnode
-	./src/application/validatingnode.cpp
+./src/application/validatingnode.cpp
 )
 set_target_properties(validatingnode PROPERTIES LINKER_LANGUAGE CXX)
+
+# aapgetlines executable
+add_executable(aapgetlines
+./src/application/aapgetlines.cpp
+./src/filesink.cpp
+./src/edlfile.cpp
+./src/ptxedlstructure.cpp
+./src/helpers.cpp
+)
+set_target_properties(aapgetlines PROPERTIES LINKER_LANGUAGE CXX)
 
 # ----------------------------------------------------------------------------|
 
