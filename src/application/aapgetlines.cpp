@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 		edlfile.PrintOutput(vt::format::File::table_all);
 
 	} catch (const std::exception& e) {
-		std::cerr << e.what();
+		std::cerr << e.what() << '\n';
 		std::exit(1);
 	}
 

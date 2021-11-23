@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.20)
 project(verbatim_proj VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(build_proj null)
@@ -9,9 +9,11 @@ include_directories(
 )
 
 # Catch2 Configuration
-find_package(Catch2 3 REQUIRED)
-include(CTest)
-include(Catch)
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux") # TODO: Configure Linux with Catch2
+    find_package(Catch2 3 REQUIRED)
+    include(CTest)
+    include(Catch)
+endif(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
 # Platform message
 message(STATUS "Building for platform: ${CMAKE_SYSTEM_NAME}")
@@ -139,6 +141,8 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 # target_link_libraries(test_catch2 PRIVATE Catch2::Catch2WithMain)
 # catch_discover_tests(test_catch2)
 
-add_executable(test_validatingnode tests/validatingnode.cpp)
-target_link_libraries(test_validatingnode PRIVATE Catch2::Catch2WithMain)
-catch_discover_tests(test_validatingnode)
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux") # TODO: Configure Linux with Catch2
+    add_executable(test_validatingnode tests/validatingnode.cpp)
+    target_link_libraries(test_validatingnode PRIVATE Catch2::Catch2WithMain)
+    catch_discover_tests(test_validatingnode)
+endif(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")

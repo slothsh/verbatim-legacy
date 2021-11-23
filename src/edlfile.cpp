@@ -210,7 +210,7 @@ void EDLFilePTX::Parse()
 	regex::AllMatches(
 		chunks,
 		text,
-		std::regex("TRACK NAME:[\\x00-\\xFF]+?(\\x0a\\x0a\\x0a(?=T))+|TRACK NAME:[\\x00-\\xFF]+?(\\x0a\\x0a\\x0a)+") // TODO: Enums for these regexes; TODO: Fix this regex chunking hack
+		std::regex("TRACK NAME:[\\x00-\\x7f]+?(\\x0a\\x0a\\x0a(?=T))+|TRACK NAME:[\\x00-\\x7f]+?(\\x0a\\x0a\\x0a)+") // TODO: Enums for these regexes; TODO: Fix this regex chunking hack
 	);
 
 	if (edl_header == "") throw std::invalid_argument("Invalid EDL file. Invalid header\n");

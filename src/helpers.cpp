@@ -29,7 +29,7 @@ namespace vt
 		{
 			std::sregex_iterator current(text.begin() + start_offset, text.end(), expr);
 			std::smatch match = *current;
-			return match.str();
+			return (match.empty()) ? "" : match.str();
 		}
 
 		void AllMatches(
@@ -42,7 +42,7 @@ namespace vt
 			std::sregex_iterator last;
 			while (current != last) {
 				std::smatch match = *current++;
-				text_list.push_back(match.str());
+				text_list.push_back( (match.empty()) ? "" : match.str() );
 			}
 		}
 	}

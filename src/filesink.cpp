@@ -23,7 +23,7 @@ FileSink::FileSink() noexcept
 
 FileSink::FileSink(const path_t& path)
     : filesink_path(path),
-	filesink_file(path, std::ios::binary | std::ios::in | std::ios::ate),
+	filesink_file(path.data(), std::ios::binary | std::ios::in | std::ios::ate),
 	filesink_length(this->filesink_file.tellg()),
 	filesink_isvalid(false)
 {
@@ -75,7 +75,7 @@ void FileSink::ValidateFile() noexcept
 		}
 	}
 	catch (const std::exception& e) {
-		std::cerr << e.what();
+		std::cerr << e.what() << '\n';
 		this->Purge();
 	}
 }
