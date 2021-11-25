@@ -145,6 +145,7 @@ namespace vt
 
 		FrameRate GetFrameRate(const std::string text)
 		{
+			if (text.find("23.976") != std::string::npos || text.find("23.97") != std::string::npos) return format::FrameRate::_23_976Fps;
 			if (text.find("24") != std::string::npos) return format::FrameRate::_24Fps;
 			if (text.find("25") != std::string::npos) return format::FrameRate::_25Fps;
 			if (text.find("30") != std::string::npos) return format::FrameRate::_30Fps;
@@ -154,6 +155,7 @@ namespace vt
         
         std::string GetFrameRate(const FrameRate& frame_rate)
         {
+            if (frame_rate == format::FrameRate::_23_976Fps) return "23.976";
             if (frame_rate == format::FrameRate::_24Fps) return "24";
 			if (frame_rate == format::FrameRate::_25Fps) return "25";
 			if (frame_rate == format::FrameRate::_30Fps) return "30";
@@ -161,13 +163,14 @@ namespace vt
 			return "";
         }
 
-		size_t ParseFrameRate(const FrameRate& frame_rate)
+		double ParseFrameRate(const FrameRate& frame_rate)
 		{
-			if (frame_rate == format::FrameRate::_24Fps) return 24;
-			if (frame_rate == format::FrameRate::_25Fps) return 25;
-			if (frame_rate == format::FrameRate::_30Fps) return 30;
-			if (frame_rate == format::FrameRate::_60Fps) return 60;
-			return 0;
+			if (frame_rate == format::FrameRate::_23_976Fps) return 23.976;
+			if (frame_rate == format::FrameRate::_24Fps) return 24.0;
+			if (frame_rate == format::FrameRate::_25Fps) return 25.0;
+			if (frame_rate == format::FrameRate::_30Fps) return 30.0;
+			if (frame_rate == format::FrameRate::_60Fps) return 60.0;
+			return 0.0;
 		}
 
 		using attribute_t = std::tuple<std::string, std::string, std::string>;
@@ -307,7 +310,7 @@ namespace vt
 			std::vector<std::string> chunks;
 			regex::AllMatches(chunks, text, std::regex("\\d+"));
 			if (chunks.size() != 4) throw std::invalid_argument("Not enough chunks to parse timecode\n");
-			size_t frame_rate = ParseFrameRate(format);
+			double frame_rate = ParseFrameRate(format);
 			double h = std::stod(chunks[0]) * 60.0 * 60.0;
 			double m = std::stod(chunks[1]) * 60.0;
 			double s = std::stod(chunks[2]);
@@ -318,7 +321,7 @@ namespace vt
 
 		std::string ParseTimecode(double n, const format::FrameRate& format)
 		{
-			size_t frame_rate = ParseFrameRate(format);
+			auto frame_rate = ParseFrameRate(format);
 			std::string h = "00", m = "00", s = "00", f = "00";
 			if (n >= 60.0 * 60.0 * 10000000.0) {
 				h = std::to_string(n / 60.0 * 60.0 / 10000000.0);

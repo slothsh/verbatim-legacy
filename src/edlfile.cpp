@@ -175,21 +175,13 @@ void EDLFilePTX::Parse()
 
 	const auto iso_8859_1_to_utf8 = [](const std::string &str) -> std::string {
 		std::string str_out;
-		for (const auto& c : str)
-		{
+		for (const auto& c : str) {
 			uint8_t ci = c;
-			if (ci < 0x80) {
-				str_out.push_back(c);
-			} else {
-				// str_out.push_back(0xc0 | ci >> 6);
-				// str_out.push_back(0x80 | (ci & 0x3f));
-				if (ci == 0xC9) str_out.append("...");
-				else str_out.push_back('.');
-			}
+			if (ci < 0x80) str_out.push_back(c);
+			else if (ci == 0xc9) str_out.append("...");
 		}
 		return str_out;
 	};
-
 
 	// Extract track chunks from raw file
 	std::unique_ptr<char*> data_ptr{ std::make_unique<char*>(new char[this->filesink_length + 1]) };
@@ -641,6 +633,36 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 						<< "TC IN: " << data.timecode["start"] << PadColumn(' ', column_width_tcin, data.timecode["start"].length()) << '\t'
 						<< "TC OUT: " << data.timecode["end"] << PadColumn(' ', column_width_tcout, data.timecode["end"].length()) << '\t'
 						<< data.clip_name << '\n';
+				});
+			});
+
+			return output;
+		}
+
+		case format::File::db_dump: {
+			this->ForEach([&](PTXTrack track, size_t) {
+				const std::regex re_aapname {"^[\\'\\-A-z0-9 ]+(?=\\[)"};
+				auto production_name = vt::string::Trim(regex::FirstMatch(this->SessionName(), re_aapname), vt::string::space);
+				auto production_code = regex::FirstMatch(this->SessionName(), std::regex("(?!\\[)\\w{6}(?=\\])"));
+				auto ep_number = regex::FirstMatch(this->SessionName(), std::regex("EP\\d{2,3}"));
+				auto character = vt::string::Trim(regex::FirstMatch(track.track_name, re_aapname), vt::string::space);
+				auto age_lo = regex::FirstMatch(track.track_name, std::regex("\\d\\d(?=\\-)"));
+				auto age_hi = regex::FirstMatch(track.track_name, std::regex("\\d\\d\\}")).substr(0,2);
+				auto frame_rate = this->FrameRate();
+
+				std::string_view d { "&&" };
+				track.ForEach(0, [&](PTXTrackData data, size_t){
+					output 
+						<< production_name.substr(2) 						  << d 
+						<< production_code 			 						  << d 
+						<< ep_number 				 						  << d 
+						<< ((character == "") ? track.track_name : character) << d 
+						<< data.timecode["start"] 	 						  << d 
+						<< data.timecode["end"] 	 						  << d 
+						<< frame_rate			     						  << d 
+						<< ((age_lo == "" ) ? "00" : age_lo)				  << d 
+						<< ((age_hi == "" ) ? "00" : age_hi)				  << d 
+						<< data.clip_name 			 						  << '\n';
 				});
 			});
 

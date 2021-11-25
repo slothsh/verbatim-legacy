@@ -88,6 +88,7 @@ namespace vt
 		typedef
 		enum class FrameRate
 		{
+			_23_976Fps,
 			_24Fps,
 			_25Fps,
 			_30Fps,
@@ -102,6 +103,7 @@ namespace vt
 			edl_ptx_all,
 			edl_ptx_minimal,
 			table_all,
+			db_dump,
 			none
 		} FILE;
 		
@@ -151,7 +153,7 @@ namespace vt
 		std::string GetTimeFormat(const TimeFormat& time_format);
 		FrameRate GetFrameRate(const std::string text);
 		std::string GetFrameRate(const FrameRate& frame_rate);
-		size_t ParseFrameRate(const FrameRate& frame_rate);
+		double ParseFrameRate(const FrameRate& frame_rate);
 
 		using attribute_t = std::tuple<std::string, std::string, std::string>;
 		XMLNode XMLNodeFactory(const std::string& ns,
