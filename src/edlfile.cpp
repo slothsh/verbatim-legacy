@@ -306,7 +306,7 @@ void EDLFilePTX::ForEach(const std::function<void(PTXTrack& track, size_t index)
 	this->ForEach(function);
 }
 
-void EDLFilePTX::FilterTracks(const std::function<bool(PTXTrack& track, size_t index)>& function) noexcept
+void EDLFilePTX::FilterTracks(const std::function<bool(PTXTrack& track, size_t index)>& function)
 {
 	for (auto& track : this->ptx_tracks) {
 		if (!function(track.second, track.first)) this->RemoveTrack(track.first);
@@ -315,7 +315,7 @@ void EDLFilePTX::FilterTracks(const std::function<bool(PTXTrack& track, size_t i
 	this->Flush();
 }
 
-void EDLFilePTX::FilterData(const std::function<bool(PTXTrack& current_track, PTXTrackData& current_data, size_t index)>& function) noexcept
+void EDLFilePTX::FilterData(const std::function<bool(PTXTrack& current_track, PTXTrackData& current_data, size_t index)>& function)
 {
 	// TODO: Optimize
 	size_t data_index = 0;
@@ -676,7 +676,7 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 			};
 
 			this->ForEach([&](PTXTrack track, size_t) {
-				const std::regex re_aapname {"^[\\'\\-A-z0-9 ]+(?=\\[)"};
+				const std::regex re_aapname {"^.+(?=\\[)"};
 				auto production_name_unstripped = vt::string::Trim(regex::FirstMatch(this->SessionName(), re_aapname), vt::string::space).substr(2); // TODO: Check for unnecessary prefixes before sub-stringing
 				auto production_code = regex::FirstMatch(this->SessionName(), std::regex("(?!\\[)\\w{6}(?=\\])"));
 				auto production_catalogue = find_catalogue(production_name_unstripped);

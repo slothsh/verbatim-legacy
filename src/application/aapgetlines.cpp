@@ -74,6 +74,7 @@ int main(int argc, char** argv)
         if (name_list[0] != "*") {
             edlfile.FilterTracks([&name_list](PTXTrack track, size_t) {
                 for (const auto& n : name_list) {
+                    // TODO: Add escapes for special regex characters
                     if (regex::FirstMatch(track.track_name, std::regex(n)) == n) {
                         return true;
                     }

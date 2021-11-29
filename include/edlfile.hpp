@@ -44,8 +44,8 @@ public:
 	void RemoveTrackEvent(const size_t& track_index, const size_t& entry_index) noexcept;
 	void ForEach(const std::function<void(PTXTrack& track, size_t index)>& function) noexcept;
 	void ForEach(const std::function<void(PTXTrack& track, size_t index)>& function) const noexcept;
-	void FilterTracks(const std::function<bool(PTXTrack& track, size_t index)>& function) noexcept;
-	void FilterData(const std::function<bool(PTXTrack& current_track, PTXTrackData& current_data, size_t index)>& function) noexcept;
+	void FilterTracks(const std::function<bool(PTXTrack& track, size_t index)>& function);
+	void FilterData(const std::function<bool(PTXTrack& current_track, PTXTrackData& current_data, size_t index)>& function);
 	void EnumerateEvents(size_t start = 1) noexcept;
 	void EnumerateEvents(const size_t& track_index, size_t start = 1) noexcept;
 
