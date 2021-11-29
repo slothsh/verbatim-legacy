@@ -25,7 +25,7 @@ namespace vt
 {
 	namespace regex
 	{
-		bool HasMatch(const std::string& text, const std::string& expr, size_t start_offset = 0);
+		bool HasMatch(const std::string& text, const std::regex& expr, size_t start_offset = 0);
 		std::string FirstMatch(const std::string& text, const std::regex& expr, size_t start_offset = 0);
 		void AllMatches(std::vector<std::string>& text_list, const std::string& text, const std::regex& expr, size_t start_offset = 0);
 

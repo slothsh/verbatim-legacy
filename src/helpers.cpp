@@ -17,9 +17,9 @@ namespace vt
 {
 	namespace regex
 	{
-		bool HasMatch(const std::string& text, const std::string& expr, size_t start_offset)
+		bool HasMatch(const std::string& text, const std::regex& expr, size_t start_offset)
 		{
-			return std::regex_search(text.begin() + start_offset, text.end(), std::regex(expr));
+			return std::regex_search(text.begin() + start_offset, text.end(), expr);
 		}
 
 		std::string FirstMatch(
@@ -117,8 +117,8 @@ namespace vt
 
 		TimeFormat ParseTimeFormat(const std::string text)
 		{
-			if (regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d") && !regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d")) return format::TimeFormat::timecode;
-			if (regex::HasMatch(text, "\\d\\d:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d")) return format::TimeFormat::timecode_subframes;
+			if (regex::HasMatch(text, std::regex("\\d\\d:\\d\\d:\\d\\d:\\d\\d")) && !regex::HasMatch(text, std::regex("\\d\\d:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d"))) return format::TimeFormat::timecode;
+			if (regex::HasMatch(text, std::regex("\\d\\d:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d"))) return format::TimeFormat::timecode_subframes;
 			// if () return format::TimeFormat::feet_frames;
 			// if () return format::TimeFormat::minute_seconds;
 			// if () return format::TimeFormat::bars_beats;

@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <functional>
 #include <regex>
+#include <iterator>
 
 // Project headers
 #include "../include/filesink.hpp"
@@ -640,10 +641,46 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 		}
 
 		case format::File::db_dump: {
+			const auto find_catalogue = [](const std::string_view& name) -> std::string {
+				std::string catalogue = "";
+				const std::regex re_catalogue { "S\\d+" };
+
+				for (auto c = name.rbegin(); c != name.rend(); ++c) {
+					if (*c != ' ') catalogue.push_back(*c);
+					else break;
+				}
+
+				std::reverse(catalogue.begin(), catalogue.end());
+
+				if (regex::HasMatch(catalogue, re_catalogue)) return catalogue;
+				return "";
+			};
+
+			const auto remove_catalogue = [](const std::string_view& name, const std::string_view& remove) -> std::string {
+				std::string filtered = "";
+
+				auto remove_start = std::search(name.begin(), name.end(), remove.begin(), remove.end());
+
+				if (remove_start != name.end()) {
+					for (auto name_start = name.begin(); name_start != name.end(); ++name_start) {
+						if (remove_start != name_start
+						   || remove_start == (name.end() - remove.length() - 2)) {
+							filtered.push_back(*name_start);
+						} else {
+							++remove_start;
+						}
+					}
+				}
+
+				return filtered;
+			};
+
 			this->ForEach([&](PTXTrack track, size_t) {
 				const std::regex re_aapname {"^[\\'\\-A-z0-9 ]+(?=\\[)"};
-				auto production_name = vt::string::Trim(regex::FirstMatch(this->SessionName(), re_aapname), vt::string::space);
+				auto production_name_unstripped = vt::string::Trim(regex::FirstMatch(this->SessionName(), re_aapname), vt::string::space).substr(2); // TODO: Check for unnecessary prefixes before sub-stringing
 				auto production_code = regex::FirstMatch(this->SessionName(), std::regex("(?!\\[)\\w{6}(?=\\])"));
+				auto production_catalogue = find_catalogue(production_name_unstripped);
+				auto production_name = ((production_catalogue == "") ? production_name_unstripped : vt::string::Trim(remove_catalogue(production_name_unstripped, production_catalogue), vt::string::space));
 				auto ep_number = regex::FirstMatch(this->SessionName(), std::regex("EP\\d{2,3}"));
 				auto character = vt::string::Trim(regex::FirstMatch(track.track_name, re_aapname), vt::string::space);
 				auto age_lo = regex::FirstMatch(track.track_name, std::regex("\\d\\d(?=\\-)"));
@@ -653,16 +690,17 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 				std::string_view d { "&&" };
 				track.ForEach(0, [&](PTXTrackData data, size_t){
 					output 
-						<< production_name.substr(2) 						  << d 
-						<< production_code 			 						  << d 
-						<< ep_number 				 						  << d 
-						<< ((character == "") ? track.track_name : character) << d 
-						<< data.timecode["start"] 	 						  << d 
-						<< data.timecode["end"] 	 						  << d 
-						<< frame_rate			     						  << d 
-						<< ((age_lo == "" ) ? "00" : age_lo)				  << d 
-						<< ((age_hi == "" ) ? "00" : age_hi)				  << d 
-						<< data.clip_name 			 						  << '\n';
+						<< production_name 		  											  << d 
+						<< production_code 			 						  				  << d 
+						<< ((production_catalogue == "") ? "MONOLITH" : production_catalogue) << d 
+						<< ep_number 				 						  				  << d 
+						<< ((character == "") ? track.track_name : character) 				  << d 
+						<< data.timecode["start"] 	 						  				  << d 
+						<< data.timecode["end"] 	 						  				  << d 
+						<< frame_rate			     						  				  << d 
+						<< ((age_lo == "" ) ? "00" : age_lo)				  				  << d 
+						<< ((age_hi == "" ) ? "00" : age_hi)				  				  << d 
+						<< data.clip_name 			 						  				  << '\n';
 				});
 			});
 
