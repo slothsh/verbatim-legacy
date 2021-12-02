@@ -25,18 +25,18 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 		/usr/local/include/libxmlpp
         /usr/local/include/fmt
 		/usr/local/include/magicenum
-		/usr/local/include/libtimecode/src/timecode
 		/usr/local/include/catch2
+		/usr/local/include/ptformat
 	)
 	
     find_library(LIBXMLPP NAMES libxml++-5.0.1.dylib PATHS /usr/local/lib)
     set(libxmlpp ${LIBXMLPP})
 
-    # find_library(LIBFMT NAMES libfmtd.dylib PATHS /usr/local/lib)
     find_library(LIBFMT NAMES libfmtd.a PATHS /usr/local/lib)
     set(libfmt ${LIBFMT})
 
-	set(libtimecode_src /usr/local/include/libtimecode/src/timecode.c)
+    find_library(LIBPTFORMAT NAMES libptformat.dylib PATHS /usr/local/lib)
+    set(libptformat ${LIBPTFORMAT})
 
 	# Compiler warnings
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
@@ -47,19 +47,16 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	file(TO_CMAKE_PATH $ENV{LIBXMLPP_PATH} libxmlpp_path)
 	file(TO_CMAKE_PATH $ENV{LIBFMT_PATH} libfmt_path)
 	file(TO_CMAKE_PATH $ENV{LIBMAGICENUM_PATH} libmagicenum_path)
-	file(TO_CMAKE_PATH $ENV{LIBTIMECODE_PATH} libtimecode_path)
 	file(TO_CMAKE_PATH $ENV{CATCH2_PATH} catch2_path)
 	message(STATUS ${libxmlpp_path})
 	message(STATUS ${libfmt_path})
 	message(STATUS ${libmagicenum_path})
-	message(STATUS ${libtimecode_path})
 	message(STATUS ${catch2_path})
 
 	include_directories(
 		${libxmlpp_path}/include/libxml++-5.0
 		${libfmt_path}/include
 		${libmagicenum_path}/include
-		${libtimecode_path}/src/timecode
 		${catch2_path}/include
 	)
 
@@ -68,8 +65,6 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
 	find_library(LIBXMLPP NAMES xml++-vc142-5.0.lib PATHS ${libxmlpp_path}/lib)
 	set(libxmlpp ${LIBXMLPP})
-	
-	set(libtimecode_src ${libtimecode_path}/src/timecode.c)
 
 	# Compiler warnings
 	# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
@@ -95,17 +90,24 @@ set_target_properties(parsettml PROPERTIES LINKER_LANGUAGE CXX)
 
 # validatingnode
 add_executable(validatingnode
-./src/application/validatingnode.cpp
+	./src/application/validatingnode.cpp
 )
 set_target_properties(validatingnode PROPERTIES LINKER_LANGUAGE CXX)
 
+# pttool
+add_executable(pttool
+	./src/application/pttool.cpp
+	./src/ptparser.cpp
+)
+set_target_properties(pttool PROPERTIES LINKER_LANGUAGE CXX)
+
 # aapgetlines executable
 add_executable(aapgetlines
-./src/application/aapgetlines.cpp
-./src/filesink.cpp
-./src/edlfile.cpp
-./src/ptxedlstructure.cpp
-./src/helpers.cpp
+	./src/application/aapgetlines.cpp
+	./src/filesink.cpp
+	./src/edlfile.cpp
+	./src/ptxedlstructure.cpp
+	./src/helpers.cpp
 )
 set_target_properties(aapgetlines PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -113,6 +115,7 @@ set_target_properties(aapgetlines PROPERTIES LINKER_LANGUAGE CXX)
 
 # Linking configuration for executables
 target_link_libraries(parsettml ${libfmt} ${libxmlpp})
+target_link_libraries(pttool ${libptformat} ${libfmt})
 
 # Move DLLs for Windows
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

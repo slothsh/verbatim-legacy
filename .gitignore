@@ -47,5 +47,3 @@ output
 
 # WIP files & non commitables
 src/examples
-include/ttml.hpp
-include/node.hpp
