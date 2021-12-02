@@ -48,16 +48,19 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	file(TO_CMAKE_PATH $ENV{LIBFMT_PATH} libfmt_path)
 	file(TO_CMAKE_PATH $ENV{LIBMAGICENUM_PATH} libmagicenum_path)
 	file(TO_CMAKE_PATH $ENV{CATCH2_PATH} catch2_path)
+	file(TO_CMAKE_PATH $ENV{LIBPTFORMAT_PATH} libptformat_path)
 	message(STATUS ${libxmlpp_path})
 	message(STATUS ${libfmt_path})
 	message(STATUS ${libmagicenum_path})
 	message(STATUS ${catch2_path})
+	message(STATUS ${libptformat_path})
 
 	include_directories(
 		${libxmlpp_path}/include/libxml++-5.0
 		${libfmt_path}/include
 		${libmagicenum_path}/include
 		${catch2_path}/include
+        ${libptformat_path}
 	)
 
 	find_library(LIBFMT NAMES fmtd.lib PATHS ${libfmt_path}/lib)
@@ -65,6 +68,9 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
 	find_library(LIBXMLPP NAMES xml++-vc142-5.0.lib PATHS ${libxmlpp_path}/lib)
 	set(libxmlpp ${LIBXMLPP})
+    
+	find_library(LIBPTFORMAT NAMES ptformatshared.lib PATHS ${libptformat_path}/build/cmake/Debug)
+	set(libptformat ${LIBPTFORMAT})
 
 	# Compiler warnings
 	# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
@@ -97,7 +103,7 @@ set_target_properties(validatingnode PROPERTIES LINKER_LANGUAGE CXX)
 # pttool
 add_executable(pttool
 	./src/application/pttool.cpp
-	./src/ptparser.cpp
+    ./src/ptparser.cpp
 )
 set_target_properties(pttool PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -136,6 +142,18 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
 		"${libfmt_path}/lib/fmtd.dll"
 		$<TARGET_FILE_DIR:parsettml>
+	)
+    add_custom_command(
+		TARGET pttool POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
+		"${libptformat_path}/build/cmake/Debug/ptformatshared.dll"
+		$<TARGET_FILE_DIR:pttool>
+	)
+    add_custom_command(
+		TARGET pttool POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
+		"${libfmt_path}/lib/fmtd.dll"
+		$<TARGET_FILE_DIR:pttool>
 	)
 endif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 

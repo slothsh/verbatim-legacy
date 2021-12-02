@@ -38,19 +38,20 @@
 int main(int argc, char** argv)
 {
     if (argc < 2) {
-        fmt::print("Please specify an input path\n");
+        fmt::print(stderr, "ERROR: not enough arguments\n");
         std::exit(1);
     }
 
     // Load ptf file
     // const auto& [ signal, pt_file ] = vt::ptparser::parse_ptf(argv[1], 48000);
 
-    const auto& pt_file = vt::ptparser::parse_ptf(argv[1], 48000);
+    const auto pt_file = vt::ptparser::parse_ptf(argv[1], 48000);
     // if (signal) {
     //     fmt::print(stderr, "ERROR: pro tools file @ path {} file could not be loaded\n", argv[1]);
+    //     std::exit(1);
     // }
 
-    for (const auto& r : pt_file.miditracks()) {
+    for (const auto& r : pt_file.tracks()) {
         fmt::print("index: {0}    name: {1}\n",
             r.index,
             r.name
