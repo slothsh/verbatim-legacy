@@ -21,6 +21,9 @@
 
 // Project headers
 
+// Timecode Globals
+static const double TIMECODE_TICKRATE = 10000000.0;
+
 namespace vt
 {
 	namespace regex

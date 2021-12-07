@@ -51,10 +51,11 @@ int main(int argc, char** argv)
     //     std::exit(1);
     // }
 
-    for (const auto& r : pt_file.tracks()) {
-        fmt::print("index: {0}    name: {1}\n",
+    for (const auto& r : pt_file.regions()) {
+        fmt::print("index: {0}     file: {2}    name: {1}\n",
             r.index,
-            r.name
+            r.name,
+            r.wave.filename
         );
     }
 

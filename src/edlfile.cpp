@@ -677,6 +677,7 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 
 			this->ForEach([&](PTXTrack track, size_t) {
 				const std::regex re_aapname {"^.+(?=\\[)"};
+				const 
 				auto production_name_unstripped = vt::string::Trim(regex::FirstMatch(this->SessionName(), re_aapname), vt::string::space).substr(2); // TODO: Check for unnecessary prefixes before sub-stringing
 				auto production_code = regex::FirstMatch(this->SessionName(), std::regex("(?!\\[)\\w{6}(?=\\])"));
 				auto production_catalogue = find_catalogue(production_name_unstripped);
@@ -697,7 +698,8 @@ std::stringstream EDLFilePTX::GetOutput(const vt::format::File& file_format)
 						<< ((character == "") ? track.track_name : character) 				  << d 
 						<< data.timecode["start"] 	 						  				  << d 
 						<< data.timecode["end"] 	 						  				  << d 
-						<< frame_rate			     						  				  << d 
+						<< frame_rate			     						  				  << d
+						<< std::fixed << std::setprecision(1) << TIMECODE_TICKRATE	  		  << d 
 						<< ((age_lo == "" ) ? "00" : age_lo)				  				  << d 
 						<< ((age_hi == "" ) ? "00" : age_hi)				  				  << d 
 						<< data.clip_name 			 						  				  << '\n';

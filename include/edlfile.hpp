@@ -25,6 +25,9 @@
 #include "filesink.hpp"
 #include "ptxedlstructure.hpp"
 
+// Timecode Globals
+extern const double TIMECODE_TICKRATE;
+
 // EDLFilePTX object declaration ----------------------------------------------------------------------------------------------|
 // ============================================================================================================================|
 

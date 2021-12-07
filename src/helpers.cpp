@@ -316,30 +316,30 @@ namespace vt
 			double s = std::stod(chunks[2]);
 			double f = (std::stod(chunks[3]) / frame_rate);
 
-			return (h + m + s + f) * 10000000; // TODO: Create a precision constant for this
+			return (h + m + s + f) * TIMECODE_TICKRATE; // TODO: Create a precision constant for this
 		}
 
 		std::string ParseTimecode(double n, const format::FrameRate& format)
 		{
 			auto frame_rate = ParseFrameRate(format);
 			std::string h = "00", m = "00", s = "00", f = "00";
-			if (n >= 60.0 * 60.0 * 10000000.0) {
-				h = std::to_string(n / 60.0 * 60.0 / 10000000.0);
+			if (n >= 60.0 * 60.0 * TIMECODE_TICKRATE) {
+				h = std::to_string(n / 60.0 * 60.0 / TIMECODE_TICKRATE);
 				h = h.substr(0, h.find_first_of('.', 0));
-				n = std::fmod(n, (60.0 * 60.0 * 10000000.0));
+				n = std::fmod(n, (60.0 * 60.0 * TIMECODE_TICKRATE));
 			}
-			if (n >= 60.0 * 10000000.0) {
-				m = std::to_string(n / 60.0 / 10000000.0);
+			if (n >= 60.0 * TIMECODE_TICKRATE) {
+				m = std::to_string(n / 60.0 / TIMECODE_TICKRATE);
 				m = m.substr(0, m.find_first_of('.', 0));
-				n = std::fmod(n, 60.0 * 10000000.0);
+				n = std::fmod(n, 60.0 * TIMECODE_TICKRATE);
 			}
-			if (n >= 10000000.0) {
-				s = std::to_string(n / 10000000.0);
+			if (n >= TIMECODE_TICKRATE) {
+				s = std::to_string(n / TIMECODE_TICKRATE);
 				s = s.substr(0, s.find_first_of('.', 0));
-				n = std::fmod(n, 10000000.0);
+				n = std::fmod(n, TIMECODE_TICKRATE);
 			}
 
-			f = std::to_string(std::round(n * frame_rate / 10000000.0));
+			f = std::to_string(std::round(n * frame_rate / TIMECODE_TICKRATE));
 			f = f.substr(0, f.find_first_of('.', 0));
 			// n -= (n / 1000000000 * frame_rate);
 
