@@ -15,6 +15,7 @@
 #include <functional>
 #include <regex>
 #include <iterator>
+#include <iomanip>
 
 // Project headers
 #include "../include/filesink.hpp"
